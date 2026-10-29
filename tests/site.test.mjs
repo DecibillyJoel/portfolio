@@ -87,3 +87,13 @@ test('player chooses the embed size once, not on resize', () => {
   assert.match(js, /matchMedia\(\s*[`'"]\(min-width: 900px\)[`'"]\s*\)/);
   assert.doesNotMatch(js, /addEventListener\([`'"]resize[`'"]/);
 });
+
+test('the mobile layout block exists', () => {
+  assert.match(readDist(), /max-width:\s*899px|width\s*<=\s*899px/);
+});
+
+test('inactive panels are hidden, never removed', () => {
+  const js = readDist();
+  assert.match(js, /\.hidden\s*=/);
+  assert.doesNotMatch(js, /removeChild|\.innerHTML\s*=/);
+});

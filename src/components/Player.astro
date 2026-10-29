@@ -22,6 +22,7 @@ const sm = `${BASE}?s=sm&m=dark&c=aac`;
   if (frame && !frame.src) {
     const wide = window.matchMedia('(min-width: 900px)').matches;
     frame.src = wide ? frame.dataset.srcXl : frame.dataset.srcSm;
+    frame.closest('.player').dataset.embedSize = wide ? 'xl' : 'sm';
     if (!wide) {
       frame.width = '300';
       frame.height = '614';
@@ -37,4 +38,17 @@ const sm = `${BASE}?s=sm&m=dark&c=aac`;
     display: inline-block;
   }
   iframe { display: block; border: 0; }
+
+  @media (max-width: 899px) {
+    .player[data-embed-size='xl'] {
+      max-width: 100%;
+      overflow: hidden;
+      height: calc((100vw - 42px) * 296 / 800 + 10px);
+    }
+    .player[data-embed-size='xl'] iframe {
+      transform: scale(calc((100vw - 42px) / 800px));
+      transform-origin: top left;
+    }
+    .player { padding: 4px; }
+  }
 </style>

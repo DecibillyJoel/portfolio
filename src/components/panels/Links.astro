@@ -36,4 +36,9 @@ import { links } from '../../data/links.js';
   .card a:focus-visible { outline: 2px solid var(--magenta); outline-offset: 2px; }
   .value { font-size: 14px; color: var(--green); }
   .pending .value { color: var(--muted); }
+
+  @media (max-width: 899px) {
+    .links { padding: 16px; }
+    ul { grid-template-columns: 1fr; }
+  }
 </style>
