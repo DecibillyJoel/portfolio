@@ -1,0 +1,39 @@
+---
+import { links } from '../../data/links.js';
+---
+<section class="links">
+  <ul>
+    {links.map((link) => (
+      <li class={link.pending ? 'card pending' : 'card'}>
+        <span class="label">{link.label}</span>
+        {link.href
+          ? <a href={link.href} rel="me noopener">{link.value}</a>
+          : <span class="value">{link.value}</span>}
+      </li>
+    ))}
+  </ul>
+</section>
+
+<style>
+  .links { padding: 30px 60px; }
+  ul {
+    list-style: none;
+    margin: 0 auto;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    max-width: 900px;
+  }
+  .card {
+    border: 1px solid var(--border);
+    background: #0b120d;
+    padding: 16px 18px;
+  }
+  .label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+  .card a { font-size: 14px; color: var(--green); text-decoration: none; }
+  .card a:hover { text-decoration: underline; }
+  .card a:focus-visible { outline: 2px solid var(--magenta); outline-offset: 2px; }
+  .value { font-size: 14px; color: var(--green); }
+  .pending .value { color: var(--muted); }
+</style>

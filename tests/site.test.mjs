@@ -54,3 +54,23 @@ test('Who Am I carries the three approved paragraphs', () => {
   assert.match(html, /CompTIA A\+ certified\. I've built many personal game dev and programming projects over the years, driven by my own interests\./);
   assert.match(html, /I'm now using those skills and interests to bring power and togetherness to indie artists and creators\./);
 });
+
+test('Links lists seven entries', () => {
+  const html = readIndex();
+  const labels = ['GITHUB', 'YOUTUBE', 'BLUESKY', 'LIVE365', 'LAST.FM', 'EMAIL', 'DISCORD'];
+  for (const label of labels) assert.match(html, new RegExp(`>\\s*${label.replace('.', '\\.')}<`));
+});
+
+test('pending links are not clickable', () => {
+  const html = readIndex();
+  assert.doesNotMatch(html, /href="[^"]*bsky\.social/);
+  assert.doesNotMatch(html, /href="mailto:/);
+});
+
+test('live links point at the approved URLs', () => {
+  const html = readIndex();
+  assert.match(html, /href="https:\/\/github\.com\/DecibillyJoel"/);
+  assert.match(html, /href="https:\/\/www\.youtube\.com\/@JoeOfSomeTrades"/);
+  assert.match(html, /href="https:\/\/www\.last\.fm\/user\/DecibillyJoel"/);
+  assert.match(html, /href="https:\/\/live365\.com\/station\/a57727"/);
+});
