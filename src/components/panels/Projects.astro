@@ -1,0 +1,46 @@
+---
+import Player from '../Player.astro';
+---
+<section class="projects">
+  <nav class="sub-tabs" aria-label="Projects">
+    <button type="button" data-active="true">Maximum Slappage</button>
+  </nav>
+
+  <div class="project">
+    <h3>MAXIMUM SLAPPAGE</h3>
+    <p class="tagline">live internet radio &mdash; rock, and whatever else gets loud</p>
+    <p class="blurb">The station I run. Tune in from the player. Built for late nights and long drives.</p>
+    <Player />
+  </div>
+</section>
+
+<style>
+  .sub-tabs { display: flex; gap: 14px; padding: 12px 22px; border-bottom: 1px solid #142a18; }
+  .sub-tabs button {
+    background: none;
+    font: inherit;
+    font-size: 12px;
+    color: var(--magenta);
+    border: 1px solid #7a1a66;
+    padding: 5px 12px;
+    cursor: pointer;
+    text-shadow: 0 0 6px #ff2fd088;
+  }
+  .project {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 18px;
+  }
+  h3 {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--magenta);
+    text-shadow: 0 0 12px #ff2fd088;
+    margin: 0 0 6px;
+  }
+  .tagline { font-size: 13px; color: var(--muted); margin: 0 0 12px; }
+  .blurb { font-size: 12px; line-height: 1.5; max-width: 520px; margin: 0 0 18px; }
+</style>

@@ -1,0 +1,40 @@
+---
+const STATION = 'a57727';
+const BASE = `https://live365.com/embeds/v1/player/${STATION}`;
+const xl = `${BASE}?s=xl&m=dark&c=aac`;
+const sm = `${BASE}?s=sm&m=dark&c=aac`;
+---
+<div class="player">
+  <iframe
+    data-embed
+    data-src-xl={xl}
+    data-src-sm={sm}
+    width="800"
+    height="296"
+    frameborder="0"
+    title="Maximum Slappage player"
+    loading="eager"
+  ></iframe>
+</div>
+
+<script>
+  const frame = document.querySelector('iframe[data-embed]');
+  if (frame && !frame.src) {
+    const wide = window.matchMedia('(min-width: 900px)').matches;
+    frame.src = wide ? frame.dataset.srcXl : frame.dataset.srcSm;
+    if (!wide) {
+      frame.width = '300';
+      frame.height = '614';
+    }
+  }
+</script>
+
+<style>
+  .player {
+    border: 1px solid var(--border);
+    background: #060906;
+    padding: 8px;
+    display: inline-block;
+  }
+  iframe { display: block; border: 0; }
+</style>

@@ -74,3 +74,16 @@ test('live links point at the approved URLs', () => {
   assert.match(html, /href="https:\/\/www\.last\.fm\/user\/DecibillyJoel"/);
   assert.match(html, /href="https:\/\/live365\.com\/station\/a57727"/);
 });
+
+test('player holds both embed sizes and mounts with no src', () => {
+  const html = readIndex();
+  assert.match(html, /data-src-xl="https:\/\/live365\.com\/embeds\/v1\/player\/a57727\?s=xl&amp;m=dark&amp;c=aac"/);
+  assert.match(html, /data-src-sm="https:\/\/live365\.com\/embeds\/v1\/player\/a57727\?s=sm&amp;m=dark&amp;c=aac"/);
+  assert.doesNotMatch(html, /<iframe[^>]*\ssrc=/);
+});
+
+test('player chooses the embed size once, not on resize', () => {
+  const js = readDist();
+  assert.match(js, /matchMedia\(\s*[`'"]\(min-width: 900px\)[`'"]\s*\)/);
+  assert.doesNotMatch(js, /addEventListener\([`'"]resize[`'"]/);
+});

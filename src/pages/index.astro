@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import WhoAmI from '../components/panels/WhoAmI.astro';
 import Links from '../components/panels/Links.astro';
+import Projects from '../components/panels/Projects.astro';
 ---
 <Base>
   <section id="panel-who-am-i" data-panel="who-am-i" role="tabpanel" aria-labelledby="tab-who-am-i">
@@ -10,5 +11,7 @@ import Links from '../components/panels/Links.astro';
   <section id="panel-links" data-panel="links" role="tabpanel" aria-labelledby="tab-links" hidden>
     <Links />
   </section>
-  <section id="panel-projects" data-panel="projects" role="tabpanel" aria-labelledby="tab-projects" hidden></section>
+  <section id="panel-projects" data-panel="projects" role="tabpanel" aria-labelledby="tab-projects" hidden>
+    <Projects />
+  </section>
 </Base>
