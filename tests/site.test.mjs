@@ -47,3 +47,10 @@ test('exactly one panel starts visible', () => {
   const hiddenCount = (html.match(/data-panel="[^"]+"[^>]*hidden/g) || []).length;
   assert.equal(hiddenCount, 2);
 });
+
+test('Who Am I carries the three approved paragraphs', () => {
+  const html = readIndex();
+  assert.match(html, /I'm a music, audio, and game design enthusiast\./);
+  assert.match(html, /CompTIA A\+ certified\. I've built many personal game dev and programming projects over the years, driven by my own interests\./);
+  assert.match(html, /I'm now using those skills and interests to bring power and togetherness to indie artists and creators\./);
+});

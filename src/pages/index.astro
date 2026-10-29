@@ -1,8 +1,11 @@
 ---
 import Base from '../layouts/Base.astro';
+import WhoAmI from '../components/panels/WhoAmI.astro';
 ---
 <Base>
-  <section id="panel-who-am-i" data-panel="who-am-i" role="tabpanel" aria-labelledby="tab-who-am-i"></section>
+  <section id="panel-who-am-i" data-panel="who-am-i" role="tabpanel" aria-labelledby="tab-who-am-i">
+    <WhoAmI />
+  </section>
   <section id="panel-links" data-panel="links" role="tabpanel" aria-labelledby="tab-links" hidden></section>
   <section id="panel-projects" data-panel="projects" role="tabpanel" aria-labelledby="tab-projects" hidden></section>
 </Base>
