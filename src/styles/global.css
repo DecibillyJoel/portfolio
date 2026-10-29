@@ -1,0 +1,20 @@
+:root {
+  --bg: #080b09;
+  --green: #39ff14;
+  --magenta: #ff2fd0;
+  --text: #b7ffb0;
+  --muted: #5d8a63;
+  --border: #1f3a24;
+  --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+}
+
+[data-panel][hidden] { display: none; }

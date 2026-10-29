@@ -26,3 +26,24 @@ export function readIndex() {
 test('build emits a static index.html', () => {
   assert.match(readIndex(), /<!doctype html>/i);
 });
+
+test('page mounts all three panels in one document', () => {
+  const html = readIndex();
+  assert.match(html, /data-panel="who-am-i"/);
+  assert.match(html, /data-panel="links"/);
+  assert.match(html, /data-panel="projects"/);
+  assert.equal((html.match(/<html/g) || []).length, 1);
+});
+
+test('tab bar exposes the three full labels', () => {
+  const html = readIndex();
+  assert.match(html, /data-tab-target="who-am-i"[^>]*>\s*Who Am I/);
+  assert.match(html, /data-tab-target="links"[^>]*>\s*Links/);
+  assert.match(html, /data-tab-target="projects"[^>]*>\s*Projects/);
+});
+
+test('exactly one panel starts visible', () => {
+  const html = readIndex();
+  const hiddenCount = (html.match(/data-panel="[^"]+"[^>]*hidden/g) || []).length;
+  assert.equal(hiddenCount, 2);
+});
