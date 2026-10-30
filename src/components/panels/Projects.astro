@@ -8,8 +8,9 @@ import Player from '../Player.astro';
 
   <div class="project">
     <h3>MAXIMUM SLAPPAGE</h3>
-    <p class="tagline">live internet radio &mdash; rock, and whatever else gets loud</p>
-    <p class="blurb">The station I run. Tune in from the player. Built for late nights and long drives.</p>
+    <p class="tagline">live internet radio - rock, and whatever else gets loud</p>
+    <p class="blurb blurb-wide">The station I run. Tune in from the player. Built for late nights and long drives.</p>
+    <p class="blurb blurb-narrow">The station I run. Tune in, and turn it up.</p>
     <Player />
   </div>
 </section>
@@ -26,6 +27,7 @@ import Player from '../Player.astro';
     cursor: pointer;
     text-shadow: 0 0 6px #ff2fd088;
   }
+  .sub-tabs button[data-active='true']::before { content: '> '; }
   .project {
     display: flex;
     flex-direction: column;
@@ -43,11 +45,13 @@ import Player from '../Player.astro';
   }
   .tagline { font-size: 13px; color: var(--muted); margin: 0 0 12px; }
   .blurb { font-size: 12px; line-height: 1.5; max-width: 520px; margin: 0 0 18px; }
+  .blurb-narrow { display: none; }
 
   @media (max-width: 899px) {
     .project { padding: 14px 16px; }
     h3 { font-size: 18px; }
     .tagline { font-size: 11px; margin-bottom: 12px; }
-    .blurb { display: none; }
+    .blurb-wide { display: none; }
+    .blurb-narrow { display: block; font-size: 11px; line-height: 1.5; margin: 0 0 12px; }
   }
 </style>
