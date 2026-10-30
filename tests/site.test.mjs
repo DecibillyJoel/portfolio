@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -203,6 +203,45 @@ test('a real 404 page ships and points back at every view', () => {
   const wrangler = readFileSync(new URL('../wrangler.jsonc', import.meta.url), 'utf8');
   assert.match(wrangler, /"not_found_handling"\s*:\s*"404-page"/);
   assert.doesNotMatch(wrangler, /single-page-application/);
+});
+
+test('the critical stylesheet is inlined, so nothing blocks the first render', () => {
+  const html = readIndex();
+  assert.doesNotMatch(html, /rel="stylesheet"/);
+  assert.doesNotMatch(html, /\/_astro\//);
+  assert.match(html, /<style>[\s\S]*--hover:/);
+  assert.equal(existsSync(join(DIST, '_astro')), false);
+});
+
+test('both header marks use the small WebP mark and keep the PNG favicon', () => {
+  for (const doc of ['index.html', '404.html']) {
+    const html = readFileSync(join(DIST, doc), 'utf8');
+    assert.match(
+      html,
+      /<img class="monogram" src="\/monogram\.webp"/,
+      `${doc} still loads the old header mark`,
+    );
+    assert.match(
+      html,
+      /<link rel="icon" type="image\/png" href="\/favicon\.png">/,
+      `${doc} lost its favicon`,
+    );
+  }
+});
+
+test('_headers ships the security headers and no CSP', () => {
+  const headers = readFileSync(join(DIST, '_headers'), 'utf8');
+  assert.match(headers, /^\/\*$/m);
+  for (const name of [
+    'Strict-Transport-Security',
+    'X-Content-Type-Options',
+    'Referrer-Policy',
+    'X-Frame-Options',
+    'Cross-Origin-Opener-Policy',
+  ]) {
+    assert.ok(headers.includes(`${name}:`), `_headers is missing ${name}`);
+  }
+  assert.doesNotMatch(headers, /Content-Security-Policy/);
 });
 
 test('the page has one h1, a skip link, and a focusable main landmark', () => {
