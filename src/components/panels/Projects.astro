@@ -32,11 +32,16 @@ import { projects } from '../../data/projects.js';
       <p class="blurb blurb-wide">{project.blurbWide}</p>
       {project.blurbNarrow && <p class="blurb blurb-narrow">{project.blurbNarrow}</p>}
       {project.href && (
-        <a class="project-link" href={project.href} target="_blank" rel="noopener">{project.linkLabel}</a>
+        <a
+          class="project-link"
+          href={project.href}
+          target="_blank"
+          rel="noopener"
+          tabindex="0"
+        >{project.linkLabel}</a>
       )}
-      {project.embedKind === 'player' ? (
-        <Player />
-      ) : (
+      {project.embedKind === 'player' && <Player />}
+      {project.embedKind === 'iframe' && (
         <div class="game">
           <iframe
             data-embed

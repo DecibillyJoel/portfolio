@@ -10,6 +10,20 @@ export const projects = [
     embedKind: 'player',
   },
   {
+    id: 'portfolio',
+    hash: 'portfolio',
+    label: 'Portfolio',
+    title: 'PORTFOLIO SITE',
+    tagline: 'the site you are reading',
+    blurbWide:
+      'This site is my professional and personal portfolio. I built it with Astro and deployed it on Cloudflare Workers with Static Assets. The source code is public on GitHub.',
+    blurbNarrow:
+      'My professional and personal portfolio. Built with Astro, deployed on Cloudflare Workers with Static Assets.',
+    href: 'https://github.com/DecibillyJoel/portfolio',
+    linkLabel: 'View on GitHub',
+    embedKind: 'none',
+  },
+  {
     id: 'smiles',
     hash: 'game',
     label: 'Smiles Sadistic Adventure',

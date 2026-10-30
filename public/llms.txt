@@ -2,7 +2,7 @@
 
 > Personal portfolio for @JoeOfSomeTrades, an enthusiast of all things IT, music,
 > audio, and game design and development. The site is one arcade-themed page with
-> four views and two live projects.
+> four views and three projects.
 
 The site is static. It holds no login and no paywall. Each view has its own hash
 URL, so the page never reloads on navigation.
@@ -17,6 +17,7 @@ URL, so the page never reloads on navigation.
 ## Projects
 
 - [Maximum Slappage](https://portfolio.joeofsometrades.workers.dev/#radio): A Live365 radio station.
+- [Portfolio](https://portfolio.joeofsometrades.workers.dev/#portfolio): This site itself, built with Astro and deployed on Cloudflare Workers with Static Assets. The source lives at https://github.com/DecibillyJoel/portfolio.
 - [Smiles Sadistic Adventure](https://portfolio.joeofsometrades.workers.dev/#game): A browser game. The source lives at https://github.com/DecibillyJoel/Smiles-Sadistic-Adventure.
 
 ## Contact

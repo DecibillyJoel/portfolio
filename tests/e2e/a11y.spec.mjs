@@ -10,6 +10,7 @@ const ROUTES = [
   { hash: '#certs', panel: 'certifications' },
   { hash: '#projects', panel: 'projects' },
   { hash: '#radio', panel: 'projects' },
+  { hash: '#portfolio', panel: 'projects' },
   { hash: '#game', panel: 'projects' },
 ];
 

@@ -157,12 +157,13 @@ test('hash routing drives the view and browser history', () => {
   assert.match(js, /a\[data-hash\]/);
 });
 
-test('projects expose two sub-tabs and two lazy project blocks', () => {
+test('projects expose three sub-tabs and three lazy project blocks', () => {
   const html = readIndex();
   assert.match(html, /data-sub-tab-target="maximum-slappage"/);
+  assert.match(html, /data-sub-tab-target="portfolio"/);
   assert.match(html, /data-sub-tab-target="smiles"/);
-  assert.equal((html.match(/data-project="/g) || []).length, 2);
-  assert.equal((html.match(/data-project="[^"]+"[^>]*hidden/g) || []).length, 2);
+  assert.equal((html.match(/data-project="/g) || []).length, 3);
+  assert.equal((html.match(/data-project="[^"]+"[^>]*hidden/g) || []).length, 3);
   assert.match(html, /data-project-empty[^>]*>\s*Select a project above\./);
 });
 
@@ -287,7 +288,7 @@ test('_headers ships the security headers and no CSP', () => {
 test('the page has one h1, a skip link, and a focusable main landmark', () => {
   const html = readIndex();
   assert.equal((html.match(/<h1[\s>]/g) || []).length, 1);
-  assert.equal((html.match(/<h2[\s>]/g) || []).length, 4);
+  assert.equal((html.match(/<h2[\s>]/g) || []).length, 5);
   assert.match(html, /<a class="skip-link" href="#main">/);
   assert.match(html, /<main id="main" tabindex="-1">/);
 });
@@ -295,8 +296,8 @@ test('the page has one h1, a skip link, and a focusable main landmark', () => {
 test('tablists use roving tabindex, arrow keys, and paired roles', () => {
   const html = readIndex();
   assert.equal((html.match(/<[a-z]+[^>]*role="tablist"/g) || []).length, 2);
-  assert.equal((html.match(/role="tabpanel"/g) || []).length, 6);
-  assert.equal((html.match(/role="tab"/g) || []).length, 6);
+  assert.equal((html.match(/role="tabpanel"/g) || []).length, 7);
+  assert.equal((html.match(/role="tab"/g) || []).length, 7);
   assert.match(html, /id="subtab-maximum-slappage"[^>]*aria-controls="project-maximum-slappage"/);
   assert.match(
     html,
@@ -315,4 +316,18 @@ test('the embed wrappers carry the focus ring attribute', () => {
   assert.match(js, /\[data-embed-focus[^\]]*\]/);
   assert.match(js, /outline: ?2px solid var\(--magenta\)/);
   assert.match(js, /dataset\.embedFocus/);
+});
+
+test('the Portfolio project sits between the radio and the game and carries the repo link', () => {
+  const html = readIndex();
+  const order = [...html.matchAll(/data-project="([a-z-]+)"/g)].map((m) => m[1]);
+  assert.deepEqual(order, ['maximum-slappage', 'portfolio', 'smiles']);
+  const subTabOrder = [...html.matchAll(/data-sub-tab-target="([a-z-]+)"/g)].map((m) => m[1]);
+  assert.deepEqual(subTabOrder, ['maximum-slappage', 'portfolio', 'smiles']);
+  assert.match(html, /id="subtab-portfolio"[^>]*data-hash="portfolio"[^>]*href="#portfolio"/);
+  assert.match(html, /id="project-portfolio"[^>]*role="tabpanel"[^>]*aria-labelledby="subtab-portfolio"/);
+  assert.match(html, /class="project-link" href="https:\/\/github\.com\/DecibillyJoel\/portfolio"[^>]*tabindex="0"/);
+  assert.match(html, /Cloudflare Workers with Static Assets/);
+  const panel = html.slice(html.indexOf('id="project-portfolio"'), html.indexOf('id="project-smiles"'));
+  assert.ok(!panel.includes('iframe'), 'the Portfolio project must carry no embed');
 });

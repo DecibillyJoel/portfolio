@@ -97,6 +97,7 @@ test('blocked embeds still render the page and switch tabs', async ({ page }) =>
   await expect(page.locator('[data-project="maximum-slappage"] h2')).toHaveText('MAXIMUM SLAPPAGE');
   await expect(page.locator('[data-project="maximum-slappage"] .tagline')).toContainText('live internet radio');
   await expect(subTab(page, 'maximum-slappage')).toBeVisible();
+  await expect(subTab(page, 'portfolio')).toBeVisible();
   await expect(subTab(page, 'smiles')).toBeVisible();
 
   await tab(page, 'links').click();
@@ -138,6 +139,8 @@ test('keyboard alone reaches the tab bar and the sub-tabs and loads a project', 
   expect(onSubTab).toBe(true);
   await expect(subTab(page, 'maximum-slappage')).toBeFocused();
 
+  await page.keyboard.press('ArrowRight');
+  await expect(subTab(page, 'portfolio')).toBeFocused();
   await page.keyboard.press('ArrowRight');
   await expect(subTab(page, 'smiles')).toBeFocused();
   await page.keyboard.press('Enter');
@@ -458,9 +461,9 @@ test('an unknown path returns a 404 page with links back to the views', async ({
   await expect(page.locator('iframe')).toHaveCount(0);
 
   const links = page.locator('.routes a');
-  await expect(links).toHaveCount(6);
+  await expect(links).toHaveCount(7);
   const hrefs = await links.evaluateAll((nodes) => nodes.map((node) => node.getAttribute('href')));
-  expect(hrefs).toEqual(['/#whoami', '/#links', '/#certs', '/#projects', '/#radio', '/#game']);
+  expect(hrefs).toEqual(['/#whoami', '/#links', '/#certs', '/#projects', '/#radio', '/#portfolio', '/#game']);
 
   await page.locator('.routes a', { hasText: 'Projects' }).click();
   await expect(page).toHaveURL(/#projects$/);
