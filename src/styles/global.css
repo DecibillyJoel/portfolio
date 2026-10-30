@@ -5,6 +5,8 @@
   --text: #b7ffb0;
   --muted: #5d8a63;
   --border: #1f3a24;
+  --hover: #2fd413;
+  --hover-glow: 0 0 6px #39ff1466;
   --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 

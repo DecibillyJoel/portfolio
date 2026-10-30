@@ -41,7 +41,9 @@ import Icon from '../Icon.astro';
   .meta { min-width: 0; }
   .label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 6px; }
   .card a { font-size: 14px; color: var(--green); text-decoration: none; }
-  .card a:hover { text-decoration: underline; }
+  @media (hover: hover) {
+    .card a:hover { text-decoration: underline; text-shadow: var(--hover-glow); }
+  }
   .card a:focus-visible { outline: 2px solid var(--magenta); outline-offset: 2px; }
   .value { font-size: 14px; color: var(--green); }
   .pending .value { color: var(--muted); }

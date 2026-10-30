@@ -100,8 +100,11 @@ import '../styles/global.css';
     content: '> ';
     color: var(--muted);
   }
-  .routes a:hover {
-    border-bottom-color: var(--green);
+  @media (hover: hover) {
+    .routes a:hover {
+      border-bottom-color: var(--green);
+      text-shadow: var(--hover-glow);
+    }
   }
   @media (max-width: 899px) {
     .site-header {
