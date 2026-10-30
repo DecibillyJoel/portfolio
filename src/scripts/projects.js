@@ -1,8 +1,11 @@
+import { initTablistKeys, setRovingTabindex } from './tablist.js';
+
 export function initProjects(root = document) {
   const buttons = [...root.querySelectorAll('[data-sub-tab-target]')];
   const panels = [...root.querySelectorAll('[data-project]')];
   if (!buttons.length) return;
 
+  const list = buttons[0].closest('[role="tablist"]');
   const empty = root.querySelector('[data-project-empty]');
   const badge = root.querySelector('[data-on-air]');
   const projectsPanel = root.querySelector('[data-panel="projects"]');
@@ -25,28 +28,17 @@ export function initProjects(root = document) {
 
     let state = 'off';
     let label = '[ OFF AIR ]';
-    let href = null;
 
     if (running) {
       state = onProjects ? 'running' : 'paused';
       label = onProjects ? '[ GAME RUNNING ]' : '[ GAME PAUSED ]';
-      href = onProjects ? null : '#game';
     } else if (onAir) {
       state = 'on-air';
       label = '[ ON AIR ]';
-      href = '#radio';
     }
 
     badge.textContent = label;
     badge.dataset.state = state;
-    badge.dataset.clickable = String(Boolean(href));
-    if (href) {
-      badge.setAttribute('href', href);
-      badge.removeAttribute('aria-disabled');
-    } else {
-      badge.removeAttribute('href');
-      badge.setAttribute('aria-disabled', 'true');
-    }
   }
 
   function unload(panel) {
@@ -78,17 +70,22 @@ export function initProjects(root = document) {
       panel.hidden = !active;
       if (!active) unload(panel);
     }
+    let activeButton = null;
     for (const button of buttons) {
       const active = button.dataset.subTabTarget === id;
       button.dataset.active = String(active);
       button.setAttribute('aria-selected', String(active));
+      if (active) activeButton = button;
     }
+    setRovingTabindex(buttons, activeButton ?? buttons[0]);
     if (empty) empty.hidden = Boolean(id);
     const activePanel = panels.find((panel) => panel.dataset.project === id);
     if (activePanel) mount(activePanel);
     syncBadge();
   }
 
+  initTablistKeys(list, buttons);
+  setRovingTabindex(buttons, buttons[0]);
   root.addEventListener('tabs:change', syncBadge);
   syncBadge();
 

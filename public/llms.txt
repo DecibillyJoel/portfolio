@@ -1,0 +1,26 @@
+# @JoeOfSomeTrades
+
+> Personal portfolio for @JoeOfSomeTrades, a music, audio, and game design
+> enthusiast. The site is one arcade-themed page with three views and two live
+> projects.
+
+The site is static. It holds no login and no paywall. Each view has its own hash
+URL, so the page never reloads on navigation.
+
+## Views
+
+- [Who Am I](https://portfolio.joeofsometrades.workers.dev/#whoami): A short introduction.
+- [Links](https://portfolio.joeofsometrades.workers.dev/#links): Contact and social links.
+- [Projects](https://portfolio.joeofsometrades.workers.dev/#projects): The project index.
+
+## Projects
+
+- [Maximum Slappage](https://portfolio.joeofsometrades.workers.dev/#radio): A Live365 radio station.
+- [Smiles Sadistic Adventure](https://portfolio.joeofsometrades.workers.dev/#game): A browser game. The source lives at https://github.com/DecibillyJoel/Smiles-Sadistic-Adventure.
+
+## Contact
+
+- Email: joeofsometrades@outlook.com
+- GitHub: https://github.com/DecibillyJoel
+- X: https://x.com/JoeOfManyTrades
+- Bluesky: https://bsky.app/profile/joeofsometrades.bsky.social

@@ -3,22 +3,31 @@ import Player from '../Player.astro';
 import { projects } from '../../data/projects.js';
 ---
 <section class="projects">
-  <nav class="sub-tabs" aria-label="Projects">
+  <div class="sub-tabs" role="tablist" aria-label="Projects">
     {projects.map((project) => (
       <a
         role="tab"
+        id={`subtab-${project.id}`}
         data-sub-tab-target={project.id}
         data-hash={project.hash}
         href={`#${project.hash}`}
+        aria-controls={`project-${project.id}`}
         data-active="false"
         aria-selected="false"
       >{project.label}</a>
     ))}
-  </nav>
+  </div>
 
   {projects.map((project) => (
-    <div class="project" data-project={project.id} hidden>
-      <h3>{project.title}</h3>
+    <div
+      class="project"
+      id={`project-${project.id}`}
+      data-project={project.id}
+      role="tabpanel"
+      aria-labelledby={`subtab-${project.id}`}
+      hidden
+    >
+      <h2>{project.title}</h2>
       {project.tagline && <p class="tagline">{project.tagline}</p>}
       <p class="blurb blurb-wide">{project.blurbWide}</p>
       {project.blurbNarrow && <p class="blurb blurb-narrow">{project.blurbNarrow}</p>}
@@ -70,7 +79,7 @@ import { projects } from '../../data/projects.js';
     text-align: center;
     padding: 18px;
   }
-  h3 {
+  h2 {
     font-size: 26px;
     font-weight: 800;
     color: var(--magenta);
@@ -100,7 +109,7 @@ import { projects } from '../../data/projects.js';
 
   @media (max-width: 899px) {
     .project { padding: 14px 16px; }
-    h3 { font-size: 18px; }
+    h2 { font-size: 18px; }
     .tagline { font-size: 11px; margin-bottom: 10px; }
     .blurb-wide { display: none; }
     .blurb-narrow { display: block; font-size: 11px; line-height: 1.5; margin: 0 0 12px; }

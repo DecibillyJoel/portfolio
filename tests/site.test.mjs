@@ -79,12 +79,13 @@ test('live links point at the approved URLs', () => {
   assert.match(html, /href="https:\/\/discord\.com\/users\/152963830350217217"/);
 });
 
-test('header merges the brand, tabs, and a status badge link', () => {
+test('header merges the brand, tabs, and a status badge indicator', () => {
   const html = readIndex();
   const header = html.match(/<header[\s\S]*?<\/header>/)?.[0] ?? '';
-  assert.match(header, /@JoeOfSomeTrades/);
+  assert.match(header, /<h1[^>]*>@JoeOfSomeTrades<\/h1>/);
   assert.match(header, /data-tab-target="projects"/);
-  assert.match(header, /<a[^>]*data-on-air[^>]*data-state="off"[^>]*aria-disabled="true"[^>]*>\s*\[ OFF AIR \]/);
+  assert.match(header, /<span[^>]*data-on-air[^>]*data-state="off"[^>]*role="status"[^>]*>\s*\[ OFF AIR \]/);
+  assert.doesNotMatch(header, /data-on-air[^>]*(href|aria-disabled|data-clickable)/);
 });
 
 test('the status badge knows all four states and reacts to tab changes', () => {
@@ -159,4 +160,42 @@ test('inactive panels are hidden, never removed', () => {
   const js = readDist();
   assert.match(js, /\.hidden\s*=/);
   assert.doesNotMatch(js, /removeChild|\.innerHTML\s*=/);
+});
+
+test('robots.txt and llms.txt ship with the site', () => {
+  const robots = readFileSync(join(DIST, 'robots.txt'), 'utf8');
+  assert.match(robots, /^User-agent: \*$/m);
+  assert.match(robots, /^Allow: \/$/m);
+
+  const llms = readFileSync(join(DIST, 'llms.txt'), 'utf8');
+  assert.match(llms, /^# @JoeOfSomeTrades$/m);
+  for (const route of ['#whoami', '#links', '#projects', '#radio', '#game']) {
+    assert.ok(llms.includes(route), `llms.txt is missing ${route}`);
+  }
+});
+
+test('the page has one h1, a skip link, and a focusable main landmark', () => {
+  const html = readIndex();
+  assert.equal((html.match(/<h1[\s>]/g) || []).length, 1);
+  assert.equal((html.match(/<h2[\s>]/g) || []).length, 3);
+  assert.match(html, /<a class="skip-link" href="#main">/);
+  assert.match(html, /<main id="main" tabindex="-1">/);
+});
+
+test('tablists use roving tabindex, arrow keys, and paired roles', () => {
+  const html = readIndex();
+  assert.equal((html.match(/<[a-z]+[^>]*role="tablist"/g) || []).length, 2);
+  assert.equal((html.match(/role="tabpanel"/g) || []).length, 5);
+  assert.equal((html.match(/role="tab"/g) || []).length, 5);
+  assert.match(html, /id="subtab-maximum-slappage"[^>]*aria-controls="project-maximum-slappage"/);
+  assert.match(
+    html,
+    /id="project-smiles"[^>]*role="tabpanel"[^>]*aria-labelledby="subtab-smiles"/,
+  );
+
+  const js = readDist();
+  assert.match(js, /ArrowRight/);
+  assert.match(js, /ArrowLeft/);
+  assert.match(js, /tabIndex/);
+  assert.match(js, /new Set\(\[[`'"]main[`'"]\]\)/);
 });

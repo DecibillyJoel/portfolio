@@ -4,11 +4,11 @@ import TabBar from './TabBar.astro';
 <header class="site-header">
   <div class="brand">
     <img class="monogram" src="/favicon.png" alt="" width="30" height="30" />
-    <strong>@JoeOfSomeTrades</strong>
+    <h1 class="brand-name">@JoeOfSomeTrades</h1>
   </div>
   <span class="divider" aria-hidden="true"></span>
   <TabBar />
-  <a class="on-air" data-on-air data-state="off" data-clickable="false" aria-disabled="true">[ OFF AIR ]</a>
+  <span class="on-air" data-on-air data-state="off" role="status">[ OFF AIR ]</span>
 </header>
 
 <style>
@@ -28,7 +28,13 @@ import TabBar from './TabBar.astro';
     background: #0d1a10;
     object-fit: cover;
   }
-  strong { font-size: 15px; letter-spacing: 0.5px; color: #c9ffc2; }
+  .brand-name {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #c9ffc2;
+    margin: 0;
+  }
   .divider { width: 1px; height: 22px; background: var(--border); }
   .on-air {
     margin-left: auto;
@@ -40,15 +46,8 @@ import TabBar from './TabBar.astro';
     padding: 4px 11px;
     text-decoration: none;
   }
-  .on-air[aria-disabled='true'] { cursor: default; }
   .on-air[data-state='on-air'],
   .on-air[data-state='running'] { color: var(--green); text-shadow: 0 0 8px #39ff1488; }
-  .on-air[data-clickable='true'] { cursor: pointer; }
-  .on-air[data-clickable='true']:hover,
-  .on-air[data-clickable='true']:focus-visible {
-    border-color: var(--green);
-    color: var(--green);
-  }
 
   @media (max-width: 899px) {
     .site-header { padding: 10px 16px; gap: 10px 14px; }

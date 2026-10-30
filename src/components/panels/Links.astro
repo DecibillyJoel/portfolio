@@ -10,7 +10,7 @@ import Icon from '../Icon.astro';
         <div class="meta">
           <span class="label">{link.label}</span>
           {link.href
-            ? <a href={link.href} rel="me noopener">{link.value}</a>
+            ? <a href={link.href} rel="me noopener"><span class="visually-hidden">{link.label}: </span>{link.value}</a>
             : <span class="value">{link.value}</span>}
         </div>
       </li>

@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test';
 
-const TAB_IDS = ['who-am-i', 'links', 'projects'];
 const tab = (page, id) => page.locator(`#tab-${id}`);
 const panel = (page, id) => page.locator(`#panel-${id}`);
 const subTab = (page, id) => page.locator(`[data-sub-tab-target="${id}"]`);
@@ -71,7 +70,7 @@ test('blocked embeds still render the page and switch tabs', async ({ page }) =>
 
   await tab(page, 'projects').click();
   await expect(panel(page, 'projects')).toBeVisible();
-  await expect(page.locator('[data-project="maximum-slappage"] h3')).toHaveText('MAXIMUM SLAPPAGE');
+  await expect(page.locator('[data-project="maximum-slappage"] h2')).toHaveText('MAXIMUM SLAPPAGE');
   await expect(page.locator('[data-project="maximum-slappage"] .tagline')).toContainText('live internet radio');
   await expect(subTab(page, 'maximum-slappage')).toBeVisible();
   await expect(subTab(page, 'smiles')).toBeVisible();
@@ -89,24 +88,19 @@ test('blocked embeds still render the page and switch tabs', async ({ page }) =>
   expect(errors).toEqual([]);
 });
 
-test('all tabs and the sub-tabs are reachable and activatable with the keyboard', async ({ page }) => {
+test('keyboard alone reaches the tab bar and the sub-tabs and loads a project', async ({ page }) => {
   await blockEmbed(page);
   await page.goto('/');
 
-  let seen = [];
-  for (let i = 0; i < 12; i += 1) {
-    await page.keyboard.press('Tab');
-    const focus = await page.evaluate(() => {
-      const active = document.activeElement;
-      return { id: active?.id ?? null, isSubTab: !!active?.closest('.sub-tabs') };
-    });
-    seen.push(focus.id ?? (focus.isSubTab ? 'sub-tab' : 'other'));
-    if (focus.id === 'tab-projects') break;
-  }
-  for (const id of TAB_IDS) {
-    expect(seen).toContain(`tab-${id}`);
-  }
+  await page.keyboard.press('Tab');
+  await expect(page.locator('.skip-link')).toBeFocused();
 
+  await page.keyboard.press('Tab');
+  await expect(tab(page, 'who-am-i')).toBeFocused();
+
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('ArrowRight');
+  await expect(tab(page, 'projects')).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(panel(page, 'projects')).toBeVisible();
   await expect(tab(page, 'projects')).toHaveAttribute('aria-selected', 'true');
@@ -117,8 +111,14 @@ test('all tabs and the sub-tabs are reachable and activatable with the keyboard'
     onSubTab = await page.evaluate(() => !!document.activeElement?.closest('.sub-tabs'));
   }
   expect(onSubTab).toBe(true);
+  await expect(subTab(page, 'maximum-slappage')).toBeFocused();
+
+  await page.keyboard.press('ArrowRight');
+  await expect(subTab(page, 'smiles')).toBeFocused();
   await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(/#game$/);
   await expect(loadedFrames(page)).toHaveCount(1);
+  await expect(page.locator('[data-on-air]')).toHaveText('[ GAME RUNNING ]');
 });
 
 test('first load defaults to #whoami and reload keeps the current hash', async ({ page }) => {
@@ -185,58 +185,105 @@ test('only one project embed is loaded at a time', async ({ page }) => {
   await expect(page.locator('[data-project="maximum-slappage"]')).toBeVisible();
 });
 
-test('status badge tracks the radio and game embeds', async ({ page }) => {
+test('status badge announces the current state and never takes focus', async ({ page }) => {
   await blockEmbed(page);
   await page.goto('/');
   const badge = page.locator('[data-on-air]');
-  await expect(badge).toHaveText('[ OFF AIR ]');
-  await expect(badge).toHaveAttribute('aria-disabled', 'true');
-  await expect(badge).not.toHaveAttribute('href');
+
+  async function expectState(text) {
+    await expect(badge).toHaveText(text);
+    await expect(badge).toHaveAttribute('role', 'status');
+    await expect(badge).not.toHaveAttribute('href');
+    expect(await badge.evaluate((element) => element.tagName)).toBe('SPAN');
+    expect(await badge.evaluate((element) => element.tabIndex)).toBe(-1);
+    expect(
+      await badge.evaluate((element) => {
+        element.focus();
+        return document.activeElement === element;
+      }),
+    ).toBe(false);
+  }
+
+  await expectState('[ OFF AIR ]');
+
+  for (let i = 0; i < 10; i += 1) {
+    await page.keyboard.press('Tab');
+    const onBadge = await page.evaluate(
+      () => document.activeElement?.hasAttribute('data-on-air') ?? false,
+    );
+    expect(onBadge).toBe(false);
+  }
 
   await tab(page, 'projects').click();
-  await expect(badge).toHaveText('[ OFF AIR ]');
+  await expectState('[ OFF AIR ]');
 
   await subTab(page, 'maximum-slappage').click();
-  await expect(badge).toHaveText('[ ON AIR ]');
-  await expect(badge).toHaveAttribute('href', '#radio');
+  await expectState('[ ON AIR ]');
 
   await subTab(page, 'smiles').click();
-  await expect(badge).toHaveText('[ GAME RUNNING ]');
-  await expect(badge).toHaveAttribute('aria-disabled', 'true');
+  await expectState('[ GAME RUNNING ]');
 
   await tab(page, 'links').click();
-  await expect(badge).toHaveText('[ GAME PAUSED ]');
-  await expect(badge).toHaveAttribute('href', '#game');
-
-  await page.evaluate(() => {
-    window.__gameFrame = document.querySelector('iframe[data-embed-kind="iframe"]');
-  });
-  await badge.click();
-  await expect(panel(page, 'projects')).toBeVisible();
-  await expect(badge).toHaveText('[ GAME RUNNING ]');
-  await expect(subTab(page, 'smiles')).toHaveAttribute('aria-selected', 'true');
-  const same = await page.evaluate(
-    () => document.querySelector('iframe[data-embed-kind="iframe"]') === window.__gameFrame,
-  );
-  expect(same).toBe(true);
+  await expectState('[ GAME PAUSED ]');
+  await expect(panel(page, 'links')).toBeVisible();
 });
 
-test('clicking the ON AIR badge returns to the radio', async ({ page }) => {
+test('the tab bar moves focus with arrow keys and activates with Enter', async ({ page }) => {
   await blockEmbed(page);
   await page.goto('/');
-  await tab(page, 'projects').click();
-  await subTab(page, 'maximum-slappage').click();
-  const badge = page.locator('[data-on-air]');
-  await expect(badge).toHaveText('[ ON AIR ]');
+  await expect(page).toHaveURL(/#whoami$/);
 
-  await tab(page, 'who-am-i').click();
-  await expect(panel(page, 'who-am-i')).toBeVisible();
-  await expect(badge).toHaveText('[ ON AIR ]');
-  await badge.click();
+  const focusableTabs = () =>
+    page.evaluate(() =>
+      [...document.querySelectorAll('[role="tablist"] [role="tab"]')]
+        .filter((item) => item.dataset.tabTarget)
+        .filter((item) => item.tabIndex === 0)
+        .map((item) => item.id),
+    );
+  expect(await focusableTabs()).toEqual(['tab-who-am-i']);
 
+  await tab(page, 'links').focus();
+  await page.keyboard.press('ArrowRight');
+  await expect(tab(page, 'projects')).toBeFocused();
+  await expect(page).toHaveURL(/#whoami$/);
+
+  await page.keyboard.press('ArrowRight');
+  await expect(tab(page, 'who-am-i')).toBeFocused();
+
+  await page.keyboard.press('ArrowLeft');
+  await expect(tab(page, 'projects')).toBeFocused();
+
+  await page.keyboard.press('Home');
+  await expect(tab(page, 'who-am-i')).toBeFocused();
+
+  await page.keyboard.press('End');
+  await expect(tab(page, 'projects')).toBeFocused();
+
+  await page.keyboard.press('ArrowRight');
+  await expect(tab(page, 'who-am-i')).toBeFocused();
+
+  await page.keyboard.press('ArrowRight');
+  await expect(tab(page, 'links')).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(/#links$/);
+  await expect(panel(page, 'links')).toBeVisible();
+  await expect(tab(page, 'links')).toBeFocused();
+  expect(await focusableTabs()).toEqual(['tab-links']);
+});
+
+test('the skip link reaches main content without changing the visible view', async ({ page }) => {
+  await blockEmbed(page);
+  await page.goto('/#projects');
   await expect(panel(page, 'projects')).toBeVisible();
-  await expect(subTab(page, 'maximum-slappage')).toHaveAttribute('aria-selected', 'true');
-  await expect(loadedFrames(page)).toHaveCount(1);
+
+  await page.keyboard.press('Tab');
+  await expect(page.locator('.skip-link')).toBeFocused();
+
+  await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(/#main$/);
+  await expect(page.locator('#main')).toBeFocused();
+  await expect(panel(page, 'projects')).toBeVisible();
+  await expect(tab(page, 'projects')).toHaveAttribute('aria-selected', 'true');
 });
 
 test('leaving Projects to a non-project tab keeps the project loaded', async ({ page }) => {
@@ -245,6 +292,9 @@ test('leaving Projects to a non-project tab keeps the project loaded', async ({ 
   await tab(page, 'projects').click();
   await subTab(page, 'maximum-slappage').click();
   await expect(loadedFrames(page)).toHaveCount(1);
+  await page.evaluate(() => {
+    window.__radioFrame = document.querySelector('iframe[data-embed-kind="player"]');
+  });
 
   await tab(page, 'links').click();
   await expect(loadedFrames(page)).toHaveCount(1);
@@ -253,6 +303,11 @@ test('leaving Projects to a non-project tab keeps the project loaded', async ({ 
   await tab(page, 'projects').click();
   await expect(loadedFrames(page)).toHaveCount(1);
   await expect(subTab(page, 'maximum-slappage')).toHaveAttribute('aria-selected', 'true');
+  expect(
+    await page.evaluate(
+      () => document.querySelector('iframe[data-embed-kind="player"]') === window.__radioFrame,
+    ),
+  ).toBe(true);
 });
 
 test('every Links card shows a brand icon', async ({ page }) => {

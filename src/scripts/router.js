@@ -2,6 +2,8 @@ import { initTabs } from './tabs.js';
 import { initProjects } from './projects.js';
 
 const DEFAULT_HASH = 'whoami';
+// In-page targets (the skip link) are not routes. Leave the visible tab alone.
+const IGNORED_HASHES = new Set(['main']);
 
 export function initRouter(root = document) {
   const tabs = initTabs(root);
@@ -31,6 +33,7 @@ export function initRouter(root = document) {
 
   function route() {
     const name = window.location.hash.replace(/^#/, '');
+    if (IGNORED_HASHES.has(name)) return;
     if (tabRoutes.has(name) || projectRoutes.has(name)) {
       apply(name);
       return;

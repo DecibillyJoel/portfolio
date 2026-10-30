@@ -1,0 +1,5 @@
+# @JoeOfSomeTrades portfolio
+# https://portfolio.joeofsometrades.workers.dev
+
+User-agent: *
+Allow: /
