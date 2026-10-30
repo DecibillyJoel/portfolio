@@ -5,12 +5,14 @@ import { projects } from '../../data/projects.js';
 <section class="projects">
   <nav class="sub-tabs" aria-label="Projects">
     {projects.map((project) => (
-      <button
-        type="button"
+      <a
+        role="tab"
         data-sub-tab-target={project.id}
+        data-hash={project.hash}
+        href={`#${project.hash}`}
         data-active="false"
         aria-selected="false"
-      >{project.label}</button>
+      >{project.label}</a>
     ))}
   </nav>
 
@@ -45,14 +47,9 @@ import { projects } from '../../data/projects.js';
   <p class="empty" data-project-empty>Select a project above.</p>
 </section>
 
-<script>
-  import { initProjects } from '../../scripts/projects.js';
-  initProjects();
-</script>
-
 <style>
   .sub-tabs { display: flex; flex-wrap: wrap; gap: 14px; padding: 12px 22px; border-bottom: 1px solid #142a18; }
-  .sub-tabs button {
+  .sub-tabs a {
     background: none;
     font: inherit;
     font-size: 12px;
@@ -60,9 +57,10 @@ import { projects } from '../../data/projects.js';
     border: 1px solid #7a1a66;
     padding: 5px 12px;
     cursor: pointer;
+    text-decoration: none;
     text-shadow: 0 0 6px #ff2fd088;
   }
-  .sub-tabs button[data-active='true']::before { content: '> '; }
+  .sub-tabs a[data-active='true']::before { content: '> '; }
   .project[hidden] { display: none; }
   .project {
     display: flex;

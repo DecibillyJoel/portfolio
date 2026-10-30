@@ -1,6 +1,7 @@
 export const projects = [
   {
     id: 'maximum-slappage',
+    hash: 'radio',
     label: 'Maximum Slappage',
     title: 'MAXIMUM SLAPPAGE',
     tagline: 'live internet radio - rock, and whatever else gets loud',
@@ -10,6 +11,7 @@ export const projects = [
   },
   {
     id: 'smiles',
+    hash: 'game',
     label: 'Smiles Sadistic Adventure',
     title: 'SMILES SADISTIC ADVENTURE',
     blurbWide: 'An endless semi-random bullet hell I created in high school.',

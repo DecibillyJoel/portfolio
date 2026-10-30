@@ -1,21 +1,22 @@
 ---
 const tabs = [
-  { id: 'who-am-i', label: 'Who Am I' },
-  { id: 'links', label: 'Links' },
-  { id: 'projects', label: 'Projects' },
+  { id: 'who-am-i', hash: 'whoami', label: 'Who Am I' },
+  { id: 'links', hash: 'links', label: 'Links' },
+  { id: 'projects', hash: 'projects', label: 'Projects' },
 ];
 ---
 <nav class="tab-bar" role="tablist" aria-label="Sections">
   {tabs.map((tab, index) => (
-    <button
-      type="button"
+    <a
       role="tab"
       id={`tab-${tab.id}`}
       data-tab-target={tab.id}
+      data-hash={tab.hash}
+      href={`#${tab.hash}`}
       aria-controls={`panel-${tab.id}`}
       aria-selected={index === 0 ? 'true' : 'false'}
       data-active={index === 0 ? 'true' : 'false'}
-    >{tab.label}</button>
+    >{tab.label}</a>
   ))}
 </nav>
 
@@ -24,24 +25,25 @@ const tabs = [
     display: flex;
     gap: 22px;
   }
-  button {
+  a {
     background: none;
     border: 0;
     padding: 6px 0;
     font: inherit;
     font-size: 13px;
     color: var(--muted);
+    text-decoration: none;
     cursor: pointer;
   }
-  button[data-active='true'] {
+  a[data-active='true'] {
     color: var(--green);
     text-shadow: 0 0 8px #39ff1488;
   }
-  button[data-active='true']::before { content: '> '; }
-  button:focus-visible { outline: 2px solid var(--magenta); outline-offset: 2px; }
+  a[data-active='true']::before { content: '> '; }
+  a:focus-visible { outline: 2px solid var(--magenta); outline-offset: 2px; }
 
   @media (max-width: 899px) {
     .tab-bar { flex: 1 1 100%; order: 9; gap: 14px; }
-    button { font-size: 11px; }
+    a { font-size: 11px; }
   }
 </style>

@@ -19,28 +19,34 @@ export function initProjects(root = document) {
 
   function syncBadge() {
     if (!badge) return;
-    const playing = isLoaded(gamePanel);
+    const running = isLoaded(gamePanel);
     const onAir = isLoaded(radioPanel);
     const onProjects = projectsPanel ? !projectsPanel.hidden : true;
 
     let state = 'off';
     let label = '[ OFF AIR ]';
-    let clickable = false;
+    let href = null;
 
-    if (playing) {
-      state = onProjects ? 'playing' : 'paused';
-      label = onProjects ? '[ GAME PLAYING ]' : '[ GAME PAUSED ]';
-      clickable = !onProjects;
+    if (running) {
+      state = onProjects ? 'running' : 'paused';
+      label = onProjects ? '[ GAME RUNNING ]' : '[ GAME PAUSED ]';
+      href = onProjects ? null : '#game';
     } else if (onAir) {
       state = 'on-air';
       label = '[ ON AIR ]';
-      clickable = true;
+      href = '#radio';
     }
 
     badge.textContent = label;
     badge.dataset.state = state;
-    badge.dataset.clickable = String(clickable);
-    badge.disabled = !clickable;
+    badge.dataset.clickable = String(Boolean(href));
+    if (href) {
+      badge.setAttribute('href', href);
+      badge.removeAttribute('aria-disabled');
+    } else {
+      badge.removeAttribute('href');
+      badge.setAttribute('aria-disabled', 'true');
+    }
   }
 
   function unload(panel) {
@@ -83,17 +89,8 @@ export function initProjects(root = document) {
     syncBadge();
   }
 
-  for (const button of buttons) {
-    button.addEventListener('click', () => show(button.dataset.subTabTarget));
-  }
-
-  if (badge) {
-    badge.addEventListener('click', () => {
-      if (badge.disabled) return;
-      root.querySelector('[data-tab-target="projects"]')?.click();
-    });
-  }
   root.addEventListener('tabs:change', syncBadge);
-
   syncBadge();
+
+  return { show, syncBadge };
 }

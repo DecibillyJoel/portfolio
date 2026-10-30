@@ -16,15 +16,5 @@ export function initTabs(root = document) {
     root.dispatchEvent(new CustomEvent('tabs:change', { detail: { tab: id } }));
   }
 
-  for (const button of buttons) {
-    button.addEventListener('click', () => show(button.dataset.tabTarget, false));
-    button.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        show(button.dataset.tabTarget, true);
-      }
-    });
-  }
-
-  show(buttons[0].dataset.tabTarget, false);
+  return { show };
 }

@@ -79,20 +79,41 @@ test('live links point at the approved URLs', () => {
   assert.match(html, /href="https:\/\/discord\.com\/users\/152963830350217217"/);
 });
 
-test('header merges the brand, tabs, and a status badge button', () => {
+test('header merges the brand, tabs, and a status badge link', () => {
   const html = readIndex();
   const header = html.match(/<header[\s\S]*?<\/header>/)?.[0] ?? '';
   assert.match(header, /@JoeOfSomeTrades/);
   assert.match(header, /data-tab-target="projects"/);
-  assert.match(header, /<button[^>]*data-on-air[^>]*data-state="off"[^>]*disabled[^>]*>\s*\[ OFF AIR \]/);
+  assert.match(header, /<a[^>]*data-on-air[^>]*data-state="off"[^>]*aria-disabled="true"[^>]*>\s*\[ OFF AIR \]/);
 });
 
 test('the status badge knows all four states and reacts to tab changes', () => {
   const js = readDist();
-  for (const label of ['[ OFF AIR ]', '[ ON AIR ]', '[ GAME PLAYING ]', '[ GAME PAUSED ]']) {
+  for (const label of ['[ OFF AIR ]', '[ ON AIR ]', '[ GAME RUNNING ]', '[ GAME PAUSED ]']) {
     assert.ok(js.includes(label), `missing ${label}`);
   }
   assert.match(js, /tabs:change/);
+});
+
+test('every tab and sub-tab is a native link with its own hash', () => {
+  const html = readIndex();
+  const links = [
+    ['data-tab-target="who-am-i"', '#whoami'],
+    ['data-tab-target="links"', '#links'],
+    ['data-tab-target="projects"', '#projects'],
+    ['data-sub-tab-target="maximum-slappage"', '#radio'],
+    ['data-sub-tab-target="smiles"', '#game'],
+  ];
+  for (const [attr, hash] of links) {
+    assert.match(html, new RegExp(`<a[^>]*${attr}[^>]*href="${hash}"`), `missing ${attr} to ${hash}`);
+  }
+});
+
+test('hash routing drives the view and browser history', () => {
+  const js = readDist();
+  assert.match(js, /addEventListener\(\s*[`'"]hashchange[`'"]/);
+  assert.match(js, /replaceState/);
+  assert.match(js, /a\[data-hash\]/);
 });
 
 test('projects expose two sub-tabs and two lazy project blocks', () => {

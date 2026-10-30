@@ -32,6 +32,7 @@ test('resizing across the 900px breakpoint does not swap or reload the embed', a
 
   await tab(page, 'projects').click();
   await subTab(page, 'maximum-slappage').click();
+  await expect(loadedFrames(page)).toHaveAttribute('src', /live365\.com/);
   const before = await page.evaluate(() => {
     const frame = document.querySelector('iframe');
     window.__iframeRef = frame;
@@ -120,20 +121,22 @@ test('all tabs and the sub-tabs are reachable and activatable with the keyboard'
   await expect(loadedFrames(page)).toHaveCount(1);
 });
 
-test('first load and mid-session reload land on the default tab with no autoplay', async ({ page }) => {
+test('first load defaults to #whoami and reload keeps the current hash', async ({ page }) => {
   await blockEmbed(page);
   await page.goto('/');
 
+  await expect(page).toHaveURL(/#whoami$/);
   await expect(panel(page, 'who-am-i')).toBeVisible();
   await expect(tab(page, 'who-am-i')).toHaveAttribute('aria-selected', 'true');
   await expect(tab(page, 'projects')).toHaveAttribute('aria-selected', 'false');
 
   await tab(page, 'projects').click();
+  await expect(page).toHaveURL(/#projects$/);
   await expect(panel(page, 'projects')).toBeVisible();
 
   await page.reload();
-  await expect(panel(page, 'who-am-i')).toBeVisible();
-  await expect(tab(page, 'who-am-i')).toHaveAttribute('aria-selected', 'true');
+  await expect(page).toHaveURL(/#projects$/);
+  await expect(panel(page, 'projects')).toBeVisible();
 
   const autoplay = await page.evaluate(() => ({
     attributeCount: document.querySelectorAll('[autoplay]').length,
@@ -187,29 +190,30 @@ test('status badge tracks the radio and game embeds', async ({ page }) => {
   await page.goto('/');
   const badge = page.locator('[data-on-air]');
   await expect(badge).toHaveText('[ OFF AIR ]');
-  await expect(badge).toBeDisabled();
+  await expect(badge).toHaveAttribute('aria-disabled', 'true');
+  await expect(badge).not.toHaveAttribute('href');
 
   await tab(page, 'projects').click();
   await expect(badge).toHaveText('[ OFF AIR ]');
 
   await subTab(page, 'maximum-slappage').click();
   await expect(badge).toHaveText('[ ON AIR ]');
-  await expect(badge).toBeEnabled();
+  await expect(badge).toHaveAttribute('href', '#radio');
 
   await subTab(page, 'smiles').click();
-  await expect(badge).toHaveText('[ GAME PLAYING ]');
-  await expect(badge).toBeDisabled();
+  await expect(badge).toHaveText('[ GAME RUNNING ]');
+  await expect(badge).toHaveAttribute('aria-disabled', 'true');
 
   await tab(page, 'links').click();
   await expect(badge).toHaveText('[ GAME PAUSED ]');
-  await expect(badge).toBeEnabled();
+  await expect(badge).toHaveAttribute('href', '#game');
 
   await page.evaluate(() => {
     window.__gameFrame = document.querySelector('iframe[data-embed-kind="iframe"]');
   });
   await badge.click();
   await expect(panel(page, 'projects')).toBeVisible();
-  await expect(badge).toHaveText('[ GAME PLAYING ]');
+  await expect(badge).toHaveText('[ GAME RUNNING ]');
   await expect(subTab(page, 'smiles')).toHaveAttribute('aria-selected', 'true');
   const same = await page.evaluate(
     () => document.querySelector('iframe[data-embed-kind="iframe"]') === window.__gameFrame,
@@ -259,4 +263,62 @@ test('every Links card shows a brand icon', async ({ page }) => {
   await expect(panel(page, 'links')).toBeVisible();
   await expect(page.locator('#panel-links .card')).toHaveCount(8);
   await expect(page.locator('#panel-links .card .icon')).toHaveCount(8);
+});
+
+test('every view has its own hash URL', async ({ page }) => {
+  await blockEmbed(page);
+  await page.goto('/');
+  await expect(page).toHaveURL(/#whoami$/);
+
+  await tab(page, 'links').click();
+  await expect(page).toHaveURL(/#links$/);
+
+  await tab(page, 'projects').click();
+  await expect(page).toHaveURL(/#projects$/);
+
+  await subTab(page, 'maximum-slappage').click();
+  await expect(page).toHaveURL(/#radio$/);
+
+  await subTab(page, 'smiles').click();
+  await expect(page).toHaveURL(/#game$/);
+});
+
+test('a deep link opens the matching view on first load', async ({ page }) => {
+  await blockEmbed(page);
+
+  await page.goto('/#game');
+  await expect(panel(page, 'projects')).toBeVisible();
+  await expect(subTab(page, 'smiles')).toHaveAttribute('aria-selected', 'true');
+  await expect(loadedFrames(page)).toHaveAttribute('src', /decibillyjoel\.github\.io/);
+  await expect(page.locator('[data-on-air]')).toHaveText('[ GAME RUNNING ]');
+
+  await page.goto('/#radio');
+  await expect(panel(page, 'projects')).toBeVisible();
+  await expect(subTab(page, 'maximum-slappage')).toHaveAttribute('aria-selected', 'true');
+  await expect(loadedFrames(page)).toHaveAttribute('src', /live365\.com/);
+  await expect(page.locator('[data-on-air]')).toHaveText('[ ON AIR ]');
+});
+
+test('browser back and forward move between views without a reload', async ({ page }) => {
+  await blockEmbed(page);
+  await page.addInitScript(() => {
+    window.__loads = (window.__loads ?? 0) + 1;
+  });
+  await page.goto('/');
+  await tab(page, 'projects').click();
+  await subTab(page, 'maximum-slappage').click();
+  await expect(page).toHaveURL(/#radio$/);
+
+  await page.goBack();
+  await expect(page).toHaveURL(/#projects$/);
+  await expect(panel(page, 'projects')).toBeVisible();
+
+  await page.goBack();
+  await expect(page).toHaveURL(/#whoami$/);
+  await expect(panel(page, 'who-am-i')).toBeVisible();
+
+  await page.goForward();
+  await expect(page).toHaveURL(/#projects$/);
+
+  expect(await page.evaluate(() => window.__loads)).toBe(1);
 });
