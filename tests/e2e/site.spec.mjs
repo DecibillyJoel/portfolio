@@ -623,7 +623,7 @@ const SHELL_VIEWPORTS = [
   { width: 390, height: 844 },
 ];
 
-test('the page fills the viewport at every size and only the panel scrolls', async ({ page }) => {
+test('the page fills the viewport at every size and only the panel body scrolls', async ({ page }) => {
   await blockEmbed(page);
   await page.goto('/#game');
 
@@ -640,6 +640,9 @@ test('the page fills the viewport at every size and only the panel scrolls', asy
         headerTop: header.getBoundingClientRect().top,
         headerBottom: header.getBoundingClientRect().bottom,
         tabsTop: tabs.getBoundingClientRect().top,
+        panelOverflow: [...document.querySelectorAll('[data-panel]')]
+          .filter((p) => !p.hidden)
+          .map((p) => p.scrollHeight - p.clientHeight),
       };
     });
     const where = `${size.width}x${size.height}`;
@@ -649,10 +652,11 @@ test('the page fills the viewport at every size and only the panel scrolls', asy
     expect(m.headerTop, `header top at ${where}`).toBe(0);
     expect(m.headerBottom, `header bottom at ${where}`).toBeLessThanOrEqual(size.height);
     expect(m.tabsTop, `sub-tab top at ${where}`).toBeLessThan(size.height);
+    expect(m.panelOverflow, `panel scroll at ${where}`).toEqual([0]);
   }
 });
 
-test('the panel scrolls while the header and the sub-tab bar stay in place', async ({ page }) => {
+test('the projects body scrolls while the header and the sub-tab bar stay in place', async ({ page }) => {
   await blockEmbed(page);
   await page.setViewportSize({ width: 844, height: 390 });
   await page.goto('/#game');
@@ -660,24 +664,33 @@ test('the panel scrolls while the header and the sub-tab bar stay in place', asy
   const before = await page.evaluate(() => {
     const header = document.querySelector('.site-header');
     const tabs = document.querySelector('#panel-projects .sub-tabs');
+    const body = document.querySelector('#panel-projects .projects-scroll');
     return {
       headerTop: header.getBoundingClientRect().top,
       tabsTop: tabs.getBoundingClientRect().top,
+      tabsBottom: tabs.getBoundingClientRect().bottom,
+      bodyTop: body.getBoundingClientRect().top,
     };
   });
 
+  // The scroll body starts where the sub-tab bar ends, so the scrollbar never
+  // runs alongside the bar.
+  expect(before.bodyTop).toBeGreaterThanOrEqual(before.tabsBottom);
+
   await page.evaluate(() => {
-    const p = document.querySelector('#panel-projects');
-    p.scrollTop = p.scrollHeight;
+    const body = document.querySelector('#panel-projects .projects-scroll');
+    body.scrollTop = body.scrollHeight;
   });
 
   const after = await page.evaluate(() => {
     const header = document.querySelector('.site-header');
     const tabs = document.querySelector('#panel-projects .sub-tabs');
-    const p = document.querySelector('#panel-projects');
+    const panel = document.querySelector('#panel-projects');
+    const body = document.querySelector('#panel-projects .projects-scroll');
     return {
-      scrollable: p.scrollHeight > p.clientHeight,
-      panelScrollTop: p.scrollTop,
+      scrollable: body.scrollHeight > body.clientHeight,
+      bodyScrollTop: body.scrollTop,
+      panelScrolls: panel.scrollHeight > panel.clientHeight,
       headerTop: header.getBoundingClientRect().top,
       tabsTop: tabs.getBoundingClientRect().top,
       scrollY: window.scrollY,
@@ -685,38 +698,38 @@ test('the panel scrolls while the header and the sub-tab bar stay in place', asy
   });
 
   expect(after.scrollable).toBe(true);
-  expect(after.panelScrollTop).toBeGreaterThan(0);
+  expect(after.bodyScrollTop).toBeGreaterThan(0);
+  expect(after.panelScrolls, 'the panel itself never scrolls').toBe(false);
   expect(after.tabsTop).toBe(before.tabsTop);
   expect(after.headerTop).toBe(before.headerTop);
   expect(after.scrollY).toBe(0);
 });
 
-test('the radio player scrolls inside the panel on a short screen', async ({ page }) => {
+test('the radio player scrolls inside the projects body on a short screen', async ({ page }) => {
   await blockEmbed(page);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/#radio');
 
   const m = await page.evaluate(() => {
     const de = document.documentElement;
-    const p = document.querySelector('#panel-projects');
+    const body = document.querySelector('#panel-projects .projects-scroll');
     return {
       docHeight: [de.scrollHeight, de.clientHeight],
-      panelHeight: [p.scrollHeight, p.clientHeight],
+      bodyHeight: [body.scrollHeight, body.clientHeight],
     };
   });
 
   expect(m.docHeight[0]).toBe(m.docHeight[1]);
-  expect(m.panelHeight[0]).toBeGreaterThan(m.panelHeight[1]);
+  expect(m.bodyHeight[0]).toBeGreaterThan(m.bodyHeight[1]);
 });
 
-test('a panel keeps its scroll position across a tab change', async ({ page }) => {
+test('the projects body keeps its scroll position across a tab change', async ({ page }) => {
   await blockEmbed(page);
   await page.setViewportSize({ width: 844, height: 390 });
   await page.goto('/#game');
 
   await page.evaluate(() => {
-    const p = document.querySelector('#panel-projects');
-    p.scrollTop = 150;
+    document.querySelector('#panel-projects .projects-scroll').scrollTop = 150;
   });
   await tab(page, 'who-am-i').click();
   await expect(panel(page, 'who-am-i')).toBeVisible();
@@ -724,8 +737,8 @@ test('a panel keeps its scroll position across a tab change', async ({ page }) =
   await expect(panel(page, 'projects')).toBeVisible();
 
   const m = await page.evaluate(() => {
-    const p = document.querySelector('#panel-projects');
-    return { scrollTop: p.scrollTop, scrollable: p.scrollHeight > p.clientHeight };
+    const body = document.querySelector('#panel-projects .projects-scroll');
+    return { scrollTop: body.scrollTop, scrollable: body.scrollHeight > body.clientHeight };
   });
   expect(m.scrollable).toBe(true);
   expect(m.scrollTop).toBe(150);

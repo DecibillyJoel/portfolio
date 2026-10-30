@@ -16,7 +16,9 @@ import NotFound from '../components/NotFound.astro';
   <section id="panel-certifications" data-panel="certifications" role="tabpanel" aria-labelledby="tab-certifications" tabindex="0" hidden>
     <Certifications />
   </section>
-  <section id="panel-projects" data-panel="projects" role="tabpanel" aria-labelledby="tab-projects" tabindex="0" hidden>
+  <!-- The projects panel scrolls inside .projects-scroll, so it carries no
+       tabindex of its own. The scroll body holds that focus target. -->
+  <section id="panel-projects" data-panel="projects" role="tabpanel" aria-labelledby="tab-projects" hidden>
     <Projects />
   </section>
   <!-- No tab controls this panel. The router shows it for an unknown hash. -->

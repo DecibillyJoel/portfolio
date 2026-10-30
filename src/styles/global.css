@@ -7,6 +7,7 @@
   --border: #1f3a24;
   --hover: #2fd413;
   --hover-glow: 0 0 6px #39ff1466;
+  --scroll-track: #0c1410;
   --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
@@ -30,6 +31,20 @@ body {
   body { height: 100dvh; }
 }
 
+/* Scrollbars take the theme colours. scrollbar-color is inherited, so one rule
+   covers every scroll area on the page. The width stays at the platform
+   default: `thin` draws a wider bar than the default on Linux Chromium. */
+html {
+  scrollbar-color: var(--muted) var(--scroll-track);
+}
+
+/* Fallback for WebKit builds that ignore scrollbar-color. Chromium and Firefox
+   drop these rules once scrollbar-color is set. */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--scroll-track); }
+::-webkit-scrollbar-thumb { background: var(--muted); }
+::-webkit-scrollbar-corner { background: var(--scroll-track); }
+
 [data-panel][hidden] { display: none; }
 
 /* The page never scrolls. Each panel scrolls inside the shell. The header and
@@ -49,6 +64,15 @@ main > [data-panel] {
 }
 
 main > [data-panel]:focus-visible { outline-offset: -2px; }
+
+/* The projects panel keeps a sub-tab bar above its own scroll body, so the
+   panel itself never scrolls. The bar stays outside the scroll area. The
+   :not([hidden]) guard keeps the display rule away from a hidden panel. */
+main > [data-panel='projects']:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
 
 /* The embed wrappers carry the same ring. A frame element never matches
    :focus in its parent, so scripts/projects.js sets the attribute instead. */

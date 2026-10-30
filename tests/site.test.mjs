@@ -369,17 +369,38 @@ test('the shell locks the page height and scrolls inside each panel', () => {
   assert.match(css, /main>\[data-panel\]\{[^}]*min-height:0/, 'each panel gives up its content height');
   assert.match(css, /main>\[data-panel\]:focus-visible\{outline-offset:-2px\}/, 'the panel ring sits inside the panel');
 
-  assert.equal((html.match(/<section id="panel-[a-z-]+"[^>]*tabindex="0"/g) || []).length, 5,
-    'every panel is focusable, so the scroll region is reachable by keyboard');
+  assert.equal((html.match(/<section id="panel-[a-z-]+"[^>]*tabindex="0"/g) || []).length, 4,
+    'every panel except projects is focusable, so its scroll region is reachable by keyboard');
+  assert.match(html, /<div class="projects-scroll" tabindex="0"/,
+    'the projects panel hands that focus target to its scroll body');
 });
 
-test('the sub-tab bar sticks to the top of the scrolling panel', () => {
+test('the sub-tab bar sits outside the projects scroll area', () => {
   const html = readIndex();
-  const rule = html.match(/\.sub-tabs\[[^\]]*\]\{[^}]*\}/);
-  assert.ok(rule, 'the sub-tab rule is present');
-  assert.match(rule[0], /position:sticky/, 'the sub-tab bar sticks');
-  assert.match(rule[0], /top:0/, 'the sub-tab bar sticks to the top');
-  assert.match(rule[0], /background:var\(--bg\)/, 'the sub-tab bar hides the content behind it');
+
+  const tabs = html.match(/\.sub-tabs\[[^\]]*\]\{[^}]*\}/);
+  assert.ok(tabs, 'the sub-tab rule is present');
+  assert.match(tabs[0], /flex:(none|0 0 auto)/, 'the sub-tab bar keeps its own height');
+  assert.doesNotMatch(tabs[0], /position:sticky/, 'the sub-tab bar does not ride inside the scroll area');
+  assert.match(tabs[0], /background:var\(--bg\)/);
+
+  const body = html.match(/\.projects-scroll\[[^\]]*\]\{[^}]*\}/);
+  assert.ok(body, 'the scroll body rule is present');
+  assert.match(body[0], /overflow-y:auto/, 'the scroll body scrolls');
+  assert.match(body[0], /min-height:0/, 'the scroll body gives up its content height');
+
+  const panel = html.match(/main>\[data-panel=projects\]:not\(\[hidden\]\)\{[^}]*\}/);
+  assert.ok(panel, 'the projects panel lays out its own children');
+  assert.match(panel[0], /display:flex/);
+  assert.match(panel[0], /overflow:hidden/, 'the projects panel itself never scrolls');
+});
+
+test('every scrollbar takes the site colours', () => {
+  const html = readIndex();
+  assert.match(html, /--scroll-track:#0c1410/);
+  assert.match(html, /scrollbar-color:var\(--muted\) var\(--scroll-track\)/);
+  assert.match(html, /::-webkit-scrollbar\{width:10px;height:10px\}/, 'WebKit builds get a fallback');
+  assert.match(html, /::-webkit-scrollbar-thumb\{background:var\(--muted\)\}/);
 });
 
 test('both pages ask the on-screen keyboard to resize the content', () => {
