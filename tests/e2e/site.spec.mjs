@@ -213,6 +213,57 @@ test('only one project embed is loaded at a time', async ({ page }) => {
   await expect(page.locator('[data-project="maximum-slappage"]')).toBeVisible();
 });
 
+test('the Portfolio project leaves the radio player mounted', async ({ page }) => {
+  await blockEmbed(page);
+  await page.goto('/');
+  await tab(page, 'projects').click();
+
+  await subTab(page, 'maximum-slappage').click();
+  await expect(loadedFrames(page)).toHaveCount(1);
+  await expect(loadedFrames(page)).toHaveAttribute('src', /live365\.com/);
+  await page.evaluate(() => {
+    window.__radio = document.querySelector('[data-project="maximum-slappage"] iframe[data-embed]');
+  });
+
+  await subTab(page, 'portfolio').click();
+  await expect(page.locator('[data-project="portfolio"]')).toBeVisible();
+  await expect(page.locator('[data-project="maximum-slappage"]')).toBeHidden();
+  await expect(loadedFrames(page)).toHaveCount(1);
+  await expect(page.locator('[data-on-air]')).toHaveText('[ ON AIR ]');
+
+  const radio = await page.evaluate(() => ({
+    same: window.__radio === document.querySelector('[data-project="maximum-slappage"] iframe[data-embed]'),
+    src: window.__radio.getAttribute('src'),
+  }));
+  expect(radio.same).toBe(true);
+  expect(radio.src).toMatch(/live365\.com/);
+
+  await subTab(page, 'smiles').click();
+  await expect(loadedFrames(page)).toHaveCount(1);
+  await expect(loadedFrames(page)).toHaveAttribute('src', /decibillyjoel\.github\.io/);
+  await expect(page.locator('[data-project="maximum-slappage"] iframe[data-embed]')).toHaveAttribute(
+    'src',
+    'about:blank',
+  );
+});
+
+test('the Portfolio project leaves the game mounted', async ({ page }) => {
+  await blockEmbed(page);
+  await page.goto('/');
+  await tab(page, 'projects').click();
+
+  await subTab(page, 'smiles').click();
+  await expect(loadedFrames(page)).toHaveCount(1);
+  await expect(loadedFrames(page)).toHaveAttribute('src', /decibillyjoel\.github\.io/);
+
+  await subTab(page, 'portfolio').click();
+  await expect(page.locator('[data-project="portfolio"]')).toBeVisible();
+  await expect(page.locator('[data-project="smiles"]')).toBeHidden();
+  await expect(loadedFrames(page)).toHaveCount(1);
+  await expect(loadedFrames(page)).toHaveAttribute('src', /decibillyjoel\.github\.io/);
+  await expect(page.locator('[data-on-air]')).toHaveText('[ GAME RUNNING ]');
+});
+
 test('status badge announces the current state and never takes focus', async ({ page }) => {
   await blockEmbed(page);
   await page.goto('/');

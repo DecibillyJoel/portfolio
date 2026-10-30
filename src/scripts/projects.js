@@ -94,11 +94,19 @@ export function initProjects(root = document) {
     startFocusWatch();
   }
 
+  function hasEmbed(panel) {
+    return Boolean(panel?.querySelector('iframe[data-embed]'));
+  }
+
   function show(id) {
+    const activePanel = panels.find((panel) => panel.dataset.project === id);
+    // A project with no embed of its own leaves the mounted embed alone, so
+    // the radio keeps playing and the game keeps its state.
+    const spareEmbeds = Boolean(activePanel) && !hasEmbed(activePanel);
     for (const panel of panels) {
       const active = panel.dataset.project === id;
       panel.hidden = !active;
-      if (!active) unload(panel);
+      if (!active && !spareEmbeds) unload(panel);
     }
     let activeButton = null;
     for (const button of buttons) {
@@ -109,7 +117,6 @@ export function initProjects(root = document) {
     }
     setRovingTabindex(buttons, activeButton ?? buttons[0]);
     if (empty) empty.hidden = Boolean(id);
-    const activePanel = panels.find((panel) => panel.dataset.project === id);
     if (activePanel) mount(activePanel);
     syncBadge();
   }
