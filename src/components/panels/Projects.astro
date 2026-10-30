@@ -29,8 +29,7 @@ import { projects } from '../../data/projects.js';
     >
       <h2>{project.title}</h2>
       {project.tagline && <p class="tagline">{project.tagline}</p>}
-      <p class="blurb blurb-wide">{project.blurbWide}</p>
-      {project.blurbNarrow && <p class="blurb blurb-narrow">{project.blurbNarrow}</p>}
+      <p class="blurb">{project.blurb}</p>
       {project.href && (
         <a
           class="project-link"
@@ -98,7 +97,6 @@ import { projects } from '../../data/projects.js';
   }
   .tagline { font-size: 13px; color: var(--muted); margin: 0 0 12px; }
   .blurb { font-size: 12px; line-height: 1.5; max-width: 520px; margin: 0 0 14px; }
-  .blurb-narrow { display: none; }
   .project-link { font-size: 12px; color: var(--green); margin: 0 0 14px; }
   @media (hover: hover) {
     .project-link:hover {
@@ -127,8 +125,6 @@ import { projects } from '../../data/projects.js';
     .project { padding: 14px 16px; }
     h2 { font-size: 18px; }
     .tagline { font-size: 11px; margin-bottom: 10px; }
-    .blurb-wide { display: none; }
-    .blurb-narrow { display: block; font-size: 11px; line-height: 1.5; margin: 0 0 12px; }
     .game { padding: 4px; }
   }
 </style>

@@ -332,3 +332,11 @@ test('the Portfolio project sits between the radio and the game and carries the 
   const panel = html.slice(html.indexOf('id="project-portfolio"'), html.indexOf('id="project-smiles"'));
   assert.ok(!panel.includes('iframe'), 'the Portfolio project must carry no embed');
 });
+
+test('every project carries one blurb and no screen-size text swap', () => {
+  const html = readIndex();
+  assert.equal((html.match(/class="blurb"/g) || []).length, 3);
+  assert.ok(!/blurb-narrow|blurb-wide|blurbNarrow|blurbWide/.test(html), 'no narrow or wide blurb class');
+  const js = readDist();
+  assert.ok(!/blurbNarrow|blurbWide/.test(js), 'no narrow blurb in the bundle');
+});
