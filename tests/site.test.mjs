@@ -229,7 +229,8 @@ test('sitemap.xml ships and robots.txt points at it', () => {
 
 test('a real 404 page ships and points back at every view', () => {
   const notFound = readFileSync(join(DIST, '404.html'), 'utf8');
-  assert.match(notFound, /404 — NO SIGNAL/);
+  assert.match(notFound, /404 - Dead Air/);
+  assert.match(notFound, /Signal lost\. Tune in to an active frequency below:/);
   assert.equal((notFound.match(/<h1[\s>]/g) || []).length, 1);
   assert.equal((notFound.match(/<h2[\s>]/g) || []).length, 1);
   assert.match(notFound, /<main id="main" tabindex="-1"[^>]*>/);
@@ -339,4 +340,43 @@ test('every project carries one blurb and no screen-size text swap', () => {
   assert.ok(!/blurb-narrow|blurb-wide|blurbNarrow|blurbWide/.test(html), 'no narrow or wide blurb class');
   const js = readDist();
   assert.ok(!/blurbNarrow|blurbWide/.test(js), 'no narrow blurb in the bundle');
+});
+
+test('the shell locks the page height and scrolls inside each panel', () => {
+  const html = readIndex();
+  const css = readDist();
+
+  assert.match(css, /body\{[^}]*height:100vh/, 'the shell keeps a 100vh fallback');
+  assert.match(css, /@supports \(height:100dvh\)\{body\{height:100dvh\}\}/, 'the shell upgrades to 100dvh');
+  assert.match(css, /body\{[^}]*display:flex/, 'the shell is a flex column');
+  assert.match(css, /body\{[^}]*overflow:hidden/, 'the page itself never scrolls');
+  assert.match(css, /body\{[^}]*overscroll-behavior-y:none/, 'the page does not chain its scroll');
+
+  assert.match(css, /main\{[^}]*min-height:0/, 'main gives up its content height');
+  assert.match(css, /main>\[data-panel\]\{[^}]*overflow-y:auto/, 'each panel scrolls');
+  assert.match(css, /main>\[data-panel\]\{[^}]*min-height:0/, 'each panel gives up its content height');
+  assert.match(css, /main>\[data-panel\]:focus-visible\{outline-offset:-2px\}/, 'the panel ring sits inside the panel');
+
+  assert.equal((html.match(/<section id="panel-[a-z-]+"[^>]*tabindex="0"/g) || []).length, 4,
+    'every tabpanel is focusable, so the scroll region is reachable by keyboard');
+});
+
+test('the sub-tab bar sticks to the top of the scrolling panel', () => {
+  const html = readIndex();
+  const rule = html.match(/\.sub-tabs\[[^\]]*\]\{[^}]*\}/);
+  assert.ok(rule, 'the sub-tab rule is present');
+  assert.match(rule[0], /position:sticky/, 'the sub-tab bar sticks');
+  assert.match(rule[0], /top:0/, 'the sub-tab bar sticks to the top');
+  assert.match(rule[0], /background:var\(--bg\)/, 'the sub-tab bar hides the content behind it');
+});
+
+test('both pages ask the on-screen keyboard to resize the content', () => {
+  for (const doc of ['index.html', '404.html']) {
+    const html = readFileSync(join(DIST, doc), 'utf8');
+    assert.match(html, /name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content"/);
+    assert.ok(!/maximum-scale|user-scalable/.test(html), `${doc} must not block zoom`);
+  }
+
+  const notFound = readFileSync(join(DIST, '404.html'), 'utf8');
+  assert.match(notFound, /main\[data-astro-cid-[a-z]+\]\{min-height:0;overflow-y:auto\}/, 'the 404 page scrolls inside main');
 });

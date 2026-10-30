@@ -51,3 +51,20 @@ test('the 404 page has no WCAG 2.0 or 2.1 A and AA violations', async ({ page })
 
   expect(await audit(page)).toEqual([]);
 });
+
+// A short viewport makes every panel overflow, which exercises the
+// scrollable-region-focusable rule.
+test('every view passes at a short mobile viewport', async ({ page }) => {
+  await blockEmbed(page);
+  await page.setViewportSize({ width: 390, height: 480 });
+
+  const failures = [];
+  for (const { hash, panel } of ROUTES) {
+    await page.goto(`/${hash}`);
+    await expect(page.locator(`#panel-${panel}`)).toBeVisible();
+    const violations = await audit(page);
+    if (violations.length > 0) failures.push({ hash, violations });
+  }
+
+  expect(failures).toEqual([]);
+});

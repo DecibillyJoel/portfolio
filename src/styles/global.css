@@ -17,9 +17,38 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--mono);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  overscroll-behavior-y: none;
+}
+
+/* A dynamic viewport unit follows the mobile URL bar as it grows and shrinks.
+   The minifier drops a plain second height, so the rule needs the guard. */
+@supports (height: 100dvh) {
+  body { height: 100dvh; }
 }
 
 [data-panel][hidden] { display: none; }
+
+/* The page never scrolls. Each panel scrolls inside the shell. The header and
+   the sub-tab bar stay on screen. */
+main {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+main > [data-panel] {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+main > [data-panel]:focus-visible { outline-offset: -2px; }
 
 /* The embed wrappers carry the same ring. A frame element never matches
    :focus in its parent, so scripts/projects.js sets the attribute instead. */

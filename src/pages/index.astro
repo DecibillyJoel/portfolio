@@ -6,16 +6,16 @@ import Certifications from '../components/panels/Certifications.astro';
 import Projects from '../components/panels/Projects.astro';
 ---
 <Base>
-  <section id="panel-who-am-i" data-panel="who-am-i" role="tabpanel" aria-labelledby="tab-who-am-i">
+  <section id="panel-who-am-i" data-panel="who-am-i" role="tabpanel" aria-labelledby="tab-who-am-i" tabindex="0">
     <WhoAmI />
   </section>
-  <section id="panel-links" data-panel="links" role="tabpanel" aria-labelledby="tab-links" hidden>
+  <section id="panel-links" data-panel="links" role="tabpanel" aria-labelledby="tab-links" tabindex="0" hidden>
     <Links />
   </section>
-  <section id="panel-certifications" data-panel="certifications" role="tabpanel" aria-labelledby="tab-certifications" hidden>
+  <section id="panel-certifications" data-panel="certifications" role="tabpanel" aria-labelledby="tab-certifications" tabindex="0" hidden>
     <Certifications />
   </section>
-  <section id="panel-projects" data-panel="projects" role="tabpanel" aria-labelledby="tab-projects" hidden>
+  <section id="panel-projects" data-panel="projects" role="tabpanel" aria-labelledby="tab-projects" tabindex="0" hidden>
     <Projects />
   </section>
 </Base>

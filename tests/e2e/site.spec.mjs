@@ -566,3 +566,117 @@ test('the radio player uses the same focus ring', async ({ page }) => {
   expect(await tabIntoEmbed(page, '#project-maximum-slappage iframe')).toBe(true);
   await expect(wrap).toHaveAttribute('data-embed-focus', 'true');
 });
+
+const SHELL_VIEWPORTS = [
+  { width: 1280, height: 720 },
+  { width: 844, height: 390 },
+  { width: 390, height: 844 },
+];
+
+test('the page fills the viewport at every size and only the panel scrolls', async ({ page }) => {
+  await blockEmbed(page);
+  await page.goto('/#game');
+
+  for (const size of SHELL_VIEWPORTS) {
+    await page.setViewportSize(size);
+    const m = await page.evaluate(() => {
+      const de = document.documentElement;
+      const header = document.querySelector('.site-header');
+      const tabs = document.querySelector('#panel-projects .sub-tabs');
+      return {
+        docHeight: [de.scrollHeight, de.clientHeight],
+        docWidth: [de.scrollWidth, de.clientWidth],
+        scrollY: window.scrollY,
+        headerTop: header.getBoundingClientRect().top,
+        headerBottom: header.getBoundingClientRect().bottom,
+        tabsTop: tabs.getBoundingClientRect().top,
+      };
+    });
+    const where = `${size.width}x${size.height}`;
+    expect(m.docHeight[0], `document height at ${where}`).toBe(m.docHeight[1]);
+    expect(m.docWidth[0], `document width at ${where}`).toBeLessThanOrEqual(m.docWidth[1]);
+    expect(m.scrollY, `document scroll at ${where}`).toBe(0);
+    expect(m.headerTop, `header top at ${where}`).toBe(0);
+    expect(m.headerBottom, `header bottom at ${where}`).toBeLessThanOrEqual(size.height);
+    expect(m.tabsTop, `sub-tab top at ${where}`).toBeLessThan(size.height);
+  }
+});
+
+test('the panel scrolls while the header and the sub-tab bar stay in place', async ({ page }) => {
+  await blockEmbed(page);
+  await page.setViewportSize({ width: 844, height: 390 });
+  await page.goto('/#game');
+
+  const before = await page.evaluate(() => {
+    const header = document.querySelector('.site-header');
+    const tabs = document.querySelector('#panel-projects .sub-tabs');
+    return {
+      headerTop: header.getBoundingClientRect().top,
+      tabsTop: tabs.getBoundingClientRect().top,
+    };
+  });
+
+  await page.evaluate(() => {
+    const p = document.querySelector('#panel-projects');
+    p.scrollTop = p.scrollHeight;
+  });
+
+  const after = await page.evaluate(() => {
+    const header = document.querySelector('.site-header');
+    const tabs = document.querySelector('#panel-projects .sub-tabs');
+    const p = document.querySelector('#panel-projects');
+    return {
+      scrollable: p.scrollHeight > p.clientHeight,
+      panelScrollTop: p.scrollTop,
+      headerTop: header.getBoundingClientRect().top,
+      tabsTop: tabs.getBoundingClientRect().top,
+      scrollY: window.scrollY,
+    };
+  });
+
+  expect(after.scrollable).toBe(true);
+  expect(after.panelScrollTop).toBeGreaterThan(0);
+  expect(after.tabsTop).toBe(before.tabsTop);
+  expect(after.headerTop).toBe(before.headerTop);
+  expect(after.scrollY).toBe(0);
+});
+
+test('the radio player scrolls inside the panel on a short screen', async ({ page }) => {
+  await blockEmbed(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/#radio');
+
+  const m = await page.evaluate(() => {
+    const de = document.documentElement;
+    const p = document.querySelector('#panel-projects');
+    return {
+      docHeight: [de.scrollHeight, de.clientHeight],
+      panelHeight: [p.scrollHeight, p.clientHeight],
+    };
+  });
+
+  expect(m.docHeight[0]).toBe(m.docHeight[1]);
+  expect(m.panelHeight[0]).toBeGreaterThan(m.panelHeight[1]);
+});
+
+test('a panel keeps its scroll position across a tab change', async ({ page }) => {
+  await blockEmbed(page);
+  await page.setViewportSize({ width: 844, height: 390 });
+  await page.goto('/#game');
+
+  await page.evaluate(() => {
+    const p = document.querySelector('#panel-projects');
+    p.scrollTop = 150;
+  });
+  await tab(page, 'who-am-i').click();
+  await expect(panel(page, 'who-am-i')).toBeVisible();
+  await tab(page, 'projects').click();
+  await expect(panel(page, 'projects')).toBeVisible();
+
+  const m = await page.evaluate(() => {
+    const p = document.querySelector('#panel-projects');
+    return { scrollTop: p.scrollTop, scrollable: p.scrollHeight > p.clientHeight };
+  });
+  expect(m.scrollable).toBe(true);
+  expect(m.scrollTop).toBe(150);
+});

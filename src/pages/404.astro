@@ -5,7 +5,7 @@ import '../styles/global.css';
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <title>404 — @JoeOfSomeTrades</title>
     <meta
@@ -23,8 +23,8 @@ import '../styles/global.css';
     </header>
     <main id="main" tabindex="-1">
       <section class="error">
-        <h2>404 — NO SIGNAL</h2>
-        <p>That address is not in this cabinet. Pick a view below.</p>
+        <h2>404 - Dead Air</h2>
+        <p>Signal lost. Tune in to an active frequency below:</p>
         <ul class="routes">
           <li><a href="/#whoami">Who Am I</a></li>
           <li><a href="/#links">Links</a></li>
@@ -67,6 +67,12 @@ import '../styles/global.css';
     letter-spacing: 0.5px;
     color: #c9ffc2;
     margin: 0;
+  }
+  /* The shell locks the page height, so this page scrolls inside main too.
+     It has no panels, so the panel rule in global.css does not apply here. */
+  main {
+    min-height: 0;
+    overflow-y: auto;
   }
   .error {
     padding: 48px 22px;
