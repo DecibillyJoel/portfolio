@@ -1,8 +1,8 @@
 # @JoeOfSomeTrades
 
-> Personal portfolio for @JoeOfSomeTrades, a music, audio, and game design
-> enthusiast. The site is one arcade-themed page with four views and two live
-> projects.
+> Personal portfolio for @JoeOfSomeTrades, an enthusiast of all things IT, music,
+> audio, and game design and development. The site is one arcade-themed page with
+> four views and two live projects.
 
 The site is static. It holds no login and no paywall. Each view has its own hash
 URL, so the page never reloads on navigation.
