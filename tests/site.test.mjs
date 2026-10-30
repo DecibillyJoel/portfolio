@@ -55,10 +55,11 @@ test('Who Am I carries the three approved paragraphs', () => {
   assert.match(html, /I'm now using those skills and interests to bring power and togetherness to indie artists and creators\./);
 });
 
-test('Links lists seven entries', () => {
+test('Links lists eight entries, each with an icon', () => {
   const html = readIndex();
-  const labels = ['GITHUB', 'YOUTUBE', 'BLUESKY', 'LIVE365', 'LAST.FM', 'EMAIL', 'DISCORD'];
+  const labels = ['GITHUB', 'YOUTUBE', 'X', 'BLUESKY', 'LIVE365', 'LAST.FM', 'EMAIL', 'DISCORD'];
   for (const label of labels) assert.match(html, new RegExp(`>\\s*${label.replace('.', '\\.')}<`));
+  assert.equal((html.match(/class="icon"/g) || []).length, labels.length);
 });
 
 test('no link renders as a pending placeholder', () => {
@@ -70,11 +71,20 @@ test('live links point at the approved URLs', () => {
   const html = readIndex();
   assert.match(html, /href="https:\/\/github\.com\/DecibillyJoel"/);
   assert.match(html, /href="https:\/\/www\.youtube\.com\/@JoeOfSomeTrades"/);
+  assert.match(html, /href="https:\/\/x\.com\/JoeOfManyTrades"/);
   assert.match(html, /href="https:\/\/www\.last\.fm\/user\/DecibillyJoel"/);
   assert.match(html, /href="https:\/\/bsky\.app\/profile\/joeofsometrades\.bsky\.social"/);
   assert.match(html, /href="https:\/\/live365\.com\/station\/a57727"/);
   assert.match(html, /href="mailto:joeofsometrades@outlook\.com"/);
   assert.match(html, /href="https:\/\/discord\.com\/users\/152963830350217217"/);
+});
+
+test('header merges the brand, tabs, and a clickable ON AIR control', () => {
+  const html = readIndex();
+  const header = html.match(/<header[\s\S]*?<\/header>/)?.[0] ?? '';
+  assert.match(header, /@JoeOfSomeTrades/);
+  assert.match(header, /data-tab-target="projects"/);
+  assert.match(header, /<button[^>]*data-goto-tab="projects"[^>]*>\s*\[ ON AIR \]/);
 });
 
 test('player holds both embed sizes and mounts with no src', () => {

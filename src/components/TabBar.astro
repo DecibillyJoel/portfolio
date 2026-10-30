@@ -22,14 +22,12 @@ const tabs = [
 <style>
   .tab-bar {
     display: flex;
-    gap: 26px;
-    padding: 0 22px;
-    border-bottom: 1px solid var(--border);
+    gap: 22px;
   }
   button {
     background: none;
     border: 0;
-    padding: 12px 0;
+    padding: 6px 0;
     font: inherit;
     font-size: 13px;
     color: var(--muted);
@@ -43,7 +41,7 @@ const tabs = [
   button:focus-visible { outline: 2px solid var(--magenta); outline-offset: 2px; }
 
   @media (max-width: 899px) {
-    .tab-bar { gap: 14px; justify-content: center; }
-    button { font-size: 11px; padding: 9px 0; }
+    .tab-bar { flex: 1 1 100%; order: 9; gap: 14px; }
+    button { font-size: 11px; }
   }
 </style>

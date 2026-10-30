@@ -25,5 +25,9 @@ export function initTabs(root = document) {
     });
   }
 
+  for (const trigger of root.querySelectorAll('[data-goto-tab]')) {
+    trigger.addEventListener('click', () => show(trigger.dataset.gotoTab, false));
+  }
+
   show(buttons[0].dataset.tabTarget, false);
 }

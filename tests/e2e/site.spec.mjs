@@ -101,8 +101,13 @@ test('all tabs and the sub-tab are reachable and activatable with the keyboard',
   await expect(panel(page, 'projects')).toBeVisible();
   await expect(tab(page, 'projects')).toHaveAttribute('aria-selected', 'true');
 
-  await page.keyboard.press('Tab');
-  const onSubTab = await page.evaluate(() => !!document.activeElement?.closest('.sub-tabs'));
+  // The merged header puts the ON AIR control after the tabs, so the sub-tab is
+  // a couple of stops further along.
+  let onSubTab = false;
+  for (let i = 0; i < 5 && !onSubTab; i += 1) {
+    await page.keyboard.press('Tab');
+    onSubTab = await page.evaluate(() => !!document.activeElement?.closest('.sub-tabs'));
+  }
   expect(onSubTab).toBe(true);
 });
 
@@ -129,4 +134,24 @@ test('first load and mid-session reload land on the default tab with no autoplay
   expect(autoplay.attributeCount).toBe(0);
   expect(autoplay.iframeAllows).not.toContain('autoplay');
   expect(autoplay.iframeSrc).not.toContain('autoplay');
+});
+
+test('the ON AIR control jumps to the Projects tab', async ({ page }) => {
+  await blockEmbed(page);
+  await page.goto('/');
+
+  await expect(panel(page, 'who-am-i')).toBeVisible();
+  await page.locator('[data-goto-tab="projects"]').click();
+  await expect(panel(page, 'projects')).toBeVisible();
+  await expect(tab(page, 'projects')).toHaveAttribute('aria-selected', 'true');
+});
+
+test('every Links card shows a brand icon', async ({ page }) => {
+  await blockEmbed(page);
+  await page.goto('/');
+
+  await tab(page, 'links').click();
+  await expect(panel(page, 'links')).toBeVisible();
+  await expect(page.locator('#panel-links .card')).toHaveCount(8);
+  await expect(page.locator('#panel-links .card .icon')).toHaveCount(8);
 });

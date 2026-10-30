@@ -1,18 +1,24 @@
+---
+import TabBar from './TabBar.astro';
+---
 <header class="site-header">
   <div class="brand">
     <img class="monogram" src="/favicon.png" alt="" width="30" height="30" />
     <strong>@JoeOfSomeTrades</strong>
   </div>
-  <span class="on-air">[ ON AIR ]</span>
+  <span class="divider" aria-hidden="true"></span>
+  <TabBar />
+  <button class="on-air" type="button" data-goto-tab="projects">[ ON AIR ]</button>
 </header>
 
 <style>
   .site-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 14px 22px;
+    gap: 16px 22px;
+    padding: 12px 22px;
     border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
   }
   .brand { display: flex; align-items: center; gap: 10px; }
   .monogram {
@@ -23,10 +29,22 @@
     object-fit: cover;
   }
   strong { font-size: 15px; letter-spacing: 0.5px; color: #c9ffc2; }
+  .divider { width: 1px; height: 22px; background: var(--border); }
   .on-air {
+    margin-left: auto;
+    font: inherit;
     font-size: 11px;
     color: var(--green);
+    background: none;
     border: 1px solid #2c5a33;
     padding: 4px 11px;
+    cursor: pointer;
+  }
+  .on-air:hover { background: #0d1a10; }
+  .on-air:focus-visible { outline: 2px solid var(--magenta); outline-offset: 2px; }
+
+  @media (max-width: 899px) {
+    .site-header { padding: 10px 16px; gap: 10px 14px; }
+    .divider { display: none; }
   }
 </style>

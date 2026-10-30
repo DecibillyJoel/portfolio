@@ -1,14 +1,18 @@
 ---
 import { links } from '../../data/links.js';
+import Icon from '../Icon.astro';
 ---
 <section class="links">
   <ul>
     {links.map((link) => (
       <li class={link.pending ? 'card pending' : 'card'}>
-        <span class="label">{link.label}</span>
-        {link.href
-          ? <a href={link.href} rel="me noopener">{link.value}</a>
-          : <span class="value">{link.value}</span>}
+        <Icon id={link.id} />
+        <div class="meta">
+          <span class="label">{link.label}</span>
+          {link.href
+            ? <a href={link.href} rel="me noopener">{link.value}</a>
+            : <span class="value">{link.value}</span>}
+        </div>
       </li>
     ))}
   </ul>
@@ -26,10 +30,15 @@ import { links } from '../../data/links.js';
     max-width: 900px;
   }
   .card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
     border: 1px solid var(--border);
     background: #0b120d;
     padding: 16px 18px;
   }
+  .card :global(.icon) { color: var(--green); }
+  .meta { min-width: 0; }
   .label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 6px; }
   .card a { font-size: 14px; color: var(--green); text-decoration: none; }
   .card a:hover { text-decoration: underline; }
