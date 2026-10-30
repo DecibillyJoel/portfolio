@@ -8,12 +8,14 @@
     "build": "astro build",
     "preview": "astro preview",
     "test": "node --test tests/",
+    "test:e2e": "playwright test",
     "deploy": "wrangler deploy"
   },
   "dependencies": {
     "astro": "^7.4.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "wrangler": "^4.156.0"
   }
 }

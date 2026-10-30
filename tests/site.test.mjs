@@ -64,7 +64,7 @@ test('Links lists seven entries', () => {
 test('pending links are not clickable', () => {
   const html = readIndex();
   assert.doesNotMatch(html, /href="[^"]*bsky\.social/);
-  assert.doesNotMatch(html, /href="mailto:/);
+  assert.match(html, /<li class="card pending"[^>]*><span[^>]*>BLUESKY<\/span><span[^>]*>@joeofsometrades\.bsky\.social<\/span><\/li>/);
 });
 
 test('live links point at the approved URLs', () => {
@@ -73,6 +73,8 @@ test('live links point at the approved URLs', () => {
   assert.match(html, /href="https:\/\/www\.youtube\.com\/@JoeOfSomeTrades"/);
   assert.match(html, /href="https:\/\/www\.last\.fm\/user\/DecibillyJoel"/);
   assert.match(html, /href="https:\/\/live365\.com\/station\/a57727"/);
+  assert.match(html, /href="mailto:joeofsometrades@outlook\.com"/);
+  assert.match(html, /href="https:\/\/discord\.com\/users\/152963830350217217"/);
 });
 
 test('player holds both embed sizes and mounts with no src', () => {
