@@ -7,7 +7,7 @@ import { site } from '../src/data/site.js';
 import { links } from '../src/data/links.js';
 import { certifications } from '../src/data/certifications.js';
 import { projects } from '../src/data/projects.js';
-import { routes } from '../src/data/routes.js';
+import { routes, tabs } from '../src/data/routes.js';
 
 const DIST = fileURLToPath(new URL('../dist', import.meta.url));
 
@@ -50,17 +50,18 @@ test('page mounts all four panels in one document', () => {
   assert.equal((html.match(/<html/g) || []).length, 1);
 });
 
-test('tab bar exposes the four full labels', () => {
+test('the tab bar carries three labels and the brand row carries Links', () => {
   const html = readIndex();
   // The selected tab carries a decorative prompt, so drop the markup first.
   const labels = [...html.matchAll(/data-tab-target="([a-z-]+)"[^>]*>([\s\S]*?)<\/a>/g)]
     .map((m) => [m[1], m[2].replace(/<span[\s\S]*?<\/span>/g, '').replace(/<[^>]+>/g, '').trim()]);
   assert.deepEqual(labels, [
     ['who-am-i', 'Who Am I'],
-    ['links', 'Links'],
     ['certifications', 'Certifications'],
     ['projects', 'Projects'],
   ]);
+  // Links sits in the brand column with the handle and opens its own panel.
+  assert.match(html, /class="brand-link"[^>]*data-view="links"[^>]*data-hash="links"[^>]*href="#links"/);
 });
 
 test('exactly one panel starts visible', () => {
@@ -168,7 +169,7 @@ test('every tab and sub-tab is a native link with its own hash', () => {
   const html = readIndex();
   const links = [
     ['data-tab-target="who-am-i"', '#whoami'],
-    ['data-tab-target="links"', '#links'],
+    ['data-view="links"', '#links'],
     ['data-tab-target="certifications"', '#certs'],
     ['data-tab-target="projects"', '#projects'],
     ['data-sub-tab-target="maximum-slappage"', '#radio'],
@@ -335,8 +336,11 @@ test('the page has one h1, a skip link, and a focusable main landmark', () => {
 test('tablists use roving tabindex, arrow keys, and paired roles', () => {
   const html = readIndex();
   assert.equal((html.match(/<[a-z]+[^>]*role="tablist"/g) || []).length, 2);
-  assert.equal((html.match(/role="tabpanel"/g) || []).length, 7);
-  assert.equal((html.match(/role="tab"/g) || []).length, 7);
+  assert.equal((html.match(/role="tabpanel"/g) || []).length, 6);
+  assert.equal((html.match(/role="tab"/g) || []).length, 6);
+  // Links has no tab of its own, so its panel is a labelled region.
+  assert.match(html, /id="panel-links"[^>]*role="region"[^>]*aria-label="Links"/);
+  assert.ok(!/id="tab-links"/.test(html), 'the Links view is not a tab');
   assert.match(html, /id="subtab-maximum-slappage"[^>]*aria-controls="project-maximum-slappage"/);
   assert.match(
     html,
@@ -425,7 +429,7 @@ test('every scrollbar takes the site colours', () => {
   const html = readIndex();
   assert.match(html, /--scroll-track:#0c1410/);
   assert.match(html, /scrollbar-color:var\(--muted\) var\(--scroll-track\)/);
-  assert.match(html, /::-webkit-scrollbar\{width:10px;height:10px\}/, 'WebKit builds get a fallback');
+  assert.match(html, /::-webkit-scrollbar\{width:0?\.625rem;height:0?\.625rem\}/, 'WebKit builds get a fallback');
   assert.match(html, /::-webkit-scrollbar-thumb\{background:var\(--muted\)\}/);
 });
 
@@ -696,7 +700,15 @@ test('one shared rule styles every panel heading', () => {
 test('the page renders the navigation from the one route list', () => {
   const html = readIndex();
   const rendered = [...html.matchAll(/data-hash="([^"]+)"/g)].map((match) => match[1]);
-  assert.deepEqual(rendered, routes.map(({ hash }) => hash));
+  // Every route in the list reaches the page, and the page invents none.
+  assert.deepEqual([...rendered].sort(), routes.map(({ hash }) => hash).sort());
+  // Links leads, because it sits in the brand row, and the tab bar then keeps
+  // the order the list gives it.
+  assert.deepEqual(rendered, [
+    'links',
+    ...tabs.map(({ hash }) => hash),
+    ...projects.map(({ hash }) => hash),
+  ]);
 });
 
 // The 404 document shares the head and the header with the other pages, so the
@@ -732,19 +744,14 @@ test('an icon name that is not in the set stops the build', () => {
   assert.match(source, /icons\[id\]/);
 });
 
-test('one dial sets every size on the page', () => {
+test('every size is a rem value written where it is used', () => {
   const html = readIndex();
-  assert.match(html, /--type-scale:[\d.]+/, 'the dial is in the token layer');
-  assert.match(
-    html,
-    /html\{font-size:calc\(100% \* var\(--type-scale\)\)/,
-    'the root font size is the dial times the reader default',
-  );
-  const inPx = [...html.matchAll(/font-size:(-?[\d.]+)px/g)].map((m) => m[1]);
-  assert.deepEqual(inPx, [], `these sizes are still pinned to px: ${inPx.join(', ')}`);
-  for (const knob of ['--fs-tab', '--fs-subtab', '--subtab-pad-y', '--header-pad-y', '--bar-pad-x']) {
-    assert.ok(html.includes(knob), `${knob} stays tunable from the token layer`);
-  }
+  assert.doesNotMatch(html, /--type-scale|font-size: ?calc\(/, 'no size dial and no font size is a multiplier');
+  assert.doesNotMatch(html, /transform:|zoom:/, 'nothing is scaled after layout');
+  assert.doesNotMatch(html, /font-size: ?[\d.]+px/, 'no font size stays in px, so the reader font sets the scale');
+  // The whole type scale, one deliberate step at a time.
+  const sizes = [...new Set([...html.matchAll(/font-size: ?(-?[\d.]+)rem/g)].map((m) => Number(m[1])))];
+  assert.deepEqual(sizes.sort((a, b) => a - b), [0.9375, 1, 1.125, 1.25, 1.3125, 1.375, 1.6875, 2.4375]);
 });
 
 test('nothing on the page carries a text glow', () => {
@@ -761,11 +768,39 @@ test('nothing on the page carries a text glow', () => {
   }
 });
 
-test('the sub-tabs wear the same colour ramp as the tabs above them', () => {
+test('the sub-tabs wear a purple ramp, and every step stays legible', () => {
   const html = readIndex();
-  assert.match(html, /\.sub-tabs\[[^\]]*\] a\[[^\]]*\]\{[^}]*color:var\(--muted\)/);
-  assert.match(html, /\.sub-tabs\[[^\]]*\] a\[[^\]]*\]\[aria-selected=true\]\{color:var\(--green\)\}/);
-  assert.match(html, /\.sub-tabs\[[^\]]*\] a\[[^\]]*\]:hover\{color:var\(--hover\)\}/);
+  assert.match(html, /\.sub-tabs\[[^\]]*\] a\[[^\]]*\]\{[^}]*color:var\(--magenta-dim\)/);
+  assert.match(html, /\.sub-tabs\[[^\]]*\] a\[[^\]]*\]\[aria-selected=true\]\{color:var\(--magenta\)\}/);
+  assert.match(html, /\.sub-tabs\[[^\]]*\] a\[[^\]]*\]:hover\{color:var\(--magenta-hover\)\}/);
   assert.match(html, /\.sub-tabs\[[^\]]*\] a\[[^\]]*\]\{[^}]*border:0/, 'the pill outline is gone');
-  assert.ok(!/\.sub-tabs[^{]*\{[^}]*var\(--magenta\)/.test(html), 'no magenta is left on the sub-tabs');
+  assert.ok(!/\.sub-tabs[^{]*\{[^}]*var\(--green\)/.test(html), 'no green is left on the sub-tabs');
+
+  // A near black background leaves a purple very little room to darken and stay
+  // legible, so the two dim steps give up saturation instead of light. Each one
+  // still clears AA on its own background.
+  const css = readFileSync(join(SRC, 'styles', 'global.css'), 'utf8');
+  const plain = (name) => css.match(new RegExp(`^\\s*${name}:\\s*(#[0-9a-f]{6});`, 'm'))?.[1];
+  const pair = (name) =>
+    css.match(new RegExp(`${name}:\\s*light-dark\\(\\s*(#[0-9a-f]{6}),\\s*(#[0-9a-f]{6})\\)`))?.slice(1, 3);
+  const channel = (c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+  const luminance = (hex) => {
+    const [r, g, b] = [1, 3, 5].map((i) => channel(parseInt(hex.slice(i, i + 2), 16) / 255));
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+  const ratio = (a, b) => {
+    const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+    return (hi + 0.05) / (lo + 0.05);
+  };
+
+  const darkBg = plain('--bg');
+  const lightBg = pair('--bg')?.[0];
+  assert.ok(darkBg && lightBg, 'both backgrounds are named');
+  for (const name of ['--magenta', '--magenta-hover', '--magenta-dim']) {
+    assert.ok(ratio(plain(name), darkBg) >= 4.5, `${name} clears AA on ${darkBg}`);
+    const [light, dark] = pair(name) ?? [];
+    assert.ok(light && dark, `${name} names both themes`);
+    assert.equal(dark, plain(name), `${name} keeps the dark fallback and the pair in step`);
+    assert.ok(ratio(light, lightBg) >= 4.5, `${name} clears AA on ${lightBg}`);
+  }
 });

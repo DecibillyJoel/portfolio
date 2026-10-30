@@ -10,7 +10,9 @@ import NotFound from '../components/NotFound.astro';
   <section id="panel-who-am-i" data-panel="who-am-i" role="tabpanel" aria-labelledby="tab-who-am-i" tabindex="0">
     <WhoAmI />
   </section>
-  <section id="panel-links" data-panel="links" role="tabpanel" aria-labelledby="tab-links" tabindex="0" hidden>
+  <!-- No tab controls this panel either. The Links link in the brand row opens
+       it, so it is a labelled region rather than a tab panel. -->
+  <section id="panel-links" data-panel="links" role="region" aria-label="Links" tabindex="0" hidden>
     <Links />
   </section>
   <section id="panel-certifications" data-panel="certifications" role="tabpanel" aria-labelledby="tab-certifications" tabindex="0" hidden>

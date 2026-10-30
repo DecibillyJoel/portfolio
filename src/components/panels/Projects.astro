@@ -66,7 +66,7 @@ import { projects } from '../../data/projects.js';
     flex: 1 1 auto;
     min-height: 0;
   }
-  .sub-tabs { display: flex; flex-wrap: wrap; flex: 0 0 auto; gap: 0.875rem; padding: var(--subtab-pad-y) var(--bar-pad-x); border-bottom: 1px solid var(--border); background: var(--bg); }
+  .sub-tabs { display: flex; flex-wrap: wrap; flex: 0 0 auto; gap: 1.3125rem; padding: 0.5rem 2.0625rem; border-bottom: 1px solid var(--border); background: var(--bg); }
   .projects-scroll {
     flex: 1 1 auto;
     min-height: 0;
@@ -77,22 +77,24 @@ import { projects } from '../../data/projects.js';
   .sub-tabs a {
     background: none;
     font: inherit;
-    font-size: var(--fs-subtab);
+    font-size: 1rem;
     line-height: 1.5;
-    color: var(--muted);
+    color: var(--magenta-dim);
     border: 0;
-    padding: 0.3125rem 0;
+    padding: 0.5rem 0;
     cursor: pointer;
     text-decoration: none;
   }
   /* The prompt marks the selected sub-tab and stays out of its accessible name. */
   .sub-tabs .prompt { display: none; }
   .sub-tabs a[aria-selected='true'] .prompt { display: inline; }
-  /* The same colour ramp as the bar above it. */
-  .sub-tabs a[aria-selected='true'] { color: var(--green); }
+  /* The same three step ramp as the tabs above, in the purple family: the
+     selected sub-tab is the bright magenta, hover is one step duller, and the
+     rest sit on the dullest step. */
+  .sub-tabs a[aria-selected='true'] { color: var(--magenta); }
   @media (hover: hover) {
-    .sub-tabs a:hover { color: var(--hover); }
-    .sub-tabs a[aria-selected='true']:hover { color: var(--green); }
+    .sub-tabs a:hover { color: var(--magenta-hover); }
+    .sub-tabs a[aria-selected='true']:hover { color: var(--magenta); }
   }
   .project[hidden] { display: none; }
   .project {
@@ -101,19 +103,19 @@ import { projects } from '../../data/projects.js';
     align-items: center;
     justify-content: center;
     text-align: center;
-    padding: 1.125rem;
+    padding: 1.6875rem;
   }
-  .tagline { font-size: 0.8125rem; color: var(--muted); margin: 0 0 0.75rem; }
-  .project-link { font-size: 0.75rem; color: var(--green); margin: 0 0 0.875rem; }
+  .tagline { font-size: 1.25rem; color: var(--muted); margin: 0 0 1.125rem; }
+  .project-link { font-size: 1.125rem; color: var(--green); margin: 0 0 1.3125rem; }
   @media (hover: hover) {
     .project-link:hover {
       text-decoration: underline;
     }
   }
-  .empty { padding: 3rem 1.375rem; text-align: center; color: var(--muted); font-size: 0.8125rem; }
+  .empty { padding: 4.5rem 2.0625rem; text-align: center; color: var(--muted); font-size: 1.25rem; }
   /* The frame comes from .embed-box. The game keeps its own shape: a 16 by 9
      box that fills the panel until it reaches this width. */
-  .game { --game-width: 47.5rem; }
+  .game { --game-width: 71.25rem; }
   .game iframe {
     width: var(--game-width);
     max-width: 100%;
@@ -124,8 +126,8 @@ import { projects } from '../../data/projects.js';
   @media (max-width: 899px) {
     /* The sub-tab labels are long, so they take one step down on a phone to
        stop the bar from stacking into three or four rows. */
-    .sub-tabs a { font-size: 0.6875rem; }
-    .project { padding: 0.875rem 1rem; }
-    .tagline { font-size: 0.6875rem; margin-bottom: 0.625rem; }
+    .sub-tabs a { font-size: 0.9375rem; }
+    .project { padding: 1.3125rem 1.5rem; }
+    .tagline { font-size: 1rem; margin-bottom: 0.9375rem; }
   }
 </style>

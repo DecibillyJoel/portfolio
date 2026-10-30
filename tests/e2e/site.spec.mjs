@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 const tab = (page, id) => page.locator(`#tab-${id}`);
+const viewLink = (page, id) => page.locator(`[data-view="${id}"]`);
 const panel = (page, id) => page.locator(`#panel-${id}`);
 const subTab = (page, id) => page.locator(`[data-sub-tab-target="${id}"]`);
 const loadedFrames = (page) => page.locator('iframe[data-loaded="true"]');
@@ -100,7 +101,7 @@ test('blocked embeds still render the page and switch tabs', async ({ page }) =>
   await expect(subTab(page, 'portfolio')).toBeVisible();
   await expect(subTab(page, 'smiles')).toBeVisible();
 
-  await tab(page, 'links').click();
+  await viewLink(page, 'links').click();
   await expect(panel(page, 'links')).toBeVisible();
   await expect(panel(page, 'who-am-i')).toBeHidden();
 
@@ -121,14 +122,19 @@ test('keyboard alone reaches the tab bar and the sub-tabs and loads a project', 
   await expect(page.locator('.skip-link')).toBeFocused();
 
   await page.keyboard.press('Tab');
+  await expect(viewLink(page, 'links')).toBeFocused();
+
+  await page.keyboard.press('Tab');
   await expect(tab(page, 'who-am-i')).toBeFocused();
 
   await page.keyboard.press('ArrowRight');
-  await expect(tab(page, 'links')).toBeFocused();
-  await page.keyboard.press('ArrowDown');
   await expect(tab(page, 'certifications')).toBeFocused();
+  await page.keyboard.press('ArrowDown');
+  await expect(tab(page, 'projects')).toBeFocused();
   await page.keyboard.press('ArrowUp');
-  await expect(tab(page, 'links')).toBeFocused();
+  await expect(tab(page, 'certifications')).toBeFocused();
+  await page.keyboard.press('ArrowLeft');
+  await expect(tab(page, 'who-am-i')).toBeFocused();
   await page.keyboard.press('ArrowRight');
   await expect(tab(page, 'certifications')).toBeFocused();
   await page.keyboard.press('ArrowRight');
@@ -308,7 +314,7 @@ test('status badge announces the current state and never takes focus', async ({ 
   await subTab(page, 'smiles').click();
   await expectState('[ GAME RUNNING ]');
 
-  await tab(page, 'links').click();
+  await viewLink(page, 'links').click();
   await expectState('[ GAME PAUSED ]');
   await expect(panel(page, 'links')).toBeVisible();
 });
@@ -327,7 +333,7 @@ test('the tab bar moves focus with arrow keys and activates with Enter', async (
     );
   expect(await focusableTabs()).toEqual(['tab-who-am-i']);
 
-  await tab(page, 'links').focus();
+  await tab(page, 'who-am-i').focus();
   await page.keyboard.press('ArrowRight');
   await expect(tab(page, 'certifications')).toBeFocused();
   await expect(page).toHaveURL(/#whoami$/);
@@ -351,12 +357,30 @@ test('the tab bar moves focus with arrow keys and activates with Enter', async (
   await expect(tab(page, 'who-am-i')).toBeFocused();
 
   await page.keyboard.press('ArrowRight');
-  await expect(tab(page, 'links')).toBeFocused();
+  await expect(tab(page, 'certifications')).toBeFocused();
   await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(/#certs$/);
+  await expect(panel(page, 'certifications')).toBeVisible();
+  await expect(tab(page, 'certifications')).toBeFocused();
+  expect(await focusableTabs()).toEqual(['tab-certifications']);
+});
+
+test('the brand row link opens the Links view and marks itself current', async ({ page }) => {
+  await blockEmbed(page);
+  await page.goto('/');
+
+  const link = viewLink(page, 'links');
+  await link.focus();
+  await page.keyboard.press('Enter');
+
   await expect(page).toHaveURL(/#links$/);
   await expect(panel(page, 'links')).toBeVisible();
-  await expect(tab(page, 'links')).toBeFocused();
-  expect(await focusableTabs()).toEqual(['tab-links']);
+  await expect(link).toHaveAttribute('aria-current', 'true');
+  await expect(tab(page, 'who-am-i')).toHaveAttribute('aria-selected', 'false');
+
+  await page.goBack();
+  await expect(page).toHaveURL(/#whoami$/);
+  await expect(link).not.toHaveAttribute('aria-current', 'true');
 });
 
 test('the skip link reaches main content without changing the visible view', async ({ page }) => {
@@ -385,7 +409,7 @@ test('leaving Projects to a non-project tab keeps the project loaded', async ({ 
     window.__radioFrame = document.querySelector('iframe[data-embed-kind="player"]');
   });
 
-  await tab(page, 'links').click();
+  await viewLink(page, 'links').click();
   await expect(loadedFrames(page)).toHaveCount(1);
   await expect(page.locator('[data-on-air]')).toHaveText('[ ON AIR ]');
 
@@ -403,7 +427,7 @@ test('every Links card shows a brand icon', async ({ page }) => {
   await blockEmbed(page);
   await page.goto('/');
 
-  await tab(page, 'links').click();
+  await viewLink(page, 'links').click();
   await expect(panel(page, 'links')).toBeVisible();
   await expect(page.locator('#panel-links .card')).toHaveCount(8);
   await expect(page.locator('#panel-links .card .icon')).toHaveCount(8);
@@ -447,7 +471,7 @@ test('every view has its own hash URL', async ({ page }) => {
   await page.goto('/');
   await expect(page).toHaveURL(/#whoami$/);
 
-  await tab(page, 'links').click();
+  await viewLink(page, 'links').click();
   await expect(page).toHaveURL(/#links$/);
 
   await tab(page, 'certifications').click();
@@ -549,7 +573,7 @@ test('an unknown hash shows the 404 view in place, without a reload', async ({ p
   await page.goBack();
   await expect(page).toHaveURL(/#links$/);
   await expect(panel(page, 'links')).toBeVisible();
-  await expect(tab(page, 'links')).toHaveAttribute('aria-selected', 'true');
+  await expect(viewLink(page, 'links')).toHaveAttribute('aria-current', 'true');
   await expect(page).toHaveTitle('@JoeOfSomeTrades');
 
   expect(await page.evaluate(() => window.__loads)).toBe(1);

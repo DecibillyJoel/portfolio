@@ -24,8 +24,10 @@ export function initRouter(root = document) {
   const tabRoutes = new Map();
   const projectRoutes = new Map();
 
-  for (const link of root.querySelectorAll('[data-tab-target][data-hash]')) {
-    tabRoutes.set(link.dataset.hash, link.dataset.tabTarget);
+  // A tab and a view that sits outside the tab list, such as the Links link in
+  // the brand row, both open a panel by name.
+  for (const link of root.querySelectorAll('[data-tab-target][data-hash], [data-view][data-hash]')) {
+    tabRoutes.set(link.dataset.hash, link.dataset.tabTarget ?? link.dataset.view);
   }
   for (const link of root.querySelectorAll('[data-sub-tab-target][data-hash]')) {
     projectRoutes.set(link.dataset.hash, link.dataset.subTabTarget);

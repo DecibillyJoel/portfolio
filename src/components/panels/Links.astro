@@ -19,35 +19,35 @@ import Icon from '../Icon.astro';
 </section>
 
 <style>
-  .links { padding: 1.625rem 3.75rem 2rem; text-align: center; }
+  .links { padding: 2.4375rem 5.625rem 3rem; text-align: center; }
   ul {
     list-style: none;
     margin: 0 auto;
     padding: 0;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    max-width: 56.25rem;
+    gap: 1.5rem;
+    max-width: 84.375rem;
     text-align: left;
   }
   .card {
     display: flex;
     align-items: center;
-    gap: 0.875rem;
+    gap: 1.3125rem;
     border: 1px solid var(--border);
     background: var(--surface);
-    padding: 1rem 1.125rem;
+    padding: 1.5rem 1.6875rem;
   }
   .card :global(.icon) { color: var(--green); }
   .meta { min-width: 0; }
-  .label { display: block; font-size: 0.6875rem; color: var(--muted); margin-bottom: 0.375rem; }
-  .card a { font-size: 0.875rem; color: var(--green); text-decoration: none; }
+  .label { display: block; font-size: 1rem; color: var(--muted); margin-bottom: 0.5625rem; }
+  .card a { font-size: 1.3125rem; color: var(--green); text-decoration: none; }
   @media (hover: hover) {
     .card a:hover { text-decoration: underline; }
   }
 
   @media (max-width: 899px) {
-    .links { padding: 1rem; }
+    .links { padding: 1.5rem; }
     ul { grid-template-columns: 1fr; }
   }
 </style>
