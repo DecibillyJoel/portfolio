@@ -500,6 +500,7 @@ test('the head carries a canonical link and a full social card', () => {
   const html = readIndex();
   const meta = metaMap(html);
 
+  assert.match(html, new RegExp(`<html lang="${site.lang}">`));
   assert.match(html, new RegExp(`<link rel="canonical" href="${ORIGIN}/">`));
 
   assert.equal(meta['og:type'], 'profile');
@@ -508,9 +509,9 @@ test('the head carries a canonical link and a full social card', () => {
   assert.equal(meta['og:description'], site.description);
   assert.equal(meta['og:url'], `${ORIGIN}/`);
   assert.equal(meta['og:image'], `${ORIGIN}${site.image}`);
-  assert.equal(meta['og:image:type'], 'image/png');
-  assert.equal(meta['og:image:width'], '1200');
-  assert.equal(meta['og:image:height'], '630');
+  assert.equal(meta['og:image:type'], site.imageType);
+  assert.equal(meta['og:image:width'], String(site.imageWidth));
+  assert.equal(meta['og:image:height'], String(site.imageHeight));
   assert.equal(meta['og:image:alt'], site.imageAlt);
 
   assert.equal(meta['twitter:card'], 'summary_large_image');
@@ -520,13 +521,13 @@ test('the head carries a canonical link and a full social card', () => {
   assert.equal(meta['twitter:image:alt'], site.imageAlt);
 });
 
-test('the social card is a real 1200 by 630 png', () => {
+test('the social card is a real png of the declared size', () => {
   const file = join(DIST, site.image.replace(/^\//, ''));
   assert.ok(existsSync(file), 'dist must hold the social card');
   const bytes = readFileSync(file);
   assert.deepEqual([...bytes.subarray(0, 8)], [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
-  assert.equal(bytes.readUInt32BE(16), 1200, 'the card is wide enough for a large preview');
-  assert.equal(bytes.readUInt32BE(20), 630);
+  assert.equal(bytes.readUInt32BE(16), site.imageWidth, 'the card is wide enough for a large preview');
+  assert.equal(bytes.readUInt32BE(20), site.imageHeight);
 });
 
 test('the structured data is one graph of the person, the site and the projects', () => {
@@ -541,12 +542,12 @@ test('the person node carries the profiles, the credentials and the address', ()
 
   assert.equal(person['@id'], `${ORIGIN}/#person`);
   assert.equal(person.name, site.title);
-  assert.equal(person.alternateName, 'JoeOfSomeTrades');
+  assert.equal(person.alternateName, site.title.replace(/^@/, ''));
   assert.equal(person.url, `${ORIGIN}/`);
   assert.equal(person.image, `${ORIGIN}${site.image}`);
   assert.equal(person.email, links.find((link) => link.id === 'email').value);
   assert.equal(person.description, site.description);
-  assert.ok(person.knowsAbout.includes('Game development'));
+  assert.deepEqual(person.knowsAbout, site.topics);
 
   const sameAs = person.sameAs;
   for (const id of ['github', 'youtube', 'x', 'bluesky', 'lastfm', 'discord']) {
@@ -575,6 +576,7 @@ test('the site, the station and the game point back at the person', () => {
 
   assert.equal(byType.WebSite['@id'], `${ORIGIN}/#website`);
   assert.equal(byType.WebSite.url, `${ORIGIN}/`);
+  assert.equal(byType.WebSite.inLanguage, site.lang);
   assert.equal(byType.WebSite.author['@id'], personId);
 
   assert.equal(byType.RadioStation.url, links.find((link) => link.id === 'live365').href);

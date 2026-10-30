@@ -5,16 +5,7 @@ import { projects } from './projects.js';
 
 // The site itself is the `portfolio` project, so that project provides the
 // WebSite node instead of a node of its own.
-const ALTERNATE_NAME = 'JoeOfSomeTrades';
-
-const KNOWS_ABOUT = [
-  'Information technology',
-  'Music',
-  'Audio',
-  'Game design',
-  'Game development',
-  'Internet radio',
-];
+const ALTERNATE_NAME = site.title.replace(/^@/, '');
 
 function findLink(id) {
   return links.find((link) => link.id === id);
@@ -42,7 +33,7 @@ export function buildStructuredData(origin) {
       image: `${root}${site.image}`,
       email: findLink('email')?.value,
       description: site.description,
-      knowsAbout: KNOWS_ABOUT,
+      knowsAbout: site.topics,
       // The radio station is its own node below, so it is not a profile link.
       sameAs: links
         .filter((link) => link.href?.startsWith('http') && link.id !== 'live365')
@@ -61,7 +52,7 @@ export function buildStructuredData(origin) {
       alternateName: site.title,
       url: `${root}/`,
       description: portfolio.blurb,
-      inLanguage: 'en',
+      inLanguage: site.lang,
       author: { '@id': personId },
     },
     {

@@ -22,7 +22,7 @@ const ogImage = new URL(site.image, Astro.site).href;
 const structuredData = buildStructuredData(Astro.site.origin);
 ---
 <!doctype html>
-<html lang="en">
+<html lang={site.lang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content" />
@@ -40,9 +40,9 @@ const structuredData = buildStructuredData(Astro.site.origin);
           <meta property="og:description" content={description} />
           <meta property="og:url" content={canonical} />
           <meta property="og:image" content={ogImage} />
-          <meta property="og:image:type" content="image/png" />
-          <meta property="og:image:width" content="1200" />
-          <meta property="og:image:height" content="630" />
+          <meta property="og:image:type" content={site.imageType} />
+          <meta property="og:image:width" content={String(site.imageWidth)} />
+          <meta property="og:image:height" content={String(site.imageHeight)} />
           <meta property="og:image:alt" content={site.imageAlt} />
           <meta name="twitter:card" content="summary_large_image" />
           <meta name="twitter:title" content={title} />
