@@ -4,9 +4,9 @@ export const projects = [
     hash: 'radio',
     label: 'Maximum Slappage',
     title: 'MAXIMUM SLAPPAGE',
-    tagline: 'live internet radio - rock, and whatever else gets loud',
-    blurbWide: 'The station I run. Tune in from the player. Built for late nights and long drives.',
-    blurbNarrow: 'The station I run. Tune in, and turn it up.',
+    tagline: 'live internet radio - rock, power pop, alternative, adult contemporary, and electronic/dance',
+    blurbWide: 'The station I run. The best classics, the best modern hits, and the best songs you have never heard, all optimized for maximum slappage.',
+    blurbNarrow: 'The station I run. The best classics, the best modern hits, and songs you have never heard.',
     embedKind: 'player',
   },
   {
