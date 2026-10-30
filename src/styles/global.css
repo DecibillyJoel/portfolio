@@ -155,3 +155,29 @@ main > [data-panel='projects']:not([hidden]) {
   left: 8px;
   top: 8px;
 }
+
+/* One line of intro prose under a heading. The certifications view and every
+   project panel share it, so the wording sits in the same measure everywhere. */
+.lede {
+  font-size: 12px;
+  line-height: 1.5;
+  max-width: 520px;
+  margin: 0 auto 14px;
+}
+
+/* Both embeds sit in the same frame: a bordered box on the deep background.
+   The player adds a scale rule, the game adds a size rule. */
+.embed-box {
+  --embed-pad: 8px;
+  --embed-frame: 1px;
+  border: var(--embed-frame) solid var(--border);
+  background: var(--deep);
+  padding: var(--embed-pad);
+  display: inline-block;
+  max-width: 100%;
+}
+.embed-box iframe { display: block; border: 0; }
+
+@media (max-width: 899px) {
+  .embed-box { --embed-pad: 4px; }
+}

@@ -217,7 +217,8 @@ test('player holds both embed sizes and lazy iframes carry no src', () => {
 
 test('player chooses the embed size once, not on resize', () => {
   const js = readDist();
-  assert.match(js, /matchMedia\(\s*[`'"]\(min-width: 900px\)[`'"]\s*\)/);
+  // The query comes from data/player.js, so the numbers are written once.
+  assert.match(js, /matchMedia\(\w+\.wideQuery\)/);
   assert.doesNotMatch(js, /addEventListener\([`'"]resize[`'"]/);
 });
 
@@ -362,9 +363,9 @@ test('the Portfolio project sits between the radio and the game and carries the 
   assert.ok(!panel.includes('iframe'), 'the Portfolio project must carry no embed');
 });
 
-test('every project carries one blurb and no screen-size text swap', () => {
+test('every project carries one intro line and no screen-size text swap', () => {
   const html = readIndex();
-  assert.equal((html.match(/class="blurb"/g) || []).length, 3);
+  assert.equal((html.match(/class="lede"/g) || []).length, 5, 'three projects, the links view and the certifications view');
   assert.ok(!/blurb-narrow|blurb-wide|blurbNarrow|blurbWide/.test(html), 'no narrow or wide blurb class');
   const js = readDist();
   assert.ok(!/blurbNarrow|blurbWide/.test(js), 'no narrow blurb in the bundle');

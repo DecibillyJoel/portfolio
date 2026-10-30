@@ -30,7 +30,7 @@ import { projects } from '../../data/projects.js';
       >
         <h2>{project.title}</h2>
         {project.tagline && <p class="tagline">{project.tagline}</p>}
-        <p class="blurb">{project.blurb}</p>
+        <p class="lede">{project.blurb}</p>
         {project.href && (
           <a
             class="project-link"
@@ -41,14 +41,12 @@ import { projects } from '../../data/projects.js';
         )}
         {project.embedKind === 'player' && <Player />}
         {project.embedKind === 'iframe' && (
-          <div class="game">
+          <div class="game embed-box">
             <iframe
               data-embed
               data-embed-kind="iframe"
               data-loaded="false"
               data-src={project.embed}
-              width="800"
-              height="450"
               title={project.embedTitle}
             ></iframe>
           </div>
@@ -114,7 +112,6 @@ import { projects } from '../../data/projects.js';
     margin: 0 0 6px;
   }
   .tagline { font-size: 13px; color: var(--muted); margin: 0 0 12px; }
-  .blurb { font-size: 12px; line-height: 1.5; max-width: 520px; margin: 0 0 14px; }
   .project-link { font-size: 12px; color: var(--green); margin: 0 0 14px; }
   @media (hover: hover) {
     .project-link:hover {
@@ -123,26 +120,19 @@ import { projects } from '../../data/projects.js';
     }
   }
   .empty { padding: 48px 22px; text-align: center; color: var(--muted); font-size: 13px; }
-  .game {
-    border: 1px solid var(--border);
-    background: var(--deep);
-    padding: 8px;
-    display: inline-block;
-    max-width: 100%;
-  }
+  /* The frame comes from .embed-box. The game keeps its own shape: a 16 by 9
+     box that fills the panel until it reaches this width. */
+  .game { --game-width: 760px; }
   .game iframe {
-    display: block;
-    width: 760px;
+    width: var(--game-width);
     max-width: 100%;
     height: auto;
     aspect-ratio: 16 / 9;
-    border: 0;
   }
 
   @media (max-width: 899px) {
     .project { padding: 14px 16px; }
     h2 { font-size: 18px; }
     .tagline { font-size: 11px; margin-bottom: 10px; }
-    .game { padding: 4px; }
   }
 </style>

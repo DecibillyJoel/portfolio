@@ -1,4 +1,5 @@
 import { initTablistKeys, setRovingTabindex } from './tablist.js';
+import { player } from '../data/player.js';
 
 const FOCUS_POLL_MS = 200;
 
@@ -87,12 +88,11 @@ export function initProjects(root = document) {
     const frame = panel.querySelector('iframe[data-embed]');
     if (!frame || frame.dataset.loaded === 'true') return;
     if (frame.dataset.embedKind === 'player') {
-      const wide = window.matchMedia('(min-width: 900px)').matches;
-      frame.width = wide ? '800' : '300';
-      frame.height = wide ? '296' : '614';
-      frame.src = wide ? frame.dataset.srcXl : frame.dataset.srcSm;
-      const wrap = frame.closest('.player');
-      if (wrap) wrap.dataset.embedSize = wide ? 'xl' : 'sm';
+      const layout = window.matchMedia(player.wideQuery).matches ? 'xl' : 'sm';
+      const size = player.sizes[layout];
+      frame.width = String(size.width);
+      frame.height = String(size.height);
+      frame.src = layout === 'xl' ? frame.dataset.srcXl : frame.dataset.srcSm;
     } else {
       frame.src = frame.dataset.src;
     }

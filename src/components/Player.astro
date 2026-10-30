@@ -1,41 +1,19 @@
 ---
-const STATION = 'a57727';
-const BASE = `https://live365.com/embeds/v1/player/${STATION}`;
-const xl = `${BASE}?s=xl&m=dark&c=aac`;
-const sm = `${BASE}?s=sm&m=dark&c=aac`;
+import { player } from '../data/player.js';
+
+const base = `https://live365.com/embeds/v1/player/${player.station}`;
+const params = 'm=dark&c=aac';
+const { xl } = player.sizes;
 ---
-<div class="player">
+<div class="player embed-box">
   <iframe
     data-embed
     data-embed-kind="player"
     data-loaded="false"
-    data-src-xl={xl}
-    data-src-sm={sm}
-    width="800"
-    height="296"
+    data-src-xl={`${base}?s=xl&${params}`}
+    data-src-sm={`${base}?s=sm&${params}`}
+    width={xl.width}
+    height={xl.height}
     title="Maximum Slappage player"
   ></iframe>
 </div>
-
-<style>
-  .player {
-    border: 1px solid var(--border);
-    background: var(--deep);
-    padding: 8px;
-    display: inline-block;
-  }
-  iframe { display: block; border: 0; }
-
-  @media (max-width: 899px) {
-    .player[data-embed-size='xl'] {
-      max-width: 100%;
-      overflow: hidden;
-      height: calc((100vw - 42px) * 296 / 800 + 10px);
-    }
-    .player[data-embed-size='xl'] iframe {
-      transform: scale(calc((100vw - 42px) / 800px));
-      transform-origin: top left;
-    }
-    .player { padding: 4px; }
-  }
-</style>
