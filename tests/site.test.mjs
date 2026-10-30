@@ -52,7 +52,7 @@ test('exactly one panel starts visible', () => {
 
 test('Who Am I carries the three approved paragraphs', () => {
   const html = readIndex();
-  assert.match(html, /I'm a music, audio, and game design enthusiast\./);
+  assert.match(html, /I'm an enthusiast of all things IT, music, audio, and game design and development\./);
   assert.match(html, /I've built many personal game dev and programming projects over the years, driven by my own interests\./);
   assert.match(html, /I'm now using those skills and interests to bring power and togetherness to indie artists and creators\./);
 });
@@ -97,7 +97,7 @@ test('Certifications lists four credentials with dates and official pages', () =
   }
   assert.equal((panel.match(/<h3[\s>]/g) || []).length, 4);
   // The LinkedIn note is prose on the page, but LinkedIn itself must not be linked.
-  assert.match(panel, /They are on my LinkedIn profile/);
+  assert.match(panel, /The credential links are omitted from here, but you can find them on my LinkedIn page\./);
   assert.doesNotMatch(panel, /href="https?:\/\/(www\.)?linkedin\.com/);
 });
 

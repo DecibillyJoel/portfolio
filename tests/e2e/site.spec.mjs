@@ -354,7 +354,7 @@ test('every Certification card shows its issuer, dates, and an official page', a
 
   // The credential links live on LinkedIn, but the page must not link to it.
   await expect(page.locator('#panel-certifications a[href*="linkedin"]')).toHaveCount(0);
-  await expect(panel(page, 'certifications')).toContainText('They are on my LinkedIn profile');
+  await expect(panel(page, 'certifications')).toContainText('you can find them on my LinkedIn page');
 });
 
 test('every view has its own hash URL', async ({ page }) => {
