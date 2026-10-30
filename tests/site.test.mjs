@@ -309,3 +309,10 @@ test('tablists use roving tabindex, arrow keys, and paired roles', () => {
   assert.match(js, /tabIndex/);
   assert.match(js, /new Set\(\[[`'"]main[`'"]\]\)/);
 });
+
+test('the embed wrappers carry the focus ring attribute', () => {
+  const js = readDist();
+  assert.match(js, /\[data-embed-focus[^\]]*\]/);
+  assert.match(js, /outline: ?2px solid var\(--magenta\)/);
+  assert.match(js, /dataset\.embedFocus/);
+});

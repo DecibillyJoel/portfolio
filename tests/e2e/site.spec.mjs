@@ -10,6 +10,30 @@ async function blockEmbed(page) {
   await page.route(/decibillyjoel\.github\.io/, (route) => route.abort());
 }
 
+// A stub keeps the focus tests offline. It stays cross-origin, and its focusable
+// canvas keeps the frame in the parent tab order the way the real embeds do.
+const EMBED_STUB =
+  '<!doctype html><html lang="en"><body><canvas tabindex="0"></canvas></body></html>';
+
+async function stubEmbed(page) {
+  await page.route(/live365\.com|decibillyjoel\.github\.io/, (route) =>
+    route.fulfill({ status: 200, contentType: 'text/html', body: EMBED_STUB }),
+  );
+}
+
+async function tabIntoEmbed(page, selector) {
+  await page.evaluate(() => document.getElementById('main')?.focus());
+  for (let i = 0; i < 6; i += 1) {
+    await page.keyboard.press('Tab');
+    const inside = await page.evaluate(
+      (sel) => document.activeElement === document.querySelector(sel),
+      selector,
+    );
+    if (inside) return true;
+  }
+  return false;
+}
+
 test('viewport below 320px does not scroll sideways', async ({ page }) => {
   await blockEmbed(page);
   await page.setViewportSize({ width: 319, height: 700 });
@@ -441,4 +465,50 @@ test('an unknown path returns a 404 page with links back to the views', async ({
   await page.locator('.routes a', { hasText: 'Projects' }).click();
   await expect(page).toHaveURL(/#projects$/);
   await expect(panel(page, 'projects')).toBeVisible();
+});
+
+test('the game frame shows the site focus ring for keyboard focus only', async ({ page }) => {
+  await stubEmbed(page);
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await page.goto('/#game');
+  await expect(loadedFrames(page)).toHaveCount(1);
+
+  const frame = page.locator('#project-smiles iframe');
+  const wrap = page.locator('#project-smiles .game');
+  await expect(wrap).toHaveAttribute('data-embed-focus', 'false');
+
+  expect(await tabIntoEmbed(page, '#project-smiles iframe')).toBe(true);
+  await expect(wrap).toHaveAttribute('data-embed-focus', 'true');
+  expect(
+    await wrap.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return `${style.outlineStyle} ${style.outlineWidth} ${style.outlineColor}`;
+    }),
+  ).toBe('solid 2px rgb(255, 47, 208)');
+
+  // A mouse click in the page drops the ring, and a later mouse click into the
+  // game does not bring it back, because no keyboard reached the frame.
+  await page.locator('#project-smiles h2').click();
+  await expect(wrap).toHaveAttribute('data-embed-focus', 'false');
+
+  const box = await frame.boundingBox();
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  expect(await page.evaluate(() => document.activeElement.tagName)).toBe('IFRAME');
+  await expect(wrap).toHaveAttribute('data-embed-focus', 'false');
+
+  expect(await tabIntoEmbed(page, '#project-smiles iframe')).toBe(true);
+  await expect(wrap).toHaveAttribute('data-embed-focus', 'true');
+});
+
+test('the radio player uses the same focus ring', async ({ page }) => {
+  await stubEmbed(page);
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await page.goto('/#radio');
+  await expect(loadedFrames(page)).toHaveCount(1);
+
+  const wrap = page.locator('#project-maximum-slappage .player');
+  await expect(wrap).toHaveAttribute('data-embed-focus', 'false');
+
+  expect(await tabIntoEmbed(page, '#project-maximum-slappage iframe')).toBe(true);
+  await expect(wrap).toHaveAttribute('data-embed-focus', 'true');
 });

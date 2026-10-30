@@ -21,7 +21,10 @@ body {
 
 [data-panel][hidden] { display: none; }
 
-:focus-visible {
+/* The embed wrappers carry the same ring. A frame element never matches
+   :focus in its parent, so scripts/projects.js sets the attribute instead. */
+:focus-visible,
+[data-embed-focus='true'] {
   outline: 2px solid var(--magenta);
   outline-offset: 2px;
 }

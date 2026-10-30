@@ -1,5 +1,7 @@
 import { initTablistKeys, setRovingTabindex } from './tablist.js';
 
+const FOCUS_POLL_MS = 200;
+
 export function initProjects(root = document) {
   const buttons = [...root.querySelectorAll('[data-sub-tab-target]')];
   const panels = [...root.querySelectorAll('[data-project]')];
@@ -18,6 +20,32 @@ export function initProjects(root = document) {
   function isLoaded(panel) {
     const frame = panel?.querySelector('iframe[data-embed]');
     return frame?.dataset.loaded === 'true';
+  }
+
+  // A frame element never matches :focus in its parent, so the parent cannot
+  // style the ring with a pseudo-class. Watch activeElement instead. The ring
+  // mirrors :focus-visible: it shows only when the keyboard brought focus in.
+  let keyboardInput = true;
+  let focusTimer = null;
+
+  function syncEmbedFocus() {
+    const active = root.activeElement ?? document.activeElement;
+    for (const frame of root.querySelectorAll('iframe[data-embed]')) {
+      const wrap = frame.closest('.player, .game');
+      if (wrap) wrap.dataset.embedFocus = String(keyboardInput && active === frame);
+    }
+  }
+
+  function startFocusWatch() {
+    if (focusTimer === null) focusTimer = setInterval(syncEmbedFocus, FOCUS_POLL_MS);
+    syncEmbedFocus();
+  }
+
+  function stopFocusWatch() {
+    if (panels.some(isLoaded)) return;
+    if (focusTimer !== null) clearInterval(focusTimer);
+    focusTimer = null;
+    syncEmbedFocus();
   }
 
   function syncBadge() {
@@ -46,6 +74,7 @@ export function initProjects(root = document) {
     if (!frame || frame.dataset.loaded !== 'true') return;
     frame.dataset.loaded = 'false';
     frame.src = 'about:blank';
+    stopFocusWatch();
   }
 
   function mount(panel) {
@@ -62,6 +91,7 @@ export function initProjects(root = document) {
       frame.src = frame.dataset.src;
     }
     frame.dataset.loaded = 'true';
+    startFocusWatch();
   }
 
   function show(id) {
@@ -87,7 +117,12 @@ export function initProjects(root = document) {
   initTablistKeys(list, buttons);
   setRovingTabindex(buttons, buttons[0]);
   root.addEventListener('tabs:change', syncBadge);
+  root.addEventListener('keydown', () => { keyboardInput = true; }, true);
+  root.addEventListener('pointerdown', () => { keyboardInput = false; }, true);
+  window.addEventListener('blur', syncEmbedFocus);
+  window.addEventListener('focus', syncEmbedFocus);
   syncBadge();
+  syncEmbedFocus();
 
   return { show, syncBadge };
 }
