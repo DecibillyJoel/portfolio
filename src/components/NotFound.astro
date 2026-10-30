@@ -23,17 +23,17 @@ const { prefix = '/' } = Astro.props;
 
 <style>
   .not-found {
-    padding: 48px 22px;
-    max-width: 720px;
+    padding: 3rem 1.375rem;
+    max-width: 45rem;
   }
   p {
     color: var(--muted);
-    margin: 0 0 22px;
+    margin: 0 0 1.375rem;
   }
   .routes {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px 22px;
+    gap: 0.625rem 1.375rem;
     list-style: none;
     margin: 0;
     padding: 0;
@@ -42,7 +42,7 @@ const { prefix = '/' } = Astro.props;
     color: var(--green);
     text-decoration: none;
     border-bottom: 1px solid var(--border);
-    padding-bottom: 2px;
+    padding-bottom: 0.125rem;
   }
   /* The prompt is decoration, so it stays out of the link name. */
   .routes .prompt {
@@ -51,12 +51,11 @@ const { prefix = '/' } = Astro.props;
   @media (hover: hover) {
     .routes a:hover {
       border-bottom-color: var(--green);
-      text-shadow: 0 0 6px var(--hover-glow-color);
     }
   }
   @media (max-width: 899px) {
     .not-found {
-      padding: 32px 16px;
+      padding: 2rem 1rem;
     }
   }
 </style>

@@ -37,7 +37,7 @@
     display: none;
     align-items: center;
     justify-content: center;
-    padding: 4px 5px;
+    padding: 0.25rem 0.3125rem;
     color: var(--green);
     background: none;
     font: inherit;
@@ -52,7 +52,7 @@
 
   /* One icon shows at a time. The icon follows the attribute on the root
      element, so it is correct before any script runs. */
-  .theme-toggle svg { display: none; width: 16px; height: 16px; }
+  .theme-toggle svg { display: none; width: 1rem; height: 1rem; }
 
   :global(html:not([data-theme-pref])) .theme-toggle svg[data-theme-icon='auto'],
   :global(html[data-theme-pref='light']) .theme-toggle svg[data-theme-icon='light'],

@@ -7,19 +7,26 @@
   --muted: #5d8a63;
   --border: #1f3a24;
   --hover: #2fd413;
-  --hover-glow-color: #39ff1466;
   --scroll-track: #0c1410;
   --header: #0d1a10;
   --surface: #0b120d;
   --deep: #060906;
   --dim: #2c5a33;
-  --glow-green: #39ff1488;
-  --glow-green-strong: #39ff14cc;
-  --glow-magenta: #ff2fd088;
-  --glow-magenta-soft: #ff2fd0aa;
+  /* The one dial for every size on the page. Every rem value below is the size
+     at 1.0, so the browser default of 16px is the reference point: at 1.5, text
+     that was 12px draws at 18px. The root rule multiplies the reader's own
+     default size instead of replacing it. */
+  --type-scale: 1.5;
   /* Space under a panel heading. */
-  --heading-gap: 8px;
-  --heading-gap-tight: 6px;
+  --heading-gap: 0.5rem;
+  --heading-gap-tight: 0.375rem;
+  /* The two bars. The sub-tab bar sits one step below the header bar, so the eye
+     reads top down: smaller type and a shorter bar. */
+  --bar-pad-x: 1.375rem;
+  --header-pad-y: 0.75rem;
+  --subtab-pad-y: 0.5rem;
+  --fs-tab: 0.8125rem;
+  --fs-subtab: 0.75rem;
   --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
@@ -38,16 +45,11 @@
     --muted: light-dark(#3f6b48, #5d8a63);
     --border: light-dark(#b9cfba, #1f3a24);
     --hover: light-dark(#1c8a2c, #2fd413);
-    --hover-glow-color: light-dark(transparent, #39ff1466);
     --scroll-track: light-dark(#d7e8d3, #0c1410);
     --header: light-dark(#eff7ec, #0d1a10);
     --surface: light-dark(#f7fbf5, #0b120d);
     --deep: light-dark(#dcebd9, #060906);
     --dim: light-dark(#9db89f, #2c5a33);
-    --glow-green: light-dark(transparent, #39ff1488);
-    --glow-green-strong: light-dark(transparent, #39ff14cc);
-    --glow-magenta: light-dark(transparent, #ff2fd088);
-    --glow-magenta-soft: light-dark(transparent, #ff2fd0aa);
   }
 
   /* The toggle writes this. Pinning the scheme changes the icons and the
@@ -82,8 +84,10 @@ body {
 
 /* Scrollbars take the theme colours. scrollbar-color is inherited, so one rule
    covers every scroll area on the page. The width stays at the platform
-   default: `thin` draws a wider bar than the default on Linux Chromium. */
+   default: `thin` draws a wider bar than the default on Linux Chromium. The
+   font-size dial sits here too: one number scales every rem value on the page. */
 html {
+  font-size: calc(100% * var(--type-scale));
   scrollbar-color: var(--muted) var(--scroll-track);
 }
 
@@ -151,20 +155,20 @@ main > [data-panel='projects']:not([hidden]) {
   background: var(--bg);
   color: var(--green);
   border: 1px solid var(--green);
-  padding: 8px 14px;
-  font-size: 13px;
+  padding: 0.5rem 0.875rem;
+  font-size: 0.8125rem;
   text-decoration: none;
 }
 
 .skip-link:focus {
-  left: 8px;
-  top: 8px;
+  left: 0.5rem;
+  top: 0.5rem;
 }
 
 /* One heading style for every view. The heading sits close to the line under
    it, and closer still to a tagline, where the two lines read as one block. */
 .heading {
-  font-size: 26px;
+  font-size: 1.625rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   color: var(--magenta);
@@ -177,16 +181,16 @@ main > [data-panel='projects']:not([hidden]) {
 /* One line of intro prose under a heading. The certifications view and every
    project panel share it, so the wording sits in the same measure everywhere. */
 .lede {
-  font-size: 12px;
-  line-height: 1.5;
-  max-width: 520px;
-  margin: 0 auto 14px;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  max-width: 32.5rem;
+  margin: 0 auto 0.875rem;
 }
 
 /* Both embeds sit in the same frame: a bordered box on the deep background.
    The player adds a scale rule, the game adds a size rule. */
 .embed-box {
-  --embed-pad: 8px;
+  --embed-pad: 0.5rem;
   --embed-frame: 1px;
   border: var(--embed-frame) solid var(--border);
   background: var(--deep);
@@ -197,6 +201,6 @@ main > [data-panel='projects']:not([hidden]) {
 .embed-box iframe { display: block; border: 0; }
 
 @media (max-width: 899px) {
-  .heading { font-size: 18px; }
-  .embed-box { --embed-pad: 4px; }
+  .heading { font-size: 1.125rem; }
+  .embed-box { --embed-pad: 0.25rem; }
 }

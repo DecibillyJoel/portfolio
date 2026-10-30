@@ -891,7 +891,9 @@ test('neither theme scrolls the document at 1280x720 or 390x844', async ({ page 
       const note = JSON.stringify({ scheme, size, m });
       expect(m.scrollWidth, note).toBe(m.viewportWidth);
       expect(m.scrollHeight, note).toBe(m.viewportHeight);
-      if (size.width === 390) expect(m.headerHeight, note).toBe(88);
+      // The header is three rows at this width once the type is large, so the
+      // guard is a share of the screen rather than a pixel height.
+      if (size.width === 390) expect(m.headerHeight, note).toBeLessThan(m.viewportHeight / 3);
     }
   }
 });
@@ -936,4 +938,27 @@ test('the browser chrome colour follows the page colour in both themes', async (
   await page.click('[data-theme-toggle]');
   await expect.poll(() => bodyBackground(page)).toBe(LIGHT_BG);
   await expect.poll(metaColor).toBe(LIGHT_BG);
+});
+
+test('the sub-tab bar reads as the second level of chrome', async ({ page }) => {
+  await blockEmbed(page);
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await page.goto('/#portfolio');
+
+  const m = await page.evaluate(() => {
+    const height = (el) => Math.round(el.getBoundingClientRect().height);
+    const sub = document.querySelector('#panel-projects .sub-tabs a');
+    return {
+      header: height(document.querySelector('.site-header')),
+      bar: height(document.querySelector('#panel-projects .sub-tabs')),
+      tabFont: parseFloat(getComputedStyle(document.querySelector('.tab-bar a')).fontSize),
+      subFont: parseFloat(getComputedStyle(sub).fontSize),
+      subTarget: height(sub),
+      subColor: getComputedStyle(sub).color,
+    };
+  });
+
+  expect(m.bar, JSON.stringify(m)).toBeLessThan(m.header);
+  expect(m.subFont, JSON.stringify(m)).toBeLessThan(m.tabFont);
+  expect(m.subTarget, 'a sub-tab keeps a 24px pointer target').toBeGreaterThanOrEqual(24);
 });

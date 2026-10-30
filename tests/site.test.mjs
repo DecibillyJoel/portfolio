@@ -731,3 +731,41 @@ test('an icon name that is not in the set stops the build', () => {
   assert.match(source, /throw new Error/);
   assert.match(source, /icons\[id\]/);
 });
+
+test('one dial sets every size on the page', () => {
+  const html = readIndex();
+  assert.match(html, /--type-scale:[\d.]+/, 'the dial is in the token layer');
+  assert.match(
+    html,
+    /html\{font-size:calc\(100% \* var\(--type-scale\)\)/,
+    'the root font size is the dial times the reader default',
+  );
+  const inPx = [...html.matchAll(/font-size:(-?[\d.]+)px/g)].map((m) => m[1]);
+  assert.deepEqual(inPx, [], `these sizes are still pinned to px: ${inPx.join(', ')}`);
+  for (const knob of ['--fs-tab', '--fs-subtab', '--subtab-pad-y', '--header-pad-y', '--bar-pad-x']) {
+    assert.ok(html.includes(knob), `${knob} stays tunable from the token layer`);
+  }
+});
+
+test('nothing on the page carries a text glow', () => {
+  const dist = readDist();
+  assert.ok(!dist.includes('text-shadow'), 'no text-shadow is left anywhere');
+  for (const token of [
+    '--glow-green',
+    '--glow-green-strong',
+    '--glow-magenta',
+    '--glow-magenta-soft',
+    '--hover-glow-color',
+  ]) {
+    assert.ok(!dist.includes(token), `${token} was removed with its last user`);
+  }
+});
+
+test('the sub-tabs wear the same colour ramp as the tabs above them', () => {
+  const html = readIndex();
+  assert.match(html, /\.sub-tabs\[[^\]]*\] a\[[^\]]*\]\{[^}]*color:var\(--muted\)/);
+  assert.match(html, /\.sub-tabs\[[^\]]*\] a\[[^\]]*\]\[aria-selected=true\]\{color:var\(--green\)\}/);
+  assert.match(html, /\.sub-tabs\[[^\]]*\] a\[[^\]]*\]:hover\{color:var\(--hover\)\}/);
+  assert.match(html, /\.sub-tabs\[[^\]]*\] a\[[^\]]*\]\{[^}]*border:0/, 'the pill outline is gone');
+  assert.ok(!/\.sub-tabs[^{]*\{[^}]*var\(--magenta\)/.test(html), 'no magenta is left on the sub-tabs');
+});
