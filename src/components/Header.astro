@@ -31,13 +31,17 @@ const links = views.find((view) => view.id === 'links');
   {tabs && <span class="divider" aria-hidden="true" />}
   {tabs && <TabBar />}
   {
-    status && (
-      <span class="on-air" data-on-air data-state="off" role="status"
-        ><span aria-hidden="true">[</span> <span data-on-air-text>OFF AIR</span> <span aria-hidden="true">]</span></span
-      >
+    status ? (
+      <div class="status">
+        <span class="on-air" data-on-air data-state="off" role="status"
+          ><span aria-hidden="true">[</span> <span data-on-air-text>OFF AIR</span> <span aria-hidden="true">]</span></span
+        >
+        <ThemeToggle />
+      </div>
+    ) : (
+      <ThemeToggle />
     )
   }
-  <ThemeToggle />
 </header>
 
 <style>
@@ -82,7 +86,6 @@ const links = views.find((view) => view.id === 'links');
     background: var(--border);
   }
   .on-air {
-    margin-left: auto;
     background: none;
     font: inherit;
     font-size: 1rem;
@@ -94,8 +97,17 @@ const links = views.find((view) => view.id === 'links');
   .on-air[data-state='on-air'],
   .on-air[data-state='running'] { color: var(--green); }
 
-  /* The badge takes the free space. Without it, the control does. */
-  :global(.theme-toggle) { margin-left: 0.75rem; }
+  /* The badge and the toggle travel together at the right edge of the top row,
+     and they claim the free space, so they never move down on their own. */
+  .status {
+    display: flex;
+    align-items: center;
+    flex: none;
+    gap: 0.75rem;
+    margin-left: auto;
+  }
+  /* The 404 header carries neither the tabs nor the badge, so the toggle takes
+     the free space itself. */
   .site-header[data-slim] :global(.theme-toggle) { margin-left: auto; }
 
   @media (hover: hover) {
@@ -103,9 +115,15 @@ const links = views.find((view) => view.id === 'links');
     .brand-link[aria-current='true']:hover { color: var(--green); }
   }
 
-  @media (max-width: 899px) {
-    .site-header { padding: 0.9375rem 1.5rem; gap: 0.9375rem 1.3125rem; }
+  /* The tabs give way before the status pair does. Once the handle, the tabs
+     and the pair no longer fit on one line, the tabs take a row of their own. */
+  @media (max-width: 1099px) {
+    :global(.tab-bar) { order: 9; flex: 1 1 100%; }
     /* A hairline between two stacked rows reads as noise. */
     .divider { display: none; }
+  }
+
+  @media (max-width: 899px) {
+    .site-header { padding: 0.9375rem 1.5rem; gap: 0.9375rem 1.3125rem; }
   }
 </style>

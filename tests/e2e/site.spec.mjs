@@ -986,3 +986,47 @@ test('the sub-tab bar reads as the second level of chrome', async ({ page }) => 
   expect(m.subFont, JSON.stringify(m)).toBeLessThan(m.tabFont);
   expect(m.subTarget, 'a sub-tab keeps a 24px pointer target').toBeGreaterThanOrEqual(24);
 });
+
+// The status pair used to wrap onto its own line at any width under about
+// 1023px, and on a phone the tab grid pushed it further down still. The badge
+// and the toggle now hold their place and the tab bar drops a line instead.
+test('the status pair keeps its row and the tab bar gives way instead', async ({ page }) => {
+  await blockEmbed(page);
+
+  const measure = async (width) => {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto('/#radio');
+    await expect(panel(page, 'projects')).toBeVisible();
+    return page.evaluate(() => {
+      const box = (sel) => {
+        const rect = document.querySelector(sel).getBoundingClientRect();
+        return { top: Math.round(rect.top), right: Math.round(rect.right) };
+      };
+      return {
+        badge: box('.on-air'),
+        toggle: box('.theme-toggle'),
+        bar: box('.tab-bar'),
+        scrollW: document.documentElement.scrollWidth,
+        vw: window.innerWidth,
+      };
+    });
+  };
+
+  for (const width of [1280, 1100, 1099, 985, 900, 899, 700, 520, 430, 390, 320]) {
+    const m = await measure(width);
+    // The badge and the toggle never separate.
+    expect(Math.abs(m.badge.top - m.toggle.top), `badge and toggle at ${width}`).toBeLessThanOrEqual(8);
+    // The badge sits on the tabs' row or above it, never below the tabs.
+    expect(m.badge.top, `the badge against the tab bar at ${width}`).toBeLessThanOrEqual(m.bar.top + 4);
+    expect(m.scrollW, `sideways scroll at ${width}`).toBe(m.vw);
+    expect(m.badge.right, `the badge stays inside ${width}`).toBeLessThanOrEqual(m.vw);
+  }
+
+  // Wide enough for one row, so the tabs share the row with the status pair.
+  const wide = await measure(1280);
+  expect(Math.abs(wide.bar.top - wide.badge.top)).toBeLessThanOrEqual(20);
+
+  // Too narrow for that row, so the tabs take a line of their own below it.
+  const narrow = await measure(985);
+  expect(narrow.bar.top).toBeGreaterThan(narrow.badge.top + 20);
+});
