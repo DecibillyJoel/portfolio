@@ -5,14 +5,42 @@ export function initProjects(root = document) {
 
   const empty = root.querySelector('[data-project-empty]');
   const badge = root.querySelector('[data-on-air]');
+  const projectsPanel = root.querySelector('[data-panel="projects"]');
   const radioPanel = panels.find((panel) => panel.dataset.project === 'maximum-slappage');
+  const gamePanel = panels.find((panel) => {
+    const frame = panel.querySelector('iframe[data-embed]');
+    return frame?.dataset.embedKind === 'iframe';
+  });
+
+  function isLoaded(panel) {
+    const frame = panel?.querySelector('iframe[data-embed]');
+    return frame?.dataset.loaded === 'true';
+  }
 
   function syncBadge() {
-    if (!badge || !radioPanel) return;
-    const frame = radioPanel.querySelector('iframe[data-embed]');
-    const live = frame?.dataset.loaded === 'true';
-    badge.textContent = live ? '[ ON AIR ]' : '[ OFF AIR ]';
-    badge.dataset.state = live ? 'on' : 'off';
+    if (!badge) return;
+    const playing = isLoaded(gamePanel);
+    const onAir = isLoaded(radioPanel);
+    const onProjects = projectsPanel ? !projectsPanel.hidden : true;
+
+    let state = 'off';
+    let label = '[ OFF AIR ]';
+    let clickable = false;
+
+    if (playing) {
+      state = onProjects ? 'playing' : 'paused';
+      label = onProjects ? '[ GAME PLAYING ]' : '[ GAME PAUSED ]';
+      clickable = !onProjects;
+    } else if (onAir) {
+      state = 'on-air';
+      label = '[ ON AIR ]';
+      clickable = true;
+    }
+
+    badge.textContent = label;
+    badge.dataset.state = state;
+    badge.dataset.clickable = String(clickable);
+    badge.disabled = !clickable;
   }
 
   function unload(panel) {
@@ -58,6 +86,14 @@ export function initProjects(root = document) {
   for (const button of buttons) {
     button.addEventListener('click', () => show(button.dataset.subTabTarget));
   }
+
+  if (badge) {
+    badge.addEventListener('click', () => {
+      if (badge.disabled) return;
+      root.querySelector('[data-tab-target="projects"]')?.click();
+    });
+  }
+  root.addEventListener('tabs:change', syncBadge);
 
   syncBadge();
 }

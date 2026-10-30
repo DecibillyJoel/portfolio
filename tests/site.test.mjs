@@ -79,13 +79,20 @@ test('live links point at the approved URLs', () => {
   assert.match(html, /href="https:\/\/discord\.com\/users\/152963830350217217"/);
 });
 
-test('header merges the brand, tabs, and an ON AIR status badge', () => {
+test('header merges the brand, tabs, and a status badge button', () => {
   const html = readIndex();
   const header = html.match(/<header[\s\S]*?<\/header>/)?.[0] ?? '';
   assert.match(header, /@JoeOfSomeTrades/);
   assert.match(header, /data-tab-target="projects"/);
-  assert.match(header, /<span[^>]*data-on-air[^>]*>\s*\[ OFF AIR \]/);
-  assert.doesNotMatch(header, /data-goto-tab|<button[^>]*on-air/);
+  assert.match(header, /<button[^>]*data-on-air[^>]*data-state="off"[^>]*disabled[^>]*>\s*\[ OFF AIR \]/);
+});
+
+test('the status badge knows all four states and reacts to tab changes', () => {
+  const js = readDist();
+  for (const label of ['[ OFF AIR ]', '[ ON AIR ]', '[ GAME PLAYING ]', '[ GAME PAUSED ]']) {
+    assert.ok(js.includes(label), `missing ${label}`);
+  }
+  assert.match(js, /tabs:change/);
 });
 
 test('projects expose two sub-tabs and two lazy project blocks', () => {

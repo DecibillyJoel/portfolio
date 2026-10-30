@@ -182,17 +182,57 @@ test('only one project embed is loaded at a time', async ({ page }) => {
   await expect(page.locator('[data-project="maximum-slappage"]')).toBeVisible();
 });
 
-test('ON AIR reports the radio embed load state', async ({ page }) => {
+test('status badge tracks the radio and game embeds', async ({ page }) => {
   await blockEmbed(page);
   await page.goto('/');
-  await expect(page.locator('[data-on-air]')).toHaveText('[ OFF AIR ]');
+  const badge = page.locator('[data-on-air]');
+  await expect(badge).toHaveText('[ OFF AIR ]');
+  await expect(badge).toBeDisabled();
 
   await tab(page, 'projects').click();
+  await expect(badge).toHaveText('[ OFF AIR ]');
+
   await subTab(page, 'maximum-slappage').click();
-  await expect(page.locator('[data-on-air]')).toHaveText('[ ON AIR ]');
+  await expect(badge).toHaveText('[ ON AIR ]');
+  await expect(badge).toBeEnabled();
 
   await subTab(page, 'smiles').click();
-  await expect(page.locator('[data-on-air]')).toHaveText('[ OFF AIR ]');
+  await expect(badge).toHaveText('[ GAME PLAYING ]');
+  await expect(badge).toBeDisabled();
+
+  await tab(page, 'links').click();
+  await expect(badge).toHaveText('[ GAME PAUSED ]');
+  await expect(badge).toBeEnabled();
+
+  await page.evaluate(() => {
+    window.__gameFrame = document.querySelector('iframe[data-embed-kind="iframe"]');
+  });
+  await badge.click();
+  await expect(panel(page, 'projects')).toBeVisible();
+  await expect(badge).toHaveText('[ GAME PLAYING ]');
+  await expect(subTab(page, 'smiles')).toHaveAttribute('aria-selected', 'true');
+  const same = await page.evaluate(
+    () => document.querySelector('iframe[data-embed-kind="iframe"]') === window.__gameFrame,
+  );
+  expect(same).toBe(true);
+});
+
+test('clicking the ON AIR badge returns to the radio', async ({ page }) => {
+  await blockEmbed(page);
+  await page.goto('/');
+  await tab(page, 'projects').click();
+  await subTab(page, 'maximum-slappage').click();
+  const badge = page.locator('[data-on-air]');
+  await expect(badge).toHaveText('[ ON AIR ]');
+
+  await tab(page, 'who-am-i').click();
+  await expect(panel(page, 'who-am-i')).toBeVisible();
+  await expect(badge).toHaveText('[ ON AIR ]');
+  await badge.click();
+
+  await expect(panel(page, 'projects')).toBeVisible();
+  await expect(subTab(page, 'maximum-slappage')).toHaveAttribute('aria-selected', 'true');
+  await expect(loadedFrames(page)).toHaveCount(1);
 });
 
 test('leaving Projects to a non-project tab keeps the project loaded', async ({ page }) => {

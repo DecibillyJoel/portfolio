@@ -13,6 +13,7 @@ export function initTabs(root = document) {
       button.setAttribute('aria-selected', String(active));
       if (active && moveFocus) button.focus();
     }
+    root.dispatchEvent(new CustomEvent('tabs:change', { detail: { tab: id } }));
   }
 
   for (const button of buttons) {
