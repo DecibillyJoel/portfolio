@@ -326,7 +326,8 @@ test('the Portfolio project sits between the radio and the game and carries the 
   assert.deepEqual(subTabOrder, ['maximum-slappage', 'portfolio', 'smiles']);
   assert.match(html, /id="subtab-portfolio"[^>]*data-hash="portfolio"[^>]*href="#portfolio"/);
   assert.match(html, /id="project-portfolio"[^>]*role="tabpanel"[^>]*aria-labelledby="subtab-portfolio"/);
-  assert.match(html, /class="project-link" href="https:\/\/github\.com\/DecibillyJoel\/portfolio"[^>]*tabindex="0"/);
+  assert.match(html, /class="project-link" href="https:\/\/github\.com\/DecibillyJoel\/portfolio"[^>]*>View on GitHub<\/a>/);
+  assert.ok(!/class="project-link"[^>]*tabindex/.test(html), 'the project link takes no tabindex');
   assert.match(html, /Cloudflare Workers with Static Assets/);
   const panel = html.slice(html.indexOf('id="project-portfolio"'), html.indexOf('id="project-smiles"'));
   assert.ok(!panel.includes('iframe'), 'the Portfolio project must carry no embed');
