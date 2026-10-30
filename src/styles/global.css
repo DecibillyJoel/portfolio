@@ -58,6 +58,10 @@
 
 * { box-sizing: border-box; }
 
+/* Prose keeps a balanced last line. A browser that ignores the hint just wraps
+   the old way. */
+p { text-wrap: pretty; }
+
 body {
   margin: 0;
   background: var(--bg);
@@ -164,6 +168,7 @@ main > [data-panel='projects']:not([hidden]) {
   font-weight: 800;
   letter-spacing: 0.08em;
   color: var(--magenta);
+  text-wrap: balance;
   margin: 0 0 var(--heading-gap);
 }
 

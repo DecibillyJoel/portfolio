@@ -606,7 +606,7 @@ test('both pages mount one theme toggle with an accessible name', () => {
   for (const html of [index, notFound]) {
     assert.match(
       html,
-      /<button[^>]*data-theme-toggle[^>]*aria-label="Theme: auto\. Activate to change\."/,
+      /<button[^>]*data-theme-toggle[^>]*aria-label="Theme: auto"/,
     );
     assert.equal((html.match(/<button[^>]*data-theme-toggle/g) || []).length, 1);
 
@@ -709,4 +709,25 @@ test('the 404 document reuses the shared layout', () => {
     .filter((file) => /\.site-header\s*\{/.test(readFileSync(file, 'utf8')))
     .map((file) => file.slice(SRC.length + 1));
   assert.deepEqual(headerRules, ['components/Header.astro']);
+});
+
+// ---- Modern layout hints -------------------------------------------------
+
+test('headings balance their lines and prose avoids a lone last word', () => {
+  const css = readDist();
+  assert.match(css, /\.heading\{[^}]*text-wrap:balance/);
+  assert.match(css, /p\{text-wrap:pretty\}/, 'prose carries the pretty hint');
+});
+
+test('the tablist answers Up and Down as well as Left and Right', () => {
+  const js = readScripts();
+  for (const key of ['ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown', 'Home', 'End']) {
+    assert.ok(js.includes(key), `the tablist listens for ${key}`);
+  }
+});
+
+test('an icon name that is not in the set stops the build', () => {
+  const source = readFileSync(join(SRC, 'components', 'Icon.astro'), 'utf8');
+  assert.match(source, /throw new Error/);
+  assert.match(source, /icons\[id\]/);
 });

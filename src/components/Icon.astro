@@ -2,12 +2,16 @@
 import { icons } from '../data/icons.js';
 const { id } = Astro.props;
 const path = icons[id];
+
+// A name that is not in the set is a mistake in the page, not a decoration to
+// skip. Stop the build while the message still names the missing icon.
+if (!path) {
+  throw new Error(`Unknown icon "${id}". Add it to src/data/icons.js.`);
+}
 ---
-{path && (
-  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-    <path d={path} />
-  </svg>
-)}
+<svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+  <path d={path} />
+</svg>
 
 <style>
   .icon {

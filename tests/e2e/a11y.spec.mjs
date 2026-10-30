@@ -94,10 +94,10 @@ test('the dark theme keeps the toggle reachable and correctly named', async ({ p
   await page.goto('/');
 
   const toggle = page.locator('[data-theme-toggle]');
-  await expect(toggle).toHaveAttribute('aria-label', 'Theme: auto. Activate to change.');
+  await expect(toggle).toHaveAttribute('aria-label', 'Theme: auto');
   await toggle.click();
   await expect(page.locator('html')).toHaveAttribute('data-theme-pref', 'light');
-  await expect(toggle).toHaveAttribute('aria-label', 'Theme: light. Activate to change.');
+  await expect(toggle).toHaveAttribute('aria-label', 'Theme: light');
 
   expect(await audit(page)).toEqual([]);
 });

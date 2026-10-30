@@ -49,8 +49,9 @@
       if (!button) return;
 
       function sync() {
-        button.setAttribute('aria-label', 'Theme: ' + pref + '. Activate to change.');
-        button.title = 'Theme: ' + pref;
+        var text = 'Theme: ' + pref;
+        button.setAttribute('aria-label', text);
+        button.title = text;
       }
 
       sync();

@@ -124,7 +124,13 @@ test('keyboard alone reaches the tab bar and the sub-tabs and loads a project', 
   await expect(tab(page, 'who-am-i')).toBeFocused();
 
   await page.keyboard.press('ArrowRight');
+  await expect(tab(page, 'links')).toBeFocused();
+  await page.keyboard.press('ArrowDown');
+  await expect(tab(page, 'certifications')).toBeFocused();
+  await page.keyboard.press('ArrowUp');
+  await expect(tab(page, 'links')).toBeFocused();
   await page.keyboard.press('ArrowRight');
+  await expect(tab(page, 'certifications')).toBeFocused();
   await page.keyboard.press('ArrowRight');
   await expect(tab(page, 'projects')).toBeFocused();
   await page.keyboard.press('Enter');
@@ -802,7 +808,7 @@ test('the toggle cycles auto, light, dark and back', async ({ page }) => {
   const toggle = page.locator('[data-theme-toggle]');
   const auto = {
     attr: null,
-    label: 'Theme: auto. Activate to change.',
+    label: 'Theme: auto',
     title: 'Theme: auto',
     shown: ['auto'],
     stored: null,
@@ -814,7 +820,7 @@ test('the toggle cycles auto, light, dark and back', async ({ page }) => {
   await toggle.click();
   expect(await themeState(page)).toEqual({
     attr: 'light',
-    label: 'Theme: light. Activate to change.',
+    label: 'Theme: light',
     title: 'Theme: light',
     shown: ['light'],
     stored: 'light',
@@ -824,7 +830,7 @@ test('the toggle cycles auto, light, dark and back', async ({ page }) => {
   await toggle.click();
   expect(await themeState(page)).toEqual({
     attr: 'dark',
-    label: 'Theme: dark. Activate to change.',
+    label: 'Theme: dark',
     title: 'Theme: dark',
     shown: ['dark'],
     stored: 'dark',
@@ -848,7 +854,7 @@ test('a pinned theme overrides the system setting and survives a reload', async 
   expect(await bodyBackground(page)).toBe(LIGHT_BG);
   await expect(page.locator('[data-theme-toggle]')).toHaveAttribute(
     'aria-label',
-    'Theme: light. Activate to change.',
+    'Theme: light',
   );
 });
 
