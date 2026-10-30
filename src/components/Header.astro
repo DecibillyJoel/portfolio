@@ -1,6 +1,6 @@
 <header class="site-header">
   <div class="brand">
-    <span class="monogram">JS</span>
+    <img class="monogram" src="/favicon.png" alt="" width="30" height="30" />
     <strong>@JoeOfSomeTrades</strong>
   </div>
   <span class="on-air">[ ON AIR ]</span>
@@ -17,12 +17,10 @@
   .brand { display: flex; align-items: center; gap: 10px; }
   .monogram {
     width: 30px; height: 30px;
-    display: flex; align-items: center; justify-content: center;
+    display: block;
     border: 1px solid var(--green);
     background: #0d1a10;
-    color: var(--green);
-    font-weight: 800;
-    font-size: 12px;
+    object-fit: cover;
   }
   strong { font-size: 15px; letter-spacing: 0.5px; color: #c9ffc2; }
   .on-air {
