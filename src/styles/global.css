@@ -20,6 +20,9 @@
   /* Space under a panel heading. */
   --heading-gap: 0.75rem;
   --heading-gap-tight: 0.5625rem;
+  /* The one box height shared by the status badge and the theme toggle, so the
+     two boxes beside each other are the same size. */
+  --control-h: 2.375rem;
   --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
@@ -193,6 +196,16 @@ main > [data-panel='projects']:not([hidden]) {
   max-width: 100%;
 }
 .embed-box iframe { display: block; border: 0; }
+
+/* Every link that leaves the site: one shape, one arrow, one behaviour. The
+   arrow alone marks the jump at rest, and the underline arrives only while the
+   link is highlighted. */
+.ext-link { text-decoration: none; }
+.ext-link .arrow { color: var(--muted); margin-left: 0.375rem; }
+.ext-link:focus-visible { text-decoration: underline; }
+@media (hover: hover) {
+  .ext-link:hover { text-decoration: underline; }
+}
 
 @media (max-width: 899px) {
   .heading { font-size: 1.6875rem; }

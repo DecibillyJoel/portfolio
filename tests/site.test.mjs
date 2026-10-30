@@ -369,8 +369,11 @@ test('the Portfolio project sits between the radio and the game and carries the 
   assert.deepEqual(subTabOrder, ['maximum-slappage', 'portfolio', 'smiles']);
   assert.match(html, /id="subtab-portfolio"[^>]*data-hash="portfolio"[^>]*href="#portfolio"/);
   assert.match(html, /id="project-portfolio"[^>]*role="tabpanel"[^>]*aria-labelledby="subtab-portfolio"/);
-  assert.match(html, /class="project-link" href="https:\/\/github\.com\/DecibillyJoel\/portfolio"[^>]*>View on GitHub<\/a>/);
-  assert.ok(!/class="project-link"[^>]*tabindex/.test(html), 'the project link takes no tabindex');
+  assert.match(
+    html,
+    /class="project-link ext-link" href="https:\/\/github\.com\/DecibillyJoel\/portfolio"[^>]*>View on GitHub<span class="arrow"[^>]*>↗<\/span>/,
+  );
+  assert.ok(!/class="project-link[^"]*"[^>]*tabindex/.test(html), 'the project link takes no tabindex');
   assert.match(html, /Cloudflare Workers with Static Assets/);
   const panel = html.slice(html.indexOf('id="project-portfolio"'), html.indexOf('id="project-smiles"'));
   assert.ok(!panel.includes('iframe'), 'the Portfolio project must carry no embed');
@@ -668,7 +671,7 @@ test('only the token layer names a colour', () => {
 
 test('every project link names the project it opens', () => {
   const html = readIndex();
-  const links = [...html.matchAll(/class="project-link" href="([^"]+)"[^>]*>([^<]+)<\/a>/g)]
+  const links = [...html.matchAll(/class="project-link ext-link" href="([^"]+)"[^>]*>([^<]+)<span class="arrow"/g)]
     .map((m) => [m[2], m[1]]);
   assert.deepEqual(links, [
     ['View on Live365', 'https://live365.com/station/Maximum-Slappage-a57727'],
@@ -751,7 +754,7 @@ test('every size is a rem value written where it is used', () => {
   assert.doesNotMatch(html, /font-size: ?[\d.]+px/, 'no font size stays in px, so the reader font sets the scale');
   // The whole type scale, one deliberate step at a time.
   const sizes = [...new Set([...html.matchAll(/font-size: ?(-?[\d.]+)rem/g)].map((m) => Number(m[1])))];
-  assert.deepEqual(sizes.sort((a, b) => a - b), [0.9375, 1, 1.125, 1.25, 1.3125, 1.375, 1.6875, 2.4375]);
+  assert.deepEqual(sizes.sort((a, b) => a - b), [1, 1.125, 1.25, 1.3125, 1.375, 1.6875, 2.4375]);
 });
 
 test('nothing on the page carries a text glow', () => {
@@ -773,7 +776,7 @@ test('the sub-tabs wear a purple ramp, and every step stays legible', () => {
   assert.match(html, /\.sub-tabs\[[^\]]*\] a\[[^\]]*\]\{[^}]*color:var\(--magenta-dim\)/);
   assert.match(html, /\.sub-tabs\[[^\]]*\] a\[[^\]]*\]\[aria-selected=true\]\{color:var\(--magenta\)\}/);
   assert.match(html, /\.sub-tabs\[[^\]]*\] a\[[^\]]*\]:hover\{color:var\(--magenta-hover\)\}/);
-  assert.match(html, /\.sub-tabs\[[^\]]*\] a\[[^\]]*\]\{[^}]*border:0/, 'the pill outline is gone');
+  assert.match(html, /\.sub-tabs\[[^\]]*\] a\[[^\]]*\]\{[^}]*border:0/, 'the sub-tabs carry no box of their own');
   assert.ok(!/\.sub-tabs[^{]*\{[^}]*var\(--green\)/.test(html), 'no green is left on the sub-tabs');
 
   // A near black background leaves a purple very little room to darken and stay
@@ -803,4 +806,38 @@ test('the sub-tabs wear a purple ramp, and every step stays legible', () => {
     assert.equal(dark, plain(name), `${name} keeps the dark fallback and the pair in step`);
     assert.ok(ratio(light, lightBg) >= 4.5, `${name} clears AA on ${lightBg}`);
   }
+});
+
+test('the badge and the toggle share one control height', () => {
+  const html = readIndex();
+  // They share a row, so they share one height token.
+  assert.match(html, /--control-h: ?2\.375rem/, 'one token holds the control height');
+  assert.match(html, /\.on-air\[[^\]]*\]\{[^}]*height:var\(--control-h\)/, 'the badge takes that height');
+  assert.match(html, /\.theme-toggle\[[^\]]*\]\{[^}]*height:var\(--control-h\)/, 'the toggle takes it too');
+});
+
+test('the Links link takes the same selected prompt as a tab', () => {
+  const html = readIndex();
+  assert.match(html, /class="brand-link"[^>]*>.*?<span class="prompt" aria-hidden="true"[^>]*>/, 'the Links link carries a prompt span like a tab does');
+  assert.match(html, /\.brand-link\[[^\]]*\] \.prompt\[[^\]]*\]\{display:none/);
+  assert.match(html, /\.brand-link\[[^\]]*\]\[aria-current=true\] \.prompt\[[^\]]*\]\{display:inline\}/);
+});
+
+test('every link that leaves the site looks and reads the same', () => {
+  const html = readIndex();
+  const external = [...html.matchAll(/<a [^>]*target="_blank"[^>]*>([\s\S]*?)<\/a>/g)].map((m) => m[1]);
+  assert.equal(external.length, 15, 'eight social links, four credential links and three project links');
+  for (const inner of external) {
+    assert.match(inner, /<span class="arrow"[^>]*>↗<\/span>/, 'the arrow is missing');
+    assert.match(inner, /<span class="visually-hidden"[^>]*>[^<]*opens in a new tab<\/span>/, 'the new tab note is missing');
+  }
+  assert.match(html, /\.ext-link\{text-decoration:none\}/);
+  assert.match(html, /\.ext-link:focus-visible\{text-decoration:underline\}/);
+  assert.match(html, /@media \(hover:hover\)\{\.ext-link:hover\{text-decoration:underline\}\}/);
+});
+
+test('a long address cannot push the Links card off a narrow screen', () => {
+  const html = readIndex();
+  assert.match(html, /\.card\[[^\]]*\] a\[[^\]]*\]\{overflow-wrap:anywhere\}/);
+  assert.match(html, /minmax\(0,1fr\)/);
 });

@@ -32,11 +32,11 @@ import { projects } from '../../data/projects.js';
         <p class="lede">{project.blurb}</p>
         {project.href && (
           <a
-            class="project-link"
+            class="project-link ext-link"
             href={project.href}
             target="_blank"
             rel="noopener"
-          >{project.linkLabel}</a>
+          >{project.linkLabel}<span class="arrow" aria-hidden="true">↗</span><span class="visually-hidden"> — opens in a new tab</span></a>
         )}
         {project.embedKind === 'player' && <Player />}
         {project.embedKind === 'iframe' && (
@@ -107,11 +107,6 @@ import { projects } from '../../data/projects.js';
   }
   .tagline { font-size: 1.25rem; color: var(--muted); margin: 0 0 1.125rem; }
   .project-link { font-size: 1.125rem; color: var(--green); margin: 0 0 1.3125rem; }
-  @media (hover: hover) {
-    .project-link:hover {
-      text-decoration: underline;
-    }
-  }
   .empty { padding: 4.5rem 2.0625rem; text-align: center; color: var(--muted); font-size: 1.25rem; }
   /* The frame comes from .embed-box. The game keeps its own shape: a 16 by 9
      box that fills the panel until it reaches this width. */
@@ -124,9 +119,6 @@ import { projects } from '../../data/projects.js';
   }
 
   @media (max-width: 899px) {
-    /* The sub-tab labels are long, so they take one step down on a phone to
-       stop the bar from stacking into three or four rows. */
-    .sub-tabs a { font-size: 0.9375rem; }
     .project { padding: 1.3125rem 1.5rem; }
     .tagline { font-size: 1rem; margin-bottom: 0.9375rem; }
   }

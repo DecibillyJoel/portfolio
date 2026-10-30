@@ -11,7 +11,10 @@ import Icon from '../Icon.astro';
         <Icon id={link.id} />
         <div class="meta">
           <span class="label">{link.label}</span>
-          <a href={link.href} rel="me noopener"><span class="visually-hidden">{link.label}: </span>{link.value}</a>
+          <a class="ext-link" href={link.href} target="_blank" rel="me noopener">
+            <span class="visually-hidden">{link.label}: </span>{link.value}<span class="arrow" aria-hidden="true">↗</span>
+            <span class="visually-hidden"> — opens in a new tab</span>
+          </a>
         </div>
       </li>
     ))}
@@ -41,13 +44,13 @@ import Icon from '../Icon.astro';
   .card :global(.icon) { color: var(--green); }
   .meta { min-width: 0; }
   .label { display: block; font-size: 1rem; color: var(--muted); margin-bottom: 0.5625rem; }
-  .card a { font-size: 1.3125rem; color: var(--green); text-decoration: none; }
-  @media (hover: hover) {
-    .card a:hover { text-decoration: underline; }
-  }
+  .card a { font-size: 1.3125rem; color: var(--green); }
 
   @media (max-width: 899px) {
     .links { padding: 1.5rem; }
-    ul { grid-template-columns: 1fr; }
+    /* One column, and the track may go smaller than the longest address so the
+       card keeps fitting the screen and the arrow stays in view. */
+    ul { grid-template-columns: minmax(0, 1fr); }
+    .card a { overflow-wrap: anywhere; }
   }
 </style>

@@ -1012,7 +1012,7 @@ test('the status pair keeps its row and the tab bar gives way instead', async ({
     });
   };
 
-  for (const width of [1280, 1100, 1099, 985, 900, 899, 700, 520, 430, 390, 320]) {
+  for (const width of [1280, 1000, 960, 959, 900, 899, 700, 520, 430, 390, 320]) {
     const m = await measure(width);
     // The badge and the toggle never separate.
     expect(Math.abs(m.badge.top - m.toggle.top), `badge and toggle at ${width}`).toBeLessThanOrEqual(8);
@@ -1025,8 +1025,30 @@ test('the status pair keeps its row and the tab bar gives way instead', async ({
   // Wide enough for one row, so the tabs share the row with the status pair.
   const wide = await measure(1280);
   expect(Math.abs(wide.bar.top - wide.badge.top)).toBeLessThanOrEqual(20);
+  const tightest = await measure(960);
+  expect(Math.abs(tightest.bar.top - tightest.badge.top)).toBeLessThanOrEqual(20);
 
   // Too narrow for that row, so the tabs take a line of their own below it.
-  const narrow = await measure(985);
+  const narrow = await measure(959);
   expect(narrow.bar.top).toBeGreaterThan(narrow.badge.top + 20);
+});
+
+test('the Links link in the brand row opens the Links view and marks itself', async ({ page }) => {
+  await blockEmbed(page);
+  await page.goto('/');
+  await expect(page).toHaveURL(/#whoami$/);
+
+  await viewLink(page, 'links').focus();
+  await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(/#links$/);
+  await expect(panel(page, 'links')).toBeVisible();
+  await expect(viewLink(page, 'links')).toHaveAttribute('aria-current', 'true');
+  await expect(tab(page, 'who-am-i')).toHaveAttribute('aria-selected', 'false');
+
+  // Leaving the view clears the mark, so only one item ever shows the prompt.
+  await page.goBack();
+  await expect(page).toHaveURL(/#whoami$/);
+  await expect(panel(page, 'who-am-i')).toBeVisible();
+  await expect(viewLink(page, 'links')).not.toHaveAttribute('aria-current', 'true');
+  await expect(tab(page, 'who-am-i')).toHaveAttribute('aria-selected', 'true');
 });
