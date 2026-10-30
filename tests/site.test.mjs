@@ -305,7 +305,7 @@ test('_headers ships the security headers and no CSP', () => {
 test('the page has one h1, a skip link, and a focusable main landmark', () => {
   const html = readIndex();
   assert.equal((html.match(/<h1[\s>]/g) || []).length, 1);
-  assert.equal((html.match(/<h2[\s>]/g) || []).length, 6);
+  assert.equal((html.match(/<h2[\s>]/g) || []).length, 7);
   assert.match(html, /<a class="skip-link" href="#main">/);
   assert.match(html, /<main id="main" tabindex="-1">/);
 });

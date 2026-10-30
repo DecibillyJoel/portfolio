@@ -3,6 +3,7 @@ import { links } from '../../data/links.js';
 import Icon from '../Icon.astro';
 ---
 <section class="links">
+  <h2>LINKS</h2>
   <ul>
     {links.map((link) => (
       <li class={link.pending ? 'card pending' : 'card'}>
@@ -19,7 +20,15 @@ import Icon from '../Icon.astro';
 </section>
 
 <style>
-  .links { padding: 30px 60px; }
+  .links { padding: 26px 60px 32px; text-align: center; }
+  h2 {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: var(--magenta);
+    text-shadow: 0 0 12px #ff2fd088;
+    margin: 0 0 22px;
+  }
   ul {
     list-style: none;
     margin: 0 auto;
@@ -28,6 +37,7 @@ import Icon from '../Icon.astro';
     grid-template-columns: 1fr 1fr;
     gap: 16px;
     max-width: 900px;
+    text-align: left;
   }
   .card {
     display: flex;
@@ -50,6 +60,7 @@ import Icon from '../Icon.astro';
 
   @media (max-width: 899px) {
     .links { padding: 16px; }
+    h2 { font-size: 18px; margin-bottom: 16px; }
     ul { grid-template-columns: 1fr; }
   }
 </style>
