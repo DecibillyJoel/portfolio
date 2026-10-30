@@ -7,6 +7,7 @@ const AXE_PATH = require.resolve('axe-core/axe.min.js');
 const ROUTES = [
   { hash: '#whoami', panel: 'who-am-i' },
   { hash: '#links', panel: 'links' },
+  { hash: '#certs', panel: 'certifications' },
   { hash: '#projects', panel: 'projects' },
   { hash: '#radio', panel: 'projects' },
   { hash: '#game', panel: 'projects' },

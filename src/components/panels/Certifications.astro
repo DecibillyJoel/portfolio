@@ -1,0 +1,108 @@
+---
+import { certifications } from '../../data/certifications.js';
+---
+<section class="certs">
+  <h2>CERTIFICATIONS</h2>
+  <p class="lede">
+    Want the credential links? They are on my LinkedIn profile. That profile shows my legal name, so I
+    keep it off this page.
+  </p>
+  <ul>
+    {certifications.map((cert) => (
+      <li class="cert">
+        <h3>
+          <a href={cert.href} target="_blank" rel="noopener noreferrer">
+            {cert.name}
+            <span class="arrow" aria-hidden="true">↗</span>
+            <span class="visually-hidden"> — official description, opens in a new tab</span>
+          </a>
+        </h3>
+        <p class="meta">
+          <span class="issuer">{cert.issuer}</span>
+          <span class="sep" aria-hidden="true">//</span>
+          <span class="dates">{cert.dates}</span>
+        </p>
+      </li>
+    ))}
+  </ul>
+</section>
+
+<style>
+  .certs {
+    padding: 26px 60px 32px;
+    text-align: center;
+  }
+  h2 {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: var(--magenta);
+    text-shadow: 0 0 12px #ff2fd088;
+    margin: 0 0 8px;
+  }
+  .lede {
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--muted);
+    max-width: 560px;
+    margin: 0 auto 22px;
+  }
+  ul {
+    list-style: none;
+    margin: 0 auto;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    max-width: 860px;
+    text-align: left;
+  }
+  .cert {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 10px;
+    border: 1px solid var(--border);
+    border-left: 2px solid #7a1a66;
+    background: #0b120d;
+    padding: 14px 16px;
+  }
+  h3 {
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.45;
+    margin: 0;
+  }
+  h3 a {
+    color: var(--green);
+    text-decoration: none;
+  }
+  .arrow {
+    color: var(--muted);
+    margin-left: 4px;
+  }
+  @media (hover: hover) {
+    h3 a:hover {
+      text-decoration: underline;
+      text-shadow: var(--hover-glow);
+    }
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--muted);
+    margin: 0;
+  }
+  .sep { color: #2b5133; }
+
+  @media (max-width: 899px) {
+    .certs { padding: 16px; }
+    h2 { font-size: 18px; }
+    .lede { font-size: 11px; margin-bottom: 16px; }
+    ul { grid-template-columns: 1fr; gap: 10px; }
+    .cert { padding: 12px 14px; }
+    h3 { font-size: 12px; }
+  }
+</style>

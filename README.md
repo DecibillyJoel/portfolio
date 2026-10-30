@@ -1,6 +1,6 @@
 # portfolio
 
-My personal site. It's a single page with a retro-arcade look and tabs for a short bio, my links, and my projects. The projects tab embeds my Live365 radio station, Maximum Slappage, and my game, Smiles Sadistic Adventure.
+My personal site. It's a single page with a retro-arcade look and tabs for a short bio, my links, my certifications, and my projects. The projects tab embeds my Live365 radio station, Maximum Slappage, and my game, Smiles Sadistic Adventure.
 
 Live at https://portfolio.joeofsometrades.workers.dev
 

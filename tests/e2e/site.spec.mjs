@@ -100,6 +100,7 @@ test('keyboard alone reaches the tab bar and the sub-tabs and loads a project', 
 
   await page.keyboard.press('ArrowRight');
   await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('ArrowRight');
   await expect(tab(page, 'projects')).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(panel(page, 'projects')).toBeVisible();
@@ -244,8 +245,11 @@ test('the tab bar moves focus with arrow keys and activates with Enter', async (
 
   await tab(page, 'links').focus();
   await page.keyboard.press('ArrowRight');
-  await expect(tab(page, 'projects')).toBeFocused();
+  await expect(tab(page, 'certifications')).toBeFocused();
   await expect(page).toHaveURL(/#whoami$/);
+
+  await page.keyboard.press('ArrowRight');
+  await expect(tab(page, 'projects')).toBeFocused();
 
   await page.keyboard.press('ArrowRight');
   await expect(tab(page, 'who-am-i')).toBeFocused();
@@ -320,6 +324,39 @@ test('every Links card shows a brand icon', async ({ page }) => {
   await expect(page.locator('#panel-links .card .icon')).toHaveCount(8);
 });
 
+test('every Certification card shows its issuer, dates, and an official page', async ({ page }) => {
+  await blockEmbed(page);
+  await page.goto('/');
+
+  await tab(page, 'certifications').click();
+  await expect(panel(page, 'certifications')).toBeVisible();
+
+  const cards = page.locator('#panel-certifications .cert');
+  await expect(cards).toHaveCount(4);
+  await expect(cards.nth(0)).toContainText('CompTIA A+');
+  await expect(cards.nth(0)).toContainText('Sep 2026 – Sep 2029');
+  await expect(cards.nth(3)).toContainText('Autodesk AutoCAD Certified User');
+  await expect(cards.nth(3)).toContainText('Jan 2016');
+
+  const anchors = page.locator('#panel-certifications .cert a');
+  await expect(anchors).toHaveCount(4);
+  expect(await anchors.evaluateAll((nodes) => nodes.map((node) => node.href))).toEqual([
+    'https://www.comptia.org/certifications/a',
+    'https://learn.microsoft.com/en-us/credentials/certifications/mos-excel-expert-m365-apps/',
+    'https://learn.microsoft.com/en-us/credentials/certifications/exams/98-349',
+    'https://certiport.pearsonvue.com/Certifications/Autodesk/Certifications/Certify#AutoCAD',
+  ]);
+  expect(
+    await anchors.evaluateAll((nodes) =>
+      nodes.every((node) => node.target === '_blank' && node.rel.includes('noopener')),
+    ),
+  ).toBe(true);
+
+  // The credential links live on LinkedIn, but the page must not link to it.
+  await expect(page.locator('#panel-certifications a[href*="linkedin"]')).toHaveCount(0);
+  await expect(panel(page, 'certifications')).toContainText('They are on my LinkedIn profile');
+});
+
 test('every view has its own hash URL', async ({ page }) => {
   await blockEmbed(page);
   await page.goto('/');
@@ -327,6 +364,9 @@ test('every view has its own hash URL', async ({ page }) => {
 
   await tab(page, 'links').click();
   await expect(page).toHaveURL(/#links$/);
+
+  await tab(page, 'certifications').click();
+  await expect(page).toHaveURL(/#certs$/);
 
   await tab(page, 'projects').click();
   await expect(page).toHaveURL(/#projects$/);
@@ -352,6 +392,11 @@ test('a deep link opens the matching view on first load', async ({ page }) => {
   await expect(subTab(page, 'maximum-slappage')).toHaveAttribute('aria-selected', 'true');
   await expect(loadedFrames(page)).toHaveAttribute('src', /live365\.com/);
   await expect(page.locator('[data-on-air]')).toHaveText('[ ON AIR ]');
+
+  await page.goto('/#certs');
+  await expect(panel(page, 'certifications')).toBeVisible();
+  await expect(tab(page, 'certifications')).toHaveAttribute('aria-selected', 'true');
+  await expect(page.locator('#panel-certifications h3')).toHaveCount(4);
 });
 
 test('browser back and forward move between views without a reload', async ({ page }) => {
@@ -389,9 +434,9 @@ test('an unknown path returns a 404 page with links back to the views', async ({
   await expect(page.locator('iframe')).toHaveCount(0);
 
   const links = page.locator('.routes a');
-  await expect(links).toHaveCount(5);
+  await expect(links).toHaveCount(6);
   const hrefs = await links.evaluateAll((nodes) => nodes.map((node) => node.getAttribute('href')));
-  expect(hrefs).toEqual(['/#whoami', '/#links', '/#projects', '/#radio', '/#game']);
+  expect(hrefs).toEqual(['/#whoami', '/#links', '/#certs', '/#projects', '/#radio', '/#game']);
 
   await page.locator('.routes a', { hasText: 'Projects' }).click();
   await expect(page).toHaveURL(/#projects$/);

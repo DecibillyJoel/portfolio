@@ -27,25 +27,27 @@ test('build emits a static index.html', () => {
   assert.match(readIndex(), /<!doctype html>/i);
 });
 
-test('page mounts all three panels in one document', () => {
+test('page mounts all four panels in one document', () => {
   const html = readIndex();
   assert.match(html, /data-panel="who-am-i"/);
   assert.match(html, /data-panel="links"/);
+  assert.match(html, /data-panel="certifications"/);
   assert.match(html, /data-panel="projects"/);
   assert.equal((html.match(/<html/g) || []).length, 1);
 });
 
-test('tab bar exposes the three full labels', () => {
+test('tab bar exposes the four full labels', () => {
   const html = readIndex();
   assert.match(html, /data-tab-target="who-am-i"[^>]*>\s*Who Am I/);
   assert.match(html, /data-tab-target="links"[^>]*>\s*Links/);
+  assert.match(html, /data-tab-target="certifications"[^>]*>\s*Certifications/);
   assert.match(html, /data-tab-target="projects"[^>]*>\s*Projects/);
 });
 
 test('exactly one panel starts visible', () => {
   const html = readIndex();
   const hiddenCount = (html.match(/data-panel="[^"]+"[^>]*hidden/g) || []).length;
-  assert.equal(hiddenCount, 2);
+  assert.equal(hiddenCount, 3);
 });
 
 test('Who Am I carries the three approved paragraphs', () => {
@@ -60,6 +62,43 @@ test('Links lists eight entries, each with an icon', () => {
   const labels = ['GITHUB', 'YOUTUBE', 'X', 'BLUESKY', 'LIVE365', 'LAST.FM', 'EMAIL', 'DISCORD'];
   for (const label of labels) assert.match(html, new RegExp(`>\\s*${label.replace('.', '\\.')}<`));
   assert.equal((html.match(/class="icon"/g) || []).length, labels.length);
+});
+
+test('Certifications lists four credentials with dates and official pages', () => {
+  const html = readIndex();
+  const panel = html.match(/data-panel="certifications"[\s\S]*?<\/section>/)?.[0] ?? '';
+  assert.notEqual(panel, '');
+  const expected = [
+    ['CompTIA A+', 'CompTIA', 'Sep 2026 – Sep 2029', 'https://www.comptia.org/certifications/a'],
+    [
+      'Microsoft Office Specialist: Excel Expert (Microsoft 365 Apps)',
+      'Microsoft',
+      'Mar 2024',
+      'https://learn.microsoft.com/en-us/credentials/certifications/mos-excel-expert-m365-apps/',
+    ],
+    [
+      'MTA: Windows Operating System Fundamentals',
+      'Microsoft',
+      'Dec 2016',
+      'https://learn.microsoft.com/en-us/credentials/certifications/exams/98-349',
+    ],
+    [
+      'Autodesk AutoCAD Certified User',
+      'Autodesk',
+      'Jan 2016',
+      'https://certiport.pearsonvue.com/Certifications/Autodesk/Certifications/Certify#AutoCAD',
+    ],
+  ];
+  for (const [name, issuer, dates, href] of expected) {
+    assert.ok(panel.includes(name), `missing certification ${name}`);
+    assert.ok(panel.includes(issuer), `missing issuer ${issuer}`);
+    assert.ok(panel.includes(dates), `missing dates ${dates}`);
+    assert.ok(panel.includes(`href="${href}"`), `missing page ${href}`);
+  }
+  assert.equal((panel.match(/<h3[\s>]/g) || []).length, 4);
+  // The LinkedIn note is prose on the page, but LinkedIn itself must not be linked.
+  assert.match(panel, /They are on my LinkedIn profile/);
+  assert.doesNotMatch(panel, /href="https?:\/\/(www\.)?linkedin\.com/);
 });
 
 test('no link renders as a pending placeholder', () => {
@@ -101,6 +140,7 @@ test('every tab and sub-tab is a native link with its own hash', () => {
   const links = [
     ['data-tab-target="who-am-i"', '#whoami'],
     ['data-tab-target="links"', '#links'],
+    ['data-tab-target="certifications"', '#certs'],
     ['data-tab-target="projects"', '#projects'],
     ['data-sub-tab-target="maximum-slappage"', '#radio'],
     ['data-sub-tab-target="smiles"', '#game'],
@@ -169,7 +209,7 @@ test('robots.txt and llms.txt ship with the site', () => {
 
   const llms = readFileSync(join(DIST, 'llms.txt'), 'utf8');
   assert.match(llms, /^# @JoeOfSomeTrades$/m);
-  for (const route of ['#whoami', '#links', '#projects', '#radio', '#game']) {
+  for (const route of ['#whoami', '#links', '#certs', '#projects', '#radio', '#game']) {
     assert.ok(llms.includes(route), `llms.txt is missing ${route}`);
   }
 });
@@ -193,7 +233,7 @@ test('a real 404 page ships and points back at every view', () => {
   assert.equal((notFound.match(/<h2[\s>]/g) || []).length, 1);
   assert.match(notFound, /<main id="main" tabindex="-1"[^>]*>/);
   assert.match(notFound, /<a class="skip-link" href="#main"[^>]*>/);
-  for (const route of ['/#whoami', '/#links', '/#projects', '/#radio', '/#game']) {
+  for (const route of ['/#whoami', '/#links', '/#certs', '/#projects', '/#radio', '/#game']) {
     assert.ok(notFound.includes(`href="${route}"`), `404.html is missing ${route}`);
   }
   // The 404 page renders no tab bar, so it must not reference panels that only
@@ -247,7 +287,7 @@ test('_headers ships the security headers and no CSP', () => {
 test('the page has one h1, a skip link, and a focusable main landmark', () => {
   const html = readIndex();
   assert.equal((html.match(/<h1[\s>]/g) || []).length, 1);
-  assert.equal((html.match(/<h2[\s>]/g) || []).length, 3);
+  assert.equal((html.match(/<h2[\s>]/g) || []).length, 4);
   assert.match(html, /<a class="skip-link" href="#main">/);
   assert.match(html, /<main id="main" tabindex="-1">/);
 });
@@ -255,8 +295,8 @@ test('the page has one h1, a skip link, and a focusable main landmark', () => {
 test('tablists use roving tabindex, arrow keys, and paired roles', () => {
   const html = readIndex();
   assert.equal((html.match(/<[a-z]+[^>]*role="tablist"/g) || []).length, 2);
-  assert.equal((html.match(/role="tabpanel"/g) || []).length, 5);
-  assert.equal((html.match(/role="tab"/g) || []).length, 5);
+  assert.equal((html.match(/role="tabpanel"/g) || []).length, 6);
+  assert.equal((html.match(/role="tab"/g) || []).length, 6);
   assert.match(html, /id="subtab-maximum-slappage"[^>]*aria-controls="project-maximum-slappage"/);
   assert.match(
     html,

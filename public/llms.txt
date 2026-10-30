@@ -1,7 +1,7 @@
 # @JoeOfSomeTrades
 
 > Personal portfolio for @JoeOfSomeTrades, a music, audio, and game design
-> enthusiast. The site is one arcade-themed page with three views and two live
+> enthusiast. The site is one arcade-themed page with four views and two live
 > projects.
 
 The site is static. It holds no login and no paywall. Each view has its own hash
@@ -11,6 +11,7 @@ URL, so the page never reloads on navigation.
 
 - [Who Am I](https://portfolio.joeofsometrades.workers.dev/#whoami): A short introduction.
 - [Links](https://portfolio.joeofsometrades.workers.dev/#links): Contact and social links.
+- [Certifications](https://portfolio.joeofsometrades.workers.dev/#certs): Certifications and their dates, with a link to each official description.
 - [Projects](https://portfolio.joeofsometrades.workers.dev/#projects): The project index.
 
 ## Projects
