@@ -11,7 +11,7 @@ export default defineConfig({
     launchOptions: { executablePath: CHROMIUM },
   },
   webServer: {
-    command: 'npm run build && npm run preview',
+    command: 'npm run build && npm run preview -- --ignore-lock',
     url: 'http://localhost:4321',
     reuseExistingServer: true,
     timeout: 120_000,
