@@ -14,7 +14,6 @@ export function initTabs(root = document) {
     let activeButton = null;
     for (const button of buttons) {
       const active = button.dataset.tabTarget === id;
-      button.dataset.active = String(active);
       button.setAttribute('aria-selected', String(active));
       if (active) activeButton = button;
     }
@@ -23,7 +22,7 @@ export function initTabs(root = document) {
   }
 
   initTablistKeys(list, buttons);
-  setRovingTabindex(buttons, buttons.find((button) => button.dataset.active === 'true') ?? buttons[0]);
+  setRovingTabindex(buttons, buttons.find((button) => button.getAttribute('aria-selected') === 'true') ?? buttons[0]);
 
   return { show };
 }

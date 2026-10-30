@@ -7,6 +7,7 @@ import { site } from '../src/data/site.js';
 import { links } from '../src/data/links.js';
 import { certifications } from '../src/data/certifications.js';
 import { projects } from '../src/data/projects.js';
+import { routes } from '../src/data/routes.js';
 
 const DIST = fileURLToPath(new URL('../dist', import.meta.url));
 
@@ -320,7 +321,7 @@ test('the page has one h1, a skip link, and a focusable main landmark', () => {
   assert.equal((html.match(/<h1[\s>]/g) || []).length, 1);
   assert.equal((html.match(/<h2[\s>]/g) || []).length, 7);
   assert.match(html, /<a class="skip-link" href="#main">/);
-  assert.match(html, /<main id="main" tabindex="-1">/);
+  assert.match(html, /<main id="main" tabindex="-1"[^>]*>/);
 });
 
 test('tablists use roving tabindex, arrow keys, and paired roles', () => {
@@ -338,7 +339,7 @@ test('tablists use roving tabindex, arrow keys, and paired roles', () => {
   assert.match(js, /ArrowRight/);
   assert.match(js, /ArrowLeft/);
   assert.match(js, /tabIndex/);
-  assert.match(js, /new Set\(\[[`'"]main[`'"]\]\)/);
+  assert.match(js, /\[data-route-ignore\]/, 'the router takes the ignored targets from the page');
 });
 
 test('the embed wrappers carry the focus ring attribute', () => {
@@ -453,16 +454,18 @@ test('the page carries a not-found panel that no tab controls', () => {
   assert.doesNotMatch(panel, /href="\/#/, 'the in-page view takes bare hashes');
 });
 
-test('the router reads the not-found panel and ignores only the skip link target', () => {
+test('the router reads the not-found panel and leaves in-page targets alone', () => {
   const scripts = readScripts();
-  assert.match(scripts, /404 - @JoeOfSomeTrades/, 'the 404 title lives in the script');
   assert.match(scripts, /["'`]not-found["'`]/, 'the router names the not-found panel');
   assert.match(
     scripts,
-    /new Set\(\[["'`]main["'`]\]\)/,
-    'only the skip link target escapes the 404 view',
+    /\[data-route-ignore\]/,
+    'the ignored targets come from the page, not a second list',
   );
-  assert.match(readIndex(), /<main id="main" tabindex="-1">/, 'the ignored hash names a real element');
+  assert.match(scripts, /404 - /, 'the router prefixes the page title for the 404 view');
+  const html = readIndex();
+  assert.match(html, /<main id="main" tabindex="-1"[^>]*data-route-ignore/, 'the marker sits on a real element');
+  assert.match(html, /<title>@JoeOfSomeTrades<\/title>/, 'the base title comes from the page');
 });
 
 // The origin is fixed in astro.config.mjs, so the built tags must be absolute.
@@ -679,4 +682,12 @@ test('one shared rule styles every panel heading', () => {
   assert.equal((html.match(/class="heading/g) || []).length, 7);
   assert.match(html, /\.heading\{[^}]*color:var\(--magenta\)/);
   assert.match(html, /\.heading--tight\{margin-bottom:var\(--heading-gap-tight\)\}/);
+});
+
+// Every view is named once, in src/data/routes.js. The rendered page must carry
+// exactly those hashes, in that order.
+test('the page renders the navigation from the one route list', () => {
+  const html = readIndex();
+  const rendered = [...html.matchAll(/data-hash="([^"]+)"/g)].map((match) => match[1]);
+  assert.deepEqual(rendered, routes.map(({ hash }) => hash));
 });

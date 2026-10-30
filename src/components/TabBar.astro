@@ -1,10 +1,5 @@
 ---
-const tabs = [
-  { id: 'who-am-i', hash: 'whoami', label: 'Who Am I' },
-  { id: 'links', hash: 'links', label: 'Links' },
-  { id: 'certifications', hash: 'certs', label: 'Certifications' },
-  { id: 'projects', hash: 'projects', label: 'Projects' },
-];
+import { tabs } from '../data/routes.js';
 ---
 <nav class="tab-bar" role="tablist" aria-label="Sections">
   {tabs.map((tab, index) => (
@@ -16,7 +11,6 @@ const tabs = [
       href={`#${tab.hash}`}
       aria-controls={`panel-${tab.id}`}
       aria-selected={index === 0 ? 'true' : 'false'}
-      data-active={index === 0 ? 'true' : 'false'}
     ><span class="prompt" aria-hidden="true">{'> '}</span>{tab.label}</a>
   ))}
 </nav>
@@ -36,14 +30,14 @@ const tabs = [
     text-decoration: none;
     cursor: pointer;
   }
-  a[data-active='true'] {
+  a[aria-selected='true'] {
     color: var(--green);
     text-shadow: 0 0 8px var(--glow-green);
   }
   /* The prompt marks the selected tab. It is hidden from assistive tech, so
      the tab is announced by its label alone. */
   .prompt { display: none; }
-  a[data-active='true'] .prompt { display: inline; }
+  a[aria-selected='true'] .prompt { display: inline; }
   a:focus-visible { outline: 2px solid var(--magenta); outline-offset: 2px; }
 
   @media (hover: hover) {
@@ -51,7 +45,7 @@ const tabs = [
       color: var(--hover);
       text-shadow: 0 0 6px var(--hover-glow-color);
     }
-    a[data-active='true']:hover { color: var(--green); text-shadow: 0 0 12px var(--glow-green-strong); }
+    a[aria-selected='true']:hover { color: var(--green); text-shadow: 0 0 12px var(--glow-green-strong); }
   }
 
   @media (max-width: 899px) {

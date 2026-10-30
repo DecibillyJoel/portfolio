@@ -40,7 +40,7 @@ const structuredData = buildStructuredData(Astro.site.origin);
   <body>
     <a class="skip-link" href="#main">Skip to main content</a>
     <Header />
-    <main id="main" tabindex="-1">
+    <main id="main" tabindex="-1" data-route-ignore>
       <slot />
     </main>
     <script>

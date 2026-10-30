@@ -117,7 +117,6 @@ export function initProjects(root = document) {
     let activeButton = null;
     for (const button of buttons) {
       const active = button.dataset.subTabTarget === id;
-      button.dataset.active = String(active);
       button.setAttribute('aria-selected', String(active));
       if (active) activeButton = button;
     }

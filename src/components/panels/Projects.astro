@@ -12,7 +12,6 @@ import { projects } from '../../data/projects.js';
         data-hash={project.hash}
         href={`#${project.hash}`}
         aria-controls={`project-${project.id}`}
-        data-active="false"
         aria-selected="false"
       ><span class="prompt" aria-hidden="true">{'> '}</span>{project.label}</a>
     ))}
@@ -88,7 +87,7 @@ import { projects } from '../../data/projects.js';
   }
   /* The prompt marks the selected sub-tab and stays out of its accessible name. */
   .sub-tabs .prompt { display: none; }
-  .sub-tabs a[data-active='true'] .prompt { display: inline; }
+  .sub-tabs a[aria-selected='true'] .prompt { display: inline; }
   @media (hover: hover) {
     .sub-tabs a:hover {
       border-color: var(--magenta);
