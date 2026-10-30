@@ -26,7 +26,7 @@ import Icon from '../Icon.astro';
     font-weight: 800;
     letter-spacing: 0.08em;
     color: var(--magenta);
-    text-shadow: 0 0 12px #ff2fd088;
+    text-shadow: 0 0 12px var(--glow-magenta);
     margin: 0 0 22px;
   }
   ul {
@@ -44,7 +44,7 @@ import Icon from '../Icon.astro';
     align-items: center;
     gap: 14px;
     border: 1px solid var(--border);
-    background: #0b120d;
+    background: var(--surface);
     padding: 16px 18px;
   }
   .card :global(.icon) { color: var(--green); }
@@ -52,7 +52,7 @@ import Icon from '../Icon.astro';
   .label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 6px; }
   .card a { font-size: 14px; color: var(--green); text-decoration: none; }
   @media (hover: hover) {
-    .card a:hover { text-decoration: underline; text-shadow: var(--hover-glow); }
+    .card a:hover { text-decoration: underline; text-shadow: 0 0 6px var(--hover-glow-color); }
   }
   .card a:focus-visible { outline: 2px solid var(--magenta); outline-offset: 2px; }
   .value { font-size: 14px; color: var(--green); }

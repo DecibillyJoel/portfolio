@@ -1,12 +1,15 @@
 ---
 import '../styles/global.css';
 import NotFound from '../components/NotFound.astro';
+import ThemeScript from '../components/ThemeScript.astro';
+import ThemeToggle from '../components/ThemeToggle.astro';
 ---
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content" />
+    <ThemeScript />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <title>404 - @JoeOfSomeTrades</title>
     <meta
@@ -21,6 +24,7 @@ import NotFound from '../components/NotFound.astro';
         <img class="monogram" src="/monogram.webp" alt="" width="30" height="30" />
         <h1 class="brand-name">@JoeOfSomeTrades</h1>
       </div>
+      <ThemeToggle />
     </header>
     <main id="main" tabindex="-1">
       <NotFound />
@@ -47,16 +51,18 @@ import NotFound from '../components/NotFound.astro';
     height: 30px;
     display: block;
     border: 1px solid var(--green);
-    background: #0d1a10;
+    background: var(--header);
     object-fit: cover;
   }
   .brand-name {
     font-size: 15px;
     font-weight: 700;
     letter-spacing: 0.5px;
-    color: #c9ffc2;
+    color: var(--text);
     margin: 0;
   }
+  /* This page has no status badge, so the toggle takes the right edge. */
+  :global(.theme-toggle) { margin-left: auto; }
   /* The shell locks the page height, so this page scrolls inside main too.
      It has no panels, so the panel rule in global.css does not apply here. */
   main {

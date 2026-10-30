@@ -583,12 +583,23 @@ test('the game frame shows the site focus ring for keyboard focus only', async (
 
   expect(await tabIntoEmbed(page, '#project-smiles iframe')).toBe(true);
   await expect(wrap).toHaveAttribute('data-embed-focus', 'true');
-  expect(
-    await wrap.evaluate((element) => {
-      const style = getComputedStyle(element);
-      return `${style.outlineStyle} ${style.outlineWidth} ${style.outlineColor}`;
-    }),
-  ).toBe('solid 2px rgb(255, 47, 208)');
+  // A token resolves to a different colour in each theme, so the expectation
+  // comes from rendering the same token rather than from a literal.
+  const ring = await page.evaluate(() => {
+    const style = getComputedStyle(document.querySelector('#project-smiles .game'));
+    const probe = document.createElement('span');
+    probe.style.color = 'var(--magenta)';
+    document.body.appendChild(probe);
+    const token = getComputedStyle(probe).color;
+    probe.remove();
+    return {
+      outline: `${style.outlineStyle} ${style.outlineWidth}`,
+      color: style.outlineColor,
+      token,
+    };
+  });
+  expect(ring.color).toBe(ring.token);
+  expect(ring.outline).toBe('solid 2px');
 
   // A mouse click in the page drops the ring, and a later mouse click into the
   // game does not bring it back, because no keyboard reached the frame.
@@ -742,4 +753,139 @@ test('the projects body keeps its scroll position across a tab change', async ({
   });
   expect(m.scrollable).toBe(true);
   expect(m.scrollTop).toBe(150);
+});
+
+// ---- Theme --------------------------------------------------------------
+
+function bodyBackground(page) {
+  return page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+}
+
+function themeState(page) {
+  return page.evaluate(() => {
+    const button = document.querySelector('[data-theme-toggle]');
+    const shown = [...document.querySelectorAll('[data-theme-icon]')]
+      .filter((svg) => getComputedStyle(svg).display !== 'none')
+      .map((svg) => svg.dataset.themeIcon);
+    return {
+      attr: document.documentElement.getAttribute('data-theme-pref'),
+      label: button.getAttribute('aria-label'),
+      title: button.title,
+      shown,
+      stored: window.localStorage.getItem('theme-pref'),
+      bg: getComputedStyle(document.body).backgroundColor,
+    };
+  });
+}
+
+const LIGHT_BG = 'rgb(230, 241, 228)';
+const DARK_BG = 'rgb(8, 11, 9)';
+
+test('the auto theme follows the system setting with no attribute set', async ({ page }) => {
+  await blockEmbed(page);
+
+  await page.emulateMedia({ colorScheme: 'light' });
+  await page.goto('/');
+  expect(await page.locator('html').getAttribute('data-theme-pref')).toBe(null);
+  expect(await bodyBackground(page)).toBe(LIGHT_BG);
+
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await expect.poll(() => bodyBackground(page)).toBe(DARK_BG);
+  expect(await page.locator('html').getAttribute('data-theme-pref')).toBe(null);
+});
+
+test('the toggle cycles auto, light, dark and back', async ({ page }) => {
+  await blockEmbed(page);
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.goto('/');
+
+  const toggle = page.locator('[data-theme-toggle]');
+  const auto = {
+    attr: null,
+    label: 'Theme: auto. Activate to change.',
+    title: 'Theme: auto',
+    shown: ['auto'],
+    stored: null,
+    bg: DARK_BG,
+  };
+
+  expect(await themeState(page)).toEqual(auto);
+
+  await toggle.click();
+  expect(await themeState(page)).toEqual({
+    attr: 'light',
+    label: 'Theme: light. Activate to change.',
+    title: 'Theme: light',
+    shown: ['light'],
+    stored: 'light',
+    bg: LIGHT_BG,
+  });
+
+  await toggle.click();
+  expect(await themeState(page)).toEqual({
+    attr: 'dark',
+    label: 'Theme: dark. Activate to change.',
+    title: 'Theme: dark',
+    shown: ['dark'],
+    stored: 'dark',
+    bg: DARK_BG,
+  });
+
+  await toggle.click();
+  expect(await themeState(page)).toEqual(auto);
+});
+
+test('a pinned theme overrides the system setting and survives a reload', async ({ page }) => {
+  await blockEmbed(page);
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.goto('/');
+
+  await page.locator('[data-theme-toggle]').click();
+  expect(await bodyBackground(page)).toBe(LIGHT_BG);
+
+  await page.reload();
+  expect(await page.locator('html').getAttribute('data-theme-pref')).toBe('light');
+  expect(await bodyBackground(page)).toBe(LIGHT_BG);
+  await expect(page.locator('[data-theme-toggle]')).toHaveAttribute(
+    'aria-label',
+    'Theme: light. Activate to change.',
+  );
+});
+
+test('the toggle sits in the header after the status badge and hides its icons', async ({ page }) => {
+  await blockEmbed(page);
+  await page.goto('/');
+
+  await expect(page.locator('.site-header [data-on-air] + [data-theme-toggle]')).toHaveCount(1);
+  await expect(page.locator('[data-theme-toggle] svg')).toHaveCount(3);
+  await expect(page.locator('[data-theme-toggle] svg[aria-hidden="true"]')).toHaveCount(3);
+  await expect(page.locator('[data-theme-toggle]')).toHaveAttribute('title', /^Theme: /);
+});
+
+test('neither theme scrolls the document at 1280x720 or 390x844', async ({ page }) => {
+  await blockEmbed(page);
+
+  for (const scheme of ['light', 'dark']) {
+    await page.emulateMedia({ colorScheme: scheme });
+    for (const size of [
+      { width: 1280, height: 720 },
+      { width: 390, height: 844 },
+    ]) {
+      await page.setViewportSize(size);
+      await page.goto('/');
+      const m = await page.evaluate(() => ({
+        scrollWidth: document.documentElement.scrollWidth,
+        scrollHeight: document.documentElement.scrollHeight,
+        viewportWidth: window.innerWidth,
+        viewportHeight: window.innerHeight,
+        headerHeight: Math.round(
+          document.querySelector('.site-header').getBoundingClientRect().height,
+        ),
+      }));
+      const note = JSON.stringify({ scheme, size, m });
+      expect(m.scrollWidth, note).toBe(m.viewportWidth);
+      expect(m.scrollHeight, note).toBe(m.viewportHeight);
+      if (size.width === 390) expect(m.headerHeight, note).toBe(88);
+    }
+  }
 });

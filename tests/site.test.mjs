@@ -563,3 +563,78 @@ test('the site, the station and the game point back at the person', () => {
   assert.equal(byType.VideoGame.codeRepository, smiles.href);
   assert.equal(byType.VideoGame.author['@id'], personId);
 });
+
+// ---- Theme ---------------------------------------------------------------
+
+const TOGGLE_ICONS = ['auto', 'light', 'dark'];
+const SRC = fileURLToPath(new URL('../src', import.meta.url));
+
+function collectFiles(dir) {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const full = join(dir, entry.name);
+    return entry.isDirectory() ? collectFiles(full) : [full];
+  });
+}
+
+test('both pages mount one theme toggle with an accessible name', () => {
+  const index = readIndex();
+  const notFound = readFileSync(join(DIST, '404.html'), 'utf8');
+
+  for (const html of [index, notFound]) {
+    assert.match(
+      html,
+      /<button[^>]*data-theme-toggle[^>]*aria-label="Theme: auto\. Activate to change\."/,
+    );
+    assert.equal((html.match(/<button[^>]*data-theme-toggle/g) || []).length, 1);
+
+    for (const icon of TOGGLE_ICONS) {
+      const tag = html.match(new RegExp(`<svg[^>]*data-theme-icon="${icon}"[^>]*>`));
+      assert.ok(tag, `missing the ${icon} icon`);
+      // The label says the state, so each icon stays out of the name.
+      assert.match(tag[0], /aria-hidden="true"/);
+    }
+  }
+});
+
+test('the theme script applies the stored preference before the first paint', () => {
+  const scripts = readScripts();
+
+  assert.match(scripts, /KEY = 'theme-pref'/);
+  assert.match(scripts, /ORDER = \['auto', 'light', 'dark'\]/);
+  assert.match(scripts, /root\.dataset\.themePref = pref/);
+  assert.match(scripts, /localStorage\.setItem\(KEY, pref\)/);
+  assert.match(scripts, /localStorage\.removeItem\(KEY\)/);
+  // The button is not in the document yet while the head script runs.
+  assert.match(scripts, /addEventListener\('DOMContentLoaded'/);
+});
+
+test('the stylesheet resolves both palettes through light-dark', () => {
+  const css = readDist();
+
+  assert.match(css, /@supports \(color: ?light-dark\(#000, ?#fff\)\)/);
+  assert.match(css, /color-scheme: ?light dark/);
+  assert.match(css, /:root\[data-theme-pref=light\]/);
+  assert.match(css, /:root\[data-theme-pref=dark\]/);
+
+  // The dark values stay as the fallback for a browser without light-dark().
+  assert.match(css, /--bg: ?#080b09/);
+  assert.match(css, /--green: ?#39ff14/);
+
+  // The light values.
+  for (const hex of ['#e6f1e4', '#f7fbf5', '#eff7ec', '#0d2a15', '#3f6b48', '#b9cfba', '#9c0f7a', '#12661f']) {
+    assert.ok(css.includes(hex), `missing the light value ${hex}`);
+  }
+});
+
+// A colour written into a component cannot follow the theme, so every colour
+// name lives in the token layer.
+test('only the token layer names a colour', () => {
+  const offenders = [];
+  for (const file of collectFiles(SRC)) {
+    if (file.endsWith(join('styles', 'global.css'))) continue;
+    const text = readFileSync(file, 'utf8').replace(/@supports \((?:[^()]|\([^()]*\))*\)/g, '');
+    if (/#[0-9a-fA-F]{3,8}\b/.test(text)) offenders.push(file.slice(SRC.length + 1));
+  }
+
+  assert.deepEqual(offenders, []);
+});

@@ -31,7 +31,7 @@ const { prefix = '/' } = Astro.props;
     font-weight: 800;
     letter-spacing: 1px;
     color: var(--magenta);
-    text-shadow: 0 0 12px #ff2fd066;
+    text-shadow: 0 0 12px var(--glow-magenta-faint);
     margin: 0 0 10px;
   }
   p {
@@ -59,7 +59,7 @@ const { prefix = '/' } = Astro.props;
   @media (hover: hover) {
     .routes a:hover {
       border-bottom-color: var(--green);
-      text-shadow: var(--hover-glow);
+      text-shadow: 0 0 6px var(--hover-glow-color);
     }
   }
   @media (max-width: 899px) {

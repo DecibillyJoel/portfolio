@@ -1,5 +1,6 @@
 ---
 import TabBar from './TabBar.astro';
+import ThemeToggle from './ThemeToggle.astro';
 ---
 <header class="site-header">
   <div class="brand">
@@ -9,6 +10,7 @@ import TabBar from './TabBar.astro';
   <span class="divider" aria-hidden="true"></span>
   <TabBar />
   <span class="on-air" data-on-air data-state="off" role="status">[ OFF AIR ]</span>
+  <ThemeToggle />
 </header>
 
 <style>
@@ -25,14 +27,14 @@ import TabBar from './TabBar.astro';
     width: 30px; height: 30px;
     display: block;
     border: 1px solid var(--green);
-    background: #0d1a10;
+    background: var(--header);
     object-fit: cover;
   }
   .brand-name {
     font-size: 15px;
     font-weight: 700;
     letter-spacing: 0.5px;
-    color: #c9ffc2;
+    color: var(--text);
     margin: 0;
   }
   .divider { width: 1px; height: 22px; background: var(--border); }
@@ -42,12 +44,15 @@ import TabBar from './TabBar.astro';
     font: inherit;
     font-size: 11px;
     color: var(--muted);
-    border: 1px solid #2c5a33;
+    border: 1px solid var(--dim);
     padding: 4px 11px;
     text-decoration: none;
   }
   .on-air[data-state='on-air'],
-  .on-air[data-state='running'] { color: var(--green); text-shadow: 0 0 8px #39ff1488; }
+  .on-air[data-state='running'] { color: var(--green); text-shadow: 0 0 8px var(--glow-green); }
+
+  /* The badge already takes the free space, so the control only needs a gap. */
+  :global(.theme-toggle) { margin-left: 8px; }
 
   @media (max-width: 899px) {
     .site-header { padding: 10px 16px; gap: 10px 14px; }

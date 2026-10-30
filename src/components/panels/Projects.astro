@@ -70,7 +70,7 @@ import { projects } from '../../data/projects.js';
     flex: 1 1 auto;
     min-height: 0;
   }
-  .sub-tabs { display: flex; flex-wrap: wrap; flex: 0 0 auto; gap: 14px; padding: 12px 22px; border-bottom: 1px solid #142a18; background: var(--bg); }
+  .sub-tabs { display: flex; flex-wrap: wrap; flex: 0 0 auto; gap: 14px; padding: 12px 22px; border-bottom: 1px solid var(--border); background: var(--bg); }
   .projects-scroll {
     flex: 1 1 auto;
     min-height: 0;
@@ -83,17 +83,17 @@ import { projects } from '../../data/projects.js';
     font: inherit;
     font-size: 12px;
     color: var(--magenta);
-    border: 1px solid #7a1a66;
+    border: 1px solid var(--magenta);
     padding: 5px 12px;
     cursor: pointer;
     text-decoration: none;
-    text-shadow: 0 0 6px #ff2fd088;
+    text-shadow: 0 0 6px var(--glow-magenta);
   }
   .sub-tabs a[data-active='true']::before { content: '> '; }
   @media (hover: hover) {
     .sub-tabs a:hover {
-      border-color: #b62a97;
-      text-shadow: 0 0 10px #ff2fd0aa;
+      border-color: var(--magenta);
+      text-shadow: 0 0 10px var(--glow-magenta-soft);
     }
   }
   .project[hidden] { display: none; }
@@ -109,7 +109,7 @@ import { projects } from '../../data/projects.js';
     font-size: 26px;
     font-weight: 800;
     color: var(--magenta);
-    text-shadow: 0 0 12px #ff2fd088;
+    text-shadow: 0 0 12px var(--glow-magenta);
     margin: 0 0 6px;
   }
   .tagline { font-size: 13px; color: var(--muted); margin: 0 0 12px; }
@@ -118,13 +118,13 @@ import { projects } from '../../data/projects.js';
   @media (hover: hover) {
     .project-link:hover {
       text-decoration: underline;
-      text-shadow: var(--hover-glow);
+      text-shadow: 0 0 6px var(--hover-glow-color);
     }
   }
   .empty { padding: 48px 22px; text-align: center; color: var(--muted); font-size: 13px; }
   .game {
     border: 1px solid var(--border);
-    background: #060906;
+    background: var(--deep);
     padding: 8px;
     display: inline-block;
     max-width: 100%;

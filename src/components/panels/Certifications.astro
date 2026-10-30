@@ -36,7 +36,7 @@ import { certifications } from '../../data/certifications.js';
     font-weight: 800;
     letter-spacing: 0.08em;
     color: var(--magenta);
-    text-shadow: 0 0 12px #ff2fd088;
+    text-shadow: 0 0 12px var(--glow-magenta);
     margin: 0 0 8px;
   }
   .lede {
@@ -62,7 +62,7 @@ import { certifications } from '../../data/certifications.js';
     justify-content: space-between;
     gap: 10px;
     border: 1px solid var(--border);
-    background: #0b120d;
+    background: var(--surface);
     padding: 14px 16px;
   }
   h3 {
@@ -82,7 +82,7 @@ import { certifications } from '../../data/certifications.js';
   @media (hover: hover) {
     h3 a:hover {
       text-decoration: underline;
-      text-shadow: var(--hover-glow);
+      text-shadow: 0 0 6px var(--hover-glow-color);
     }
   }
   .meta {
@@ -94,7 +94,7 @@ import { certifications } from '../../data/certifications.js';
     color: var(--muted);
     margin: 0;
   }
-  .sep { color: #2b5133; }
+  .sep { color: var(--dim); }
 
   @media (max-width: 899px) {
     .certs { padding: 16px; }

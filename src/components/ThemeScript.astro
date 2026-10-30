@@ -1,0 +1,50 @@
+---
+// Inline on purpose. Part one runs in the head, before the first paint, so a
+// pinned theme never flashes the other one. Part two wires the button once the
+// document is parsed. An inlined script also keeps the page free of extra
+// requests, which a module import shared with the 404 page would break.
+---
+<script is:inline>
+  (function () {
+    var ORDER = ['auto', 'light', 'dark'];
+    var KEY = 'theme-pref';
+    var root = document.documentElement;
+    var pref = 'auto';
+
+    try {
+      var stored = window.localStorage.getItem(KEY);
+      if (ORDER.indexOf(stored) > -1) pref = stored;
+    } catch (error) {
+      // Storage is off. Nothing is remembered, so the site follows the system.
+    }
+
+    // An absent attribute means auto, and the stylesheet resolves that from the
+    // system setting. The attribute pins color-scheme instead.
+    if (pref !== 'auto') root.dataset.themePref = pref;
+
+    document.addEventListener('DOMContentLoaded', function () {
+      var button = document.querySelector('[data-theme-toggle]');
+      if (!button) return;
+
+      function sync() {
+        button.setAttribute('aria-label', 'Theme: ' + pref + '. Activate to change.');
+        button.title = 'Theme: ' + pref;
+      }
+
+      sync();
+
+      button.addEventListener('click', function () {
+        pref = ORDER[(ORDER.indexOf(pref) + 1) % ORDER.length];
+        try {
+          if (pref === 'auto') window.localStorage.removeItem(KEY);
+          else window.localStorage.setItem(KEY, pref);
+        } catch (error) {
+          // The choice holds for this page and is not remembered.
+        }
+        if (pref === 'auto') delete root.dataset.themePref;
+        else root.dataset.themePref = pref;
+        sync();
+      });
+    });
+  })();
+</script>

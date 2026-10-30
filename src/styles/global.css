@@ -7,9 +7,52 @@
   --muted: #5d8a63;
   --border: #1f3a24;
   --hover: #2fd413;
-  --hover-glow: 0 0 6px #39ff1466;
+  --hover-glow-color: #39ff1466;
   --scroll-track: #0c1410;
+  --header: #0d1a10;
+  --surface: #0b120d;
+  --deep: #060906;
+  --dim: #2c5a33;
+  --glow-green: #39ff1488;
+  --glow-green-strong: #39ff14cc;
+  --glow-magenta: #ff2fd088;
+  --glow-magenta-soft: #ff2fd0aa;
+  --glow-magenta-faint: #ff2fd066;
   --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* The dark values above are the whole palette for a browser without
+   light-dark(). Where it is supported, each token carries both themes and the
+   used colour scheme picks one. With no stored choice that is the operating
+   system preference, with no script and no first-paint flash. A stored choice
+   pins color-scheme on the root element instead. */
+@supports (color: light-dark(#000, #fff)) {
+  :root {
+    color-scheme: light dark;
+    --bg: light-dark(#e6f1e4, #080b09);
+    --green: light-dark(#12661f, #39ff14);
+    --magenta: light-dark(#9c0f7a, #ff2fd0);
+    --text: light-dark(#0d2a15, #c2ffbd);
+    --muted: light-dark(#3f6b48, #5d8a63);
+    --border: light-dark(#b9cfba, #1f3a24);
+    --hover: light-dark(#1c8a2c, #2fd413);
+    --hover-glow-color: light-dark(transparent, #39ff1466);
+    --scroll-track: light-dark(#d7e8d3, #0c1410);
+    --header: light-dark(#eff7ec, #0d1a10);
+    --surface: light-dark(#f7fbf5, #0b120d);
+    --deep: light-dark(#dcebd9, #060906);
+    --dim: light-dark(#9db89f, #2c5a33);
+    --glow-green: light-dark(transparent, #39ff1488);
+    --glow-green-strong: light-dark(transparent, #39ff14cc);
+    --glow-magenta: light-dark(transparent, #ff2fd088);
+    --glow-magenta-soft: light-dark(transparent, #ff2fd0aa);
+    --glow-magenta-faint: light-dark(transparent, #ff2fd066);
+  }
+
+  /* The toggle writes this. Pinning the scheme changes the icons and the
+     scrollbars as well as the tokens, because both read the same property. */
+  :root[data-theme-pref='light'] { color-scheme: light; }
+  :root[data-theme-pref='dark'] { color-scheme: dark; }
 }
 
 * { box-sizing: border-box; }

@@ -38,7 +38,7 @@ const tabs = [
   }
   a[data-active='true'] {
     color: var(--green);
-    text-shadow: 0 0 8px #39ff1488;
+    text-shadow: 0 0 8px var(--glow-green);
   }
   a[data-active='true']::before { content: '> '; }
   a:focus-visible { outline: 2px solid var(--magenta); outline-offset: 2px; }
@@ -46,9 +46,9 @@ const tabs = [
   @media (hover: hover) {
     a:hover {
       color: var(--hover);
-      text-shadow: var(--hover-glow);
+      text-shadow: 0 0 6px var(--hover-glow-color);
     }
-    a[data-active='true']:hover { color: var(--green); text-shadow: 0 0 12px #39ff14cc; }
+    a[data-active='true']:hover { color: var(--green); text-shadow: 0 0 12px var(--glow-green-strong); }
   }
 
   @media (max-width: 899px) {

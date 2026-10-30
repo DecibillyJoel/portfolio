@@ -70,3 +70,34 @@ test('every view passes at a short mobile viewport', async ({ page }) => {
 
   expect(failures).toEqual([]);
 });
+
+// The light palette carries its own contrast on a light background, so it needs
+// its own pass rather than a shared one.
+test('every view passes in the light theme', async ({ page }) => {
+  await blockEmbed(page);
+  await page.emulateMedia({ colorScheme: 'light' });
+
+  const failures = [];
+  for (const { hash, panel } of ROUTES) {
+    await page.goto(`/${hash}`);
+    await expect(page.locator(`#panel-${panel}`)).toBeVisible();
+    const violations = await audit(page);
+    if (violations.length > 0) failures.push({ hash, violations });
+  }
+
+  expect(failures).toEqual([]);
+});
+
+test('the dark theme keeps the toggle reachable and correctly named', async ({ page }) => {
+  await blockEmbed(page);
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.goto('/');
+
+  const toggle = page.locator('[data-theme-toggle]');
+  await expect(toggle).toHaveAttribute('aria-label', 'Theme: auto. Activate to change.');
+  await toggle.click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme-pref', 'light');
+  await expect(toggle).toHaveAttribute('aria-label', 'Theme: light. Activate to change.');
+
+  expect(await audit(page)).toEqual([]);
+});
