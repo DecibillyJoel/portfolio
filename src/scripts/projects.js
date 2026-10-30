@@ -10,12 +10,16 @@ export function initProjects(root = document) {
   const list = buttons[0].closest('[role="tablist"]');
   const empty = root.querySelector('[data-project-empty]');
   const badge = root.querySelector('[data-on-air]');
+  const badgeText = badge?.querySelector('[data-on-air-text]');
   const projectsPanel = root.querySelector('[data-panel="projects"]');
-  const radioPanel = panels.find((panel) => panel.dataset.project === 'maximum-slappage');
-  const gamePanel = panels.find((panel) => {
-    const frame = panel.querySelector('iframe[data-embed]');
-    return frame?.dataset.embedKind === 'iframe';
-  });
+
+  // A project with an embed names its own kind, so no project id is repeated here.
+  function embedPanelOf(kind) {
+    return panels.find((panel) => panel.querySelector('iframe[data-embed]')?.dataset.embedKind === kind);
+  }
+
+  const radioPanel = embedPanelOf('player');
+  const gamePanel = embedPanelOf('iframe');
 
   function isLoaded(panel) {
     const frame = panel?.querySelector('iframe[data-embed]');
@@ -48,24 +52,26 @@ export function initProjects(root = document) {
     syncEmbedFocus();
   }
 
+  // The brackets around the badge are decoration, so the words alone carry the
+  // state to assistive tech.
+  const BADGE_LABELS = {
+    off: 'OFF AIR',
+    'on-air': 'ON AIR',
+    running: 'GAME RUNNING',
+    paused: 'GAME PAUSED',
+  };
+
   function syncBadge() {
-    if (!badge) return;
+    if (!badge || !badgeText) return;
     const running = isLoaded(gamePanel);
     const onAir = isLoaded(radioPanel);
     const onProjects = projectsPanel ? !projectsPanel.hidden : true;
 
     let state = 'off';
-    let label = '[ OFF AIR ]';
+    if (running) state = onProjects ? 'running' : 'paused';
+    else if (onAir) state = 'on-air';
 
-    if (running) {
-      state = onProjects ? 'running' : 'paused';
-      label = onProjects ? '[ GAME RUNNING ]' : '[ GAME PAUSED ]';
-    } else if (onAir) {
-      state = 'on-air';
-      label = '[ ON AIR ]';
-    }
-
-    badge.textContent = label;
+    badgeText.textContent = BADGE_LABELS[state];
     badge.dataset.state = state;
   }
 

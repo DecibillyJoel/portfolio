@@ -29,17 +29,17 @@ export function initRouter(root = document) {
   function apply(name) {
     document.title = defaultTitle;
     if (projectRoutes.has(name)) {
-      if (projectTab) tabs.show(projectTab, false);
+      if (projectTab) tabs.show(projectTab);
       projects.show(projectRoutes.get(name));
       return;
     }
-    tabs.show(tabRoutes.get(name) ?? tabRoutes.get(DEFAULT_HASH), false);
+    tabs.show(tabRoutes.get(name) ?? tabRoutes.get(DEFAULT_HASH));
   }
 
   // An unknown hash is a real address the user asked for. Keep it in the
   // address bar, hide every tab, and show the 404 view instead.
   function showNotFound() {
-    tabs.show(NOT_FOUND_PANEL, false);
+    tabs.show(NOT_FOUND_PANEL);
     document.title = NOT_FOUND_TITLE;
   }
 

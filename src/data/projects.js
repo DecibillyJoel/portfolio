@@ -6,6 +6,8 @@ export const projects = [
     title: 'MAXIMUM SLAPPAGE',
     tagline: 'live internet radio - rock, power pop, alternative, adult contemporary, and electronic/dance',
     blurb: 'The station I run. The best classics, the best modern hits, and the best songs you have never heard, all optimized for maximum slappage.',
+    href: 'https://live365.com/station/Maximum-Slappage-a57727',
+    linkLabel: 'View on Live365',
     embedKind: 'player',
   },
   {

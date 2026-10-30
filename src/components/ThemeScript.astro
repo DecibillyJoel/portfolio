@@ -22,6 +22,28 @@
     // system setting. The attribute pins color-scheme instead.
     if (pref !== 'auto') root.dataset.themePref = pref;
 
+    // A meta tag cannot read a CSS token, so resolve the page colour through a
+    // probe element. The palette then stays in the stylesheet alone.
+    function applyThemeColor() {
+      var probe = document.createElement('span');
+      probe.style.cssText = 'position:absolute;left:-9999px;background:var(--bg)';
+      (document.body || root).appendChild(probe);
+      var colour = window.getComputedStyle(probe).backgroundColor;
+      probe.remove();
+      if (!colour || colour === 'rgba(0, 0, 0, 0)' || colour === 'transparent') return;
+
+      var meta = document.querySelector('meta[name="theme-color"]');
+      if (!meta) {
+        meta = document.createElement('meta');
+        meta.setAttribute('name', 'theme-color');
+        document.head.appendChild(meta);
+      }
+      meta.setAttribute('content', colour);
+    }
+
+    applyThemeColor();
+    document.addEventListener('DOMContentLoaded', applyThemeColor);
+
     document.addEventListener('DOMContentLoaded', function () {
       var button = document.querySelector('[data-theme-toggle]');
       if (!button) return;
@@ -43,6 +65,7 @@
         }
         if (pref === 'auto') delete root.dataset.themePref;
         else root.dataset.themePref = pref;
+        applyThemeColor();
         sync();
       });
     });

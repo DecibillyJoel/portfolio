@@ -17,7 +17,7 @@ const tabs = [
       aria-controls={`panel-${tab.id}`}
       aria-selected={index === 0 ? 'true' : 'false'}
       data-active={index === 0 ? 'true' : 'false'}
-    >{tab.label}</a>
+    ><span class="prompt" aria-hidden="true">{'> '}</span>{tab.label}</a>
   ))}
 </nav>
 
@@ -40,7 +40,10 @@ const tabs = [
     color: var(--green);
     text-shadow: 0 0 8px var(--glow-green);
   }
-  a[data-active='true']::before { content: '> '; }
+  /* The prompt marks the selected tab. It is hidden from assistive tech, so
+     the tab is announced by its label alone. */
+  .prompt { display: none; }
+  a[data-active='true'] .prompt { display: inline; }
   a:focus-visible { outline: 2px solid var(--magenta); outline-offset: 2px; }
 
   @media (hover: hover) {

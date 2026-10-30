@@ -14,7 +14,7 @@ const { prefix = '/' } = Astro.props;
     {
       routes.map((route) => (
         <li>
-          <a href={`${prefix}#${route.hash}`}>{route.label}</a>
+          <a href={`${prefix}#${route.hash}`}><span class="prompt" aria-hidden="true">{'> '}</span>{route.label}</a>
         </li>
       ))
     }
@@ -52,8 +52,8 @@ const { prefix = '/' } = Astro.props;
     border-bottom: 1px solid var(--border);
     padding-bottom: 2px;
   }
-  .routes a::before {
-    content: '> ';
+  /* The prompt is decoration, so it stays out of the link name. */
+  .routes .prompt {
     color: var(--muted);
   }
   @media (hover: hover) {

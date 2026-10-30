@@ -6,13 +6,11 @@ import Icon from '../Icon.astro';
   <h2>LINKS</h2>
   <ul>
     {links.map((link) => (
-      <li class={link.pending ? 'card pending' : 'card'}>
+      <li class="card">
         <Icon id={link.id} />
         <div class="meta">
           <span class="label">{link.label}</span>
-          {link.href
-            ? <a href={link.href} rel="me noopener"><span class="visually-hidden">{link.label}: </span>{link.value}</a>
-            : <span class="value">{link.value}</span>}
+          <a href={link.href} rel="me noopener"><span class="visually-hidden">{link.label}: </span>{link.value}</a>
         </div>
       </li>
     ))}
@@ -54,9 +52,6 @@ import Icon from '../Icon.astro';
   @media (hover: hover) {
     .card a:hover { text-decoration: underline; text-shadow: 0 0 6px var(--hover-glow-color); }
   }
-  .card a:focus-visible { outline: 2px solid var(--magenta); outline-offset: 2px; }
-  .value { font-size: 14px; color: var(--green); }
-  .pending .value { color: var(--muted); }
 
   @media (max-width: 899px) {
     .links { padding: 16px; }

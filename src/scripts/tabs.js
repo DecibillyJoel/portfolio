@@ -7,7 +7,7 @@ export function initTabs(root = document) {
 
   const list = buttons[0].closest('[role="tablist"]');
 
-  function show(id, moveFocus) {
+  function show(id) {
     for (const panel of panels) {
       panel.hidden = panel.dataset.panel !== id;
     }
@@ -19,7 +19,6 @@ export function initTabs(root = document) {
       if (active) activeButton = button;
     }
     if (activeButton) setRovingTabindex(buttons, activeButton);
-    if (activeButton && moveFocus) activeButton.focus();
     root.dispatchEvent(new CustomEvent('tabs:change', { detail: { tab: id } }));
   }
 

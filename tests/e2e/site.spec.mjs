@@ -889,3 +889,45 @@ test('neither theme scrolls the document at 1280x720 or 390x844', async ({ page 
     }
   }
 });
+
+// The prompt and the brackets are decoration. A screen reader must hear the
+// plain words, so check the accessible name, not the markup.
+test('the tabs, the sub-tabs, the badge and the route links are named without decoration', async ({ page }) => {
+  await blockEmbed(page);
+  await page.goto('/');
+
+  await expect(tab(page, 'who-am-i')).toHaveAccessibleName('Who Am I');
+  await expect(tab(page, 'certifications')).toHaveAccessibleName('Certifications');
+  await expect(page.locator('[data-on-air]')).toHaveText('[ OFF AIR ]');
+  // A status region takes no name from content, so read what it exposes.
+  expect(await page.locator('[data-on-air]').ariaSnapshot()).toBe('- status: OFF AIR');
+
+  await tab(page, 'projects').click();
+  await expect(subTab(page, 'smiles')).toHaveAccessibleName('Smiles Sadistic Adventure');
+  await subTab(page, 'maximum-slappage').click();
+  await expect(subTab(page, 'maximum-slappage')).toHaveAccessibleName('Maximum Slappage');
+  await expect(page.locator('[data-on-air]')).toHaveText('[ ON AIR ]');
+  expect(await page.locator('[data-on-air]').ariaSnapshot()).toBe('- status: ON AIR');
+
+  await page.goto('/#thisdoesntexist');
+  await expect(page.locator('.routes a').first()).toHaveAccessibleName('Who Am I');
+});
+
+// The mobile browser bar should match the page, including when the choice is
+// pinned against the system setting.
+test('the browser chrome colour follows the page colour in both themes', async ({ page }) => {
+  await blockEmbed(page);
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.goto('/');
+
+  const metaColor = () => page.evaluate(
+    () => document.querySelector('meta[name="theme-color"]')?.content ?? null,
+  );
+
+  await expect.poll(metaColor).toBe(DARK_BG);
+  expect(await metaColor()).toBe(await bodyBackground(page));
+
+  await page.click('[data-theme-toggle]');
+  await expect.poll(() => bodyBackground(page)).toBe(LIGHT_BG);
+  await expect.poll(metaColor).toBe(LIGHT_BG);
+});

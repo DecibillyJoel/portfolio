@@ -14,7 +14,7 @@ import { projects } from '../../data/projects.js';
         aria-controls={`project-${project.id}`}
         data-active="false"
         aria-selected="false"
-      >{project.label}</a>
+      ><span class="prompt" aria-hidden="true">{'> '}</span>{project.label}</a>
     ))}
   </div>
 
@@ -49,7 +49,6 @@ import { projects } from '../../data/projects.js';
               data-src={project.embed}
               width="800"
               height="450"
-              frameborder="0"
               title={project.embedTitle}
             ></iframe>
           </div>
@@ -89,7 +88,9 @@ import { projects } from '../../data/projects.js';
     text-decoration: none;
     text-shadow: 0 0 6px var(--glow-magenta);
   }
-  .sub-tabs a[data-active='true']::before { content: '> '; }
+  /* The prompt marks the selected sub-tab and stays out of its accessible name. */
+  .sub-tabs .prompt { display: none; }
+  .sub-tabs a[data-active='true'] .prompt { display: inline; }
   @media (hover: hover) {
     .sub-tabs a:hover {
       border-color: var(--magenta);

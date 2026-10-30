@@ -51,10 +51,15 @@ test('page mounts all four panels in one document', () => {
 
 test('tab bar exposes the four full labels', () => {
   const html = readIndex();
-  assert.match(html, /data-tab-target="who-am-i"[^>]*>\s*Who Am I/);
-  assert.match(html, /data-tab-target="links"[^>]*>\s*Links/);
-  assert.match(html, /data-tab-target="certifications"[^>]*>\s*Certifications/);
-  assert.match(html, /data-tab-target="projects"[^>]*>\s*Projects/);
+  // The selected tab carries a decorative prompt, so drop the markup first.
+  const labels = [...html.matchAll(/data-tab-target="([a-z-]+)"[^>]*>([\s\S]*?)<\/a>/g)]
+    .map((m) => [m[1], m[2].replace(/<span[\s\S]*?<\/span>/g, '').replace(/<[^>]+>/g, '').trim()]);
+  assert.deepEqual(labels, [
+    ['who-am-i', 'Who Am I'],
+    ['links', 'Links'],
+    ['certifications', 'Certifications'],
+    ['projects', 'Projects'],
+  ]);
 });
 
 test('exactly one panel starts visible', () => {
@@ -139,16 +144,23 @@ test('header merges the brand, tabs, and a status badge indicator', () => {
   const header = html.match(/<header[\s\S]*?<\/header>/)?.[0] ?? '';
   assert.match(header, /<h1[^>]*>@JoeOfSomeTrades<\/h1>/);
   assert.match(header, /data-tab-target="projects"/);
-  assert.match(header, /<span[^>]*data-on-air[^>]*data-state="off"[^>]*role="status"[^>]*>\s*\[ OFF AIR \]/);
+  assert.match(header, /<span[^>]*data-on-air[^>]*data-state="off"[^>]*role="status"/);
+  // The words carry the state and the brackets are decoration.
+  assert.match(header, /data-on-air-text[^>]*>\s*OFF AIR/);
+  assert.equal((header.match(/aria-hidden="true"[^>]*>\[/g) || []).length, 1);
+  assert.equal((header.match(/aria-hidden="true"[^>]*>\]/g) || []).length, 1);
   assert.doesNotMatch(header, /data-on-air[^>]*(href|aria-disabled|data-clickable)/);
 });
 
 test('the status badge knows all four states and reacts to tab changes', () => {
-  const js = readDist();
-  for (const label of ['[ OFF AIR ]', '[ ON AIR ]', '[ GAME RUNNING ]', '[ GAME PAUSED ]']) {
-    assert.ok(js.includes(label), `missing ${label}`);
+  const html = readIndex();
+  const all = readDist();
+  for (const label of ['OFF AIR', 'ON AIR', 'GAME RUNNING', 'GAME PAUSED']) {
+    assert.ok(all.includes(label), `missing ${label}`);
   }
-  assert.match(js, /tabs:change/);
+  // No state carries its own brackets. The pair in the markup is the only one.
+  assert.ok(!all.includes('[ OFF AIR ]') && !all.includes('[ ON AIR ]'), 'the brackets left the labels');
+  assert.match(all, /tabs:change/);
 });
 
 test('every tab and sub-tab is a native link with its own hash', () => {
@@ -637,4 +649,15 @@ test('only the token layer names a colour', () => {
   }
 
   assert.deepEqual(offenders, []);
+});
+
+test('every project link names the project it opens', () => {
+  const html = readIndex();
+  const links = [...html.matchAll(/class="project-link" href="([^"]+)"[^>]*>([^<]+)<\/a>/g)]
+    .map((m) => [m[2], m[1]]);
+  assert.deepEqual(links, [
+    ['View on Live365', 'https://live365.com/station/Maximum-Slappage-a57727'],
+    ['View on GitHub', 'https://github.com/DecibillyJoel/portfolio'],
+    ['View on GitHub', 'https://github.com/DecibillyJoel/Smiles-Sadistic-Adventure'],
+  ]);
 });
