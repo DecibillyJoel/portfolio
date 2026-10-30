@@ -3,6 +3,10 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { site } from '../src/data/site.js';
+import { links } from '../src/data/links.js';
+import { certifications } from '../src/data/certifications.js';
+import { projects } from '../src/data/projects.js';
 
 const DIST = fileURLToPath(new URL('../dist', import.meta.url));
 
@@ -446,4 +450,116 @@ test('the router reads the not-found panel and ignores only the skip link target
     'only the skip link target escapes the 404 view',
   );
   assert.match(readIndex(), /<main id="main" tabindex="-1">/, 'the ignored hash names a real element');
+});
+
+// The origin is fixed in astro.config.mjs, so the built tags must be absolute.
+const ORIGIN = 'https://portfolio.joeofsometrades.workers.dev';
+
+function metaMap(html) {
+  const map = {};
+  for (const tag of html.match(/<meta [^>]*>/g) || []) {
+    const key = tag.match(/(?:name|property)="([^"]+)"/)?.[1];
+    const content = tag.match(/content="([^"]*)"/)?.[1];
+    if (key && content !== undefined) map[key] = content;
+  }
+  return map;
+}
+
+function readGraph() {
+  const raw = readIndex().match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1];
+  assert.ok(raw, 'the page carries one JSON-LD block');
+  const data = JSON.parse(raw);
+  return {
+    data,
+    byType: Object.fromEntries(data['@graph'].map((node) => [node['@type'], node])),
+  };
+}
+
+test('the head carries a canonical link and a full social card', () => {
+  const html = readIndex();
+  const meta = metaMap(html);
+
+  assert.match(html, new RegExp(`<link rel="canonical" href="${ORIGIN}/">`));
+
+  assert.equal(meta['og:type'], 'profile');
+  assert.equal(meta['og:site_name'], site.title);
+  assert.equal(meta['og:title'], site.title);
+  assert.equal(meta['og:description'], site.description);
+  assert.equal(meta['og:url'], `${ORIGIN}/`);
+  assert.equal(meta['og:image'], `${ORIGIN}${site.image}`);
+  assert.equal(meta['og:image:type'], 'image/png');
+  assert.equal(meta['og:image:width'], '1200');
+  assert.equal(meta['og:image:height'], '630');
+  assert.equal(meta['og:image:alt'], site.imageAlt);
+
+  assert.equal(meta['twitter:card'], 'summary_large_image');
+  assert.equal(meta['twitter:title'], site.title);
+  assert.equal(meta['twitter:description'], site.description);
+  assert.equal(meta['twitter:image'], `${ORIGIN}${site.image}`);
+  assert.equal(meta['twitter:image:alt'], site.imageAlt);
+});
+
+test('the social card is a real 1200 by 630 png', () => {
+  const file = join(DIST, site.image.replace(/^\//, ''));
+  assert.ok(existsSync(file), 'dist must hold the social card');
+  const bytes = readFileSync(file);
+  assert.deepEqual([...bytes.subarray(0, 8)], [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+  assert.equal(bytes.readUInt32BE(16), 1200, 'the card is wide enough for a large preview');
+  assert.equal(bytes.readUInt32BE(20), 630);
+});
+
+test('the structured data is one graph of the person, the site and the projects', () => {
+  const { data, byType } = readGraph();
+  assert.equal(data['@context'], 'https://schema.org');
+  assert.deepEqual(Object.keys(byType).sort(), ['Person', 'RadioStation', 'VideoGame', 'WebSite']);
+});
+
+test('the person node carries the profiles, the credentials and the address', () => {
+  const { byType } = readGraph();
+  const person = byType.Person;
+
+  assert.equal(person['@id'], `${ORIGIN}/#person`);
+  assert.equal(person.name, site.title);
+  assert.equal(person.alternateName, 'JoeOfSomeTrades');
+  assert.equal(person.url, `${ORIGIN}/`);
+  assert.equal(person.image, `${ORIGIN}${site.image}`);
+  assert.equal(person.email, links.find((link) => link.id === 'email').value);
+  assert.equal(person.description, site.description);
+  assert.ok(person.knowsAbout.includes('Game development'));
+
+  const sameAs = person.sameAs;
+  for (const id of ['github', 'youtube', 'x', 'bluesky', 'lastfm', 'discord']) {
+    assert.ok(sameAs.includes(links.find((link) => link.id === id).href), `sameAs needs ${id}`);
+  }
+  assert.ok(
+    !sameAs.includes(links.find((link) => link.id === 'live365').href),
+    'the station is its own node, not a profile link',
+  );
+
+  assert.equal(person.hasCredential.length, certifications.length);
+  for (const certification of certifications) {
+    const node = person.hasCredential.find((entry) => entry.name === certification.name);
+    assert.ok(node, `hasCredential needs ${certification.name}`);
+    assert.equal(node['@type'], 'EducationalOccupationalCredential');
+    assert.equal(node.name, certification.name);
+    assert.equal(node.url, certification.href);
+    assert.equal(node.recognizedBy.name, certification.issuer);
+  }
+});
+
+test('the site, the station and the game point back at the person', () => {
+  const { byType } = readGraph();
+  const personId = byType.Person['@id'];
+  const smiles = projects.find((project) => project.id === 'smiles');
+
+  assert.equal(byType.WebSite['@id'], `${ORIGIN}/#website`);
+  assert.equal(byType.WebSite.url, `${ORIGIN}/`);
+  assert.equal(byType.WebSite.author['@id'], personId);
+
+  assert.equal(byType.RadioStation.url, links.find((link) => link.id === 'live365').href);
+  assert.equal(byType.RadioStation.founder['@id'], personId);
+
+  assert.equal(byType.VideoGame.url, smiles.embed);
+  assert.equal(byType.VideoGame.codeRepository, smiles.href);
+  assert.equal(byType.VideoGame.author['@id'], personId);
 });
