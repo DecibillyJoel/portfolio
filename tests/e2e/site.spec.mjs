@@ -3,9 +3,12 @@ import { test, expect } from '@playwright/test';
 const TAB_IDS = ['who-am-i', 'links', 'projects'];
 const tab = (page, id) => page.locator(`#tab-${id}`);
 const panel = (page, id) => page.locator(`#panel-${id}`);
+const subTab = (page, id) => page.locator(`[data-sub-tab-target="${id}"]`);
+const loadedFrames = (page) => page.locator('iframe[data-loaded="true"]');
 
 async function blockEmbed(page) {
   await page.route(/live365\.com/, (route) => route.abort());
+  await page.route(/decibillyjoel\.github\.io/, (route) => route.abort());
 }
 
 test('viewport below 320px does not scroll sideways', async ({ page }) => {
@@ -28,6 +31,7 @@ test('resizing across the 900px breakpoint does not swap or reload the embed', a
   await page.goto('/');
 
   await tab(page, 'projects').click();
+  await subTab(page, 'maximum-slappage').click();
   const before = await page.evaluate(() => {
     const frame = document.querySelector('iframe');
     window.__iframeRef = frame;
@@ -56,15 +60,20 @@ test('resizing across the 900px breakpoint does not swap or reload the embed', a
   expect(afterGrow.src).toContain('s=xl');
 });
 
-test('blocked Live365 embed still renders the page and switches tabs', async ({ page }) => {
+test('blocked embeds still render the page and switch tabs', async ({ page }) => {
   await blockEmbed(page);
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
 
   await page.goto('/');
-  await expect(page.locator('h3')).toHaveText('MAXIMUM SLAPPAGE');
-  await expect(page.locator('.tagline')).toContainText('live internet radio');
-  await expect(page.locator('iframe')).toHaveCount(1);
+  await expect(panel(page, 'who-am-i')).toBeVisible();
+
+  await tab(page, 'projects').click();
+  await expect(panel(page, 'projects')).toBeVisible();
+  await expect(page.locator('[data-project="maximum-slappage"] h3')).toHaveText('MAXIMUM SLAPPAGE');
+  await expect(page.locator('[data-project="maximum-slappage"] .tagline')).toContainText('live internet radio');
+  await expect(subTab(page, 'maximum-slappage')).toBeVisible();
+  await expect(subTab(page, 'smiles')).toBeVisible();
 
   await tab(page, 'links').click();
   await expect(panel(page, 'links')).toBeVisible();
@@ -79,7 +88,7 @@ test('blocked Live365 embed still renders the page and switches tabs', async ({ 
   expect(errors).toEqual([]);
 });
 
-test('all tabs and the sub-tab are reachable and activatable with the keyboard', async ({ page }) => {
+test('all tabs and the sub-tabs are reachable and activatable with the keyboard', async ({ page }) => {
   await blockEmbed(page);
   await page.goto('/');
 
@@ -101,14 +110,14 @@ test('all tabs and the sub-tab are reachable and activatable with the keyboard',
   await expect(panel(page, 'projects')).toBeVisible();
   await expect(tab(page, 'projects')).toHaveAttribute('aria-selected', 'true');
 
-  // The merged header puts the ON AIR control after the tabs, so the sub-tab is
-  // a couple of stops further along.
   let onSubTab = false;
   for (let i = 0; i < 5 && !onSubTab; i += 1) {
     await page.keyboard.press('Tab');
     onSubTab = await page.evaluate(() => !!document.activeElement?.closest('.sub-tabs'));
   }
   expect(onSubTab).toBe(true);
+  await page.keyboard.press('Enter');
+  await expect(loadedFrames(page)).toHaveCount(1);
 });
 
 test('first load and mid-session reload land on the default tab with no autoplay', async ({ page }) => {
@@ -129,21 +138,77 @@ test('first load and mid-session reload land on the default tab with no autoplay
   const autoplay = await page.evaluate(() => ({
     attributeCount: document.querySelectorAll('[autoplay]').length,
     iframeAllows: document.querySelector('iframe').getAttribute('allow') ?? '',
-    iframeSrc: document.querySelector('iframe').getAttribute('src'),
+    iframeSrc: document.querySelector('iframe').getAttribute('src') ?? '',
   }));
   expect(autoplay.attributeCount).toBe(0);
   expect(autoplay.iframeAllows).not.toContain('autoplay');
   expect(autoplay.iframeSrc).not.toContain('autoplay');
 });
 
-test('the ON AIR control jumps to the Projects tab', async ({ page }) => {
+test('projects load nothing until a project is chosen', async ({ page }) => {
   await blockEmbed(page);
   await page.goto('/');
+  await tab(page, 'projects').click();
 
-  await expect(panel(page, 'who-am-i')).toBeVisible();
-  await page.locator('[data-goto-tab="projects"]').click();
-  await expect(panel(page, 'projects')).toBeVisible();
-  await expect(tab(page, 'projects')).toHaveAttribute('aria-selected', 'true');
+  await expect(loadedFrames(page)).toHaveCount(0);
+  await expect(page.locator('[data-project]:visible')).toHaveCount(0);
+  await expect(page.locator('[data-project-empty]')).toBeVisible();
+  await expect(subTab(page, 'maximum-slappage')).toHaveAttribute('aria-selected', 'false');
+  await expect(subTab(page, 'smiles')).toHaveAttribute('aria-selected', 'false');
+});
+
+test('only one project embed is loaded at a time', async ({ page }) => {
+  await blockEmbed(page);
+  await page.goto('/');
+  await tab(page, 'projects').click();
+
+  await subTab(page, 'maximum-slappage').click();
+  await expect(loadedFrames(page)).toHaveCount(1);
+  await expect(loadedFrames(page)).toHaveAttribute('src', /live365\.com/);
+  await expect(page.locator('[data-project]:visible')).toHaveCount(1);
+  await expect(page.locator('[data-project="maximum-slappage"]')).toBeVisible();
+  await expect(page.locator('[data-project-empty]')).toBeHidden();
+
+  await subTab(page, 'smiles').click();
+  await expect(loadedFrames(page)).toHaveCount(1);
+  await expect(loadedFrames(page)).toHaveAttribute('src', /decibillyjoel\.github\.io/);
+  await expect(page.locator('[data-project]:visible')).toHaveCount(1);
+  await expect(page.locator('[data-project="smiles"]')).toBeVisible();
+
+  await subTab(page, 'maximum-slappage').click();
+  await expect(loadedFrames(page)).toHaveCount(1);
+  await expect(loadedFrames(page)).toHaveAttribute('src', /live365\.com/);
+  await expect(page.locator('[data-project]:visible')).toHaveCount(1);
+  await expect(page.locator('[data-project="maximum-slappage"]')).toBeVisible();
+});
+
+test('ON AIR reports the radio embed load state', async ({ page }) => {
+  await blockEmbed(page);
+  await page.goto('/');
+  await expect(page.locator('[data-on-air]')).toHaveText('[ OFF AIR ]');
+
+  await tab(page, 'projects').click();
+  await subTab(page, 'maximum-slappage').click();
+  await expect(page.locator('[data-on-air]')).toHaveText('[ ON AIR ]');
+
+  await subTab(page, 'smiles').click();
+  await expect(page.locator('[data-on-air]')).toHaveText('[ OFF AIR ]');
+});
+
+test('leaving Projects to a non-project tab keeps the project loaded', async ({ page }) => {
+  await blockEmbed(page);
+  await page.goto('/');
+  await tab(page, 'projects').click();
+  await subTab(page, 'maximum-slappage').click();
+  await expect(loadedFrames(page)).toHaveCount(1);
+
+  await tab(page, 'links').click();
+  await expect(loadedFrames(page)).toHaveCount(1);
+  await expect(page.locator('[data-on-air]')).toHaveText('[ ON AIR ]');
+
+  await tab(page, 'projects').click();
+  await expect(loadedFrames(page)).toHaveCount(1);
+  await expect(subTab(page, 'maximum-slappage')).toHaveAttribute('aria-selected', 'true');
 });
 
 test('every Links card shows a brand icon', async ({ page }) => {

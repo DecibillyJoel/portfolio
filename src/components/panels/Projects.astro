@@ -1,22 +1,57 @@
 ---
 import Player from '../Player.astro';
+import { projects } from '../../data/projects.js';
 ---
 <section class="projects">
   <nav class="sub-tabs" aria-label="Projects">
-    <button type="button" data-active="true">Maximum Slappage</button>
+    {projects.map((project) => (
+      <button
+        type="button"
+        data-sub-tab-target={project.id}
+        data-active="false"
+        aria-selected="false"
+      >{project.label}</button>
+    ))}
   </nav>
 
-  <div class="project">
-    <h3>MAXIMUM SLAPPAGE</h3>
-    <p class="tagline">live internet radio - rock, and whatever else gets loud</p>
-    <p class="blurb blurb-wide">The station I run. Tune in from the player. Built for late nights and long drives.</p>
-    <p class="blurb blurb-narrow">The station I run. Tune in, and turn it up.</p>
-    <Player />
-  </div>
+  {projects.map((project) => (
+    <div class="project" data-project={project.id} hidden>
+      <h3>{project.title}</h3>
+      {project.tagline && <p class="tagline">{project.tagline}</p>}
+      <p class="blurb blurb-wide">{project.blurbWide}</p>
+      {project.blurbNarrow && <p class="blurb blurb-narrow">{project.blurbNarrow}</p>}
+      {project.href && (
+        <a class="project-link" href={project.href} target="_blank" rel="noopener">{project.linkLabel}</a>
+      )}
+      {project.embedKind === 'player' ? (
+        <Player />
+      ) : (
+        <div class="game">
+          <iframe
+            data-embed
+            data-embed-kind="iframe"
+            data-loaded="false"
+            data-src={project.embed}
+            width="800"
+            height="450"
+            frameborder="0"
+            title={project.embedTitle}
+          ></iframe>
+        </div>
+      )}
+    </div>
+  ))}
+
+  <p class="empty" data-project-empty>Select a project above.</p>
 </section>
 
+<script>
+  import { initProjects } from '../../scripts/projects.js';
+  initProjects();
+</script>
+
 <style>
-  .sub-tabs { display: flex; gap: 14px; padding: 12px 22px; border-bottom: 1px solid #142a18; }
+  .sub-tabs { display: flex; flex-wrap: wrap; gap: 14px; padding: 12px 22px; border-bottom: 1px solid #142a18; }
   .sub-tabs button {
     background: none;
     font: inherit;
@@ -28,6 +63,7 @@ import Player from '../Player.astro';
     text-shadow: 0 0 6px #ff2fd088;
   }
   .sub-tabs button[data-active='true']::before { content: '> '; }
+  .project[hidden] { display: none; }
   .project {
     display: flex;
     flex-direction: column;
@@ -44,14 +80,32 @@ import Player from '../Player.astro';
     margin: 0 0 6px;
   }
   .tagline { font-size: 13px; color: var(--muted); margin: 0 0 12px; }
-  .blurb { font-size: 12px; line-height: 1.5; max-width: 520px; margin: 0 0 18px; }
+  .blurb { font-size: 12px; line-height: 1.5; max-width: 520px; margin: 0 0 14px; }
   .blurb-narrow { display: none; }
+  .project-link { font-size: 12px; color: var(--green); margin: 0 0 14px; }
+  .empty { padding: 48px 22px; text-align: center; color: var(--muted); font-size: 13px; }
+  .game {
+    border: 1px solid var(--border);
+    background: #060906;
+    padding: 8px;
+    display: inline-block;
+    max-width: 100%;
+  }
+  .game iframe {
+    display: block;
+    width: 760px;
+    max-width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    border: 0;
+  }
 
   @media (max-width: 899px) {
     .project { padding: 14px 16px; }
     h3 { font-size: 18px; }
-    .tagline { font-size: 11px; margin-bottom: 12px; }
+    .tagline { font-size: 11px; margin-bottom: 10px; }
     .blurb-wide { display: none; }
     .blurb-narrow { display: block; font-size: 11px; line-height: 1.5; margin: 0 0 12px; }
+    .game { padding: 4px; }
   }
 </style>

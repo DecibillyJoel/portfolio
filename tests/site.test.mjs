@@ -79,18 +79,41 @@ test('live links point at the approved URLs', () => {
   assert.match(html, /href="https:\/\/discord\.com\/users\/152963830350217217"/);
 });
 
-test('header merges the brand, tabs, and a clickable ON AIR control', () => {
+test('header merges the brand, tabs, and an ON AIR status badge', () => {
   const html = readIndex();
   const header = html.match(/<header[\s\S]*?<\/header>/)?.[0] ?? '';
   assert.match(header, /@JoeOfSomeTrades/);
   assert.match(header, /data-tab-target="projects"/);
-  assert.match(header, /<button[^>]*data-goto-tab="projects"[^>]*>\s*\[ ON AIR \]/);
+  assert.match(header, /<span[^>]*data-on-air[^>]*>\s*\[ OFF AIR \]/);
+  assert.doesNotMatch(header, /data-goto-tab|<button[^>]*on-air/);
 });
 
-test('player holds both embed sizes and mounts with no src', () => {
+test('projects expose two sub-tabs and two lazy project blocks', () => {
+  const html = readIndex();
+  assert.match(html, /data-sub-tab-target="maximum-slappage"/);
+  assert.match(html, /data-sub-tab-target="smiles"/);
+  assert.equal((html.match(/data-project="/g) || []).length, 2);
+  assert.equal((html.match(/data-project="[^"]+"[^>]*hidden/g) || []).length, 2);
+  assert.match(html, /data-project-empty[^>]*>\s*Select a project above\./);
+});
+
+test('hidden project blocks are display:none, not flex', () => {
+  const css = readDist();
+  assert.match(css, /\.project\[data-astro-cid-[a-z0-9]+\]\[hidden\]\s*\{\s*display:\s*none/);
+});
+
+test('Smiles Sadistic Adventure carries its embed and GitHub link', () => {
+  const html = readIndex();
+  assert.match(html, /data-src="https:\/\/decibillyjoel\.github\.io\/Smiles-Sadistic-Adventure\/"/);
+  assert.match(html, /href="https:\/\/github\.com\/DecibillyJoel\/Smiles-Sadistic-Adventure"/);
+  assert.match(html, /An endless semi-random bullet hell I created in high school\./);
+});
+
+test('player holds both embed sizes and lazy iframes carry no src', () => {
   const html = readIndex();
   assert.match(html, /data-src-xl="https:\/\/live365\.com\/embeds\/v1\/player\/a57727\?s=xl&amp;m=dark&amp;c=aac"/);
   assert.match(html, /data-src-sm="https:\/\/live365\.com\/embeds\/v1\/player\/a57727\?s=sm&amp;m=dark&amp;c=aac"/);
+  assert.equal((html.match(/data-loaded="false"/g) || []).length, 2);
   assert.doesNotMatch(html, /<iframe[^>]*\ssrc=/);
 });
 

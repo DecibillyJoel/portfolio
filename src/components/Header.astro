@@ -8,7 +8,7 @@ import TabBar from './TabBar.astro';
   </div>
   <span class="divider" aria-hidden="true"></span>
   <TabBar />
-  <button class="on-air" type="button" data-goto-tab="projects">[ ON AIR ]</button>
+  <span class="on-air" data-on-air data-state="off">[ OFF AIR ]</span>
 </header>
 
 <style>
@@ -32,16 +32,12 @@ import TabBar from './TabBar.astro';
   .divider { width: 1px; height: 22px; background: var(--border); }
   .on-air {
     margin-left: auto;
-    font: inherit;
     font-size: 11px;
-    color: var(--green);
-    background: none;
+    color: var(--muted);
     border: 1px solid #2c5a33;
     padding: 4px 11px;
-    cursor: pointer;
   }
-  .on-air:hover { background: #0d1a10; }
-  .on-air:focus-visible { outline: 2px solid var(--magenta); outline-offset: 2px; }
+  .on-air[data-state='on'] { color: var(--green); text-shadow: 0 0 8px #39ff1488; }
 
   @media (max-width: 899px) {
     .site-header { padding: 10px 16px; gap: 10px 14px; }

@@ -7,28 +7,16 @@ const sm = `${BASE}?s=sm&m=dark&c=aac`;
 <div class="player">
   <iframe
     data-embed
+    data-embed-kind="player"
+    data-loaded="false"
     data-src-xl={xl}
     data-src-sm={sm}
     width="800"
     height="296"
     frameborder="0"
     title="Maximum Slappage player"
-    loading="eager"
   ></iframe>
 </div>
-
-<script>
-  const frame = document.querySelector('iframe[data-embed]');
-  if (frame && !frame.src) {
-    const wide = window.matchMedia('(min-width: 900px)').matches;
-    frame.src = wide ? frame.dataset.srcXl : frame.dataset.srcSm;
-    frame.closest('.player').dataset.embedSize = wide ? 'xl' : 'sm';
-    if (!wide) {
-      frame.width = '300';
-      frame.height = '614';
-    }
-  }
-</script>
 
 <style>
   .player {
