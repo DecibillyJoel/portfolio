@@ -377,3 +377,23 @@ test('browser back and forward move between views without a reload', async ({ pa
 
   expect(await page.evaluate(() => window.__loads)).toBe(1);
 });
+
+test('an unknown path returns a 404 page with links back to the views', async ({ page }) => {
+  await blockEmbed(page);
+
+  const response = await page.goto('/some/typo');
+  expect(response?.status()).toBe(404);
+  await expect(page.getByRole('heading', { name: /404/ })).toBeVisible();
+  await expect(page.locator('.skip-link')).toHaveAttribute('href', '#main');
+  await expect(page.locator('#main')).toHaveCount(1);
+  await expect(page.locator('iframe')).toHaveCount(0);
+
+  const links = page.locator('.routes a');
+  await expect(links).toHaveCount(5);
+  const hrefs = await links.evaluateAll((nodes) => nodes.map((node) => node.getAttribute('href')));
+  expect(hrefs).toEqual(['/#whoami', '/#links', '/#projects', '/#radio', '/#game']);
+
+  await page.locator('.routes a', { hasText: 'Projects' }).click();
+  await expect(page).toHaveURL(/#projects$/);
+  await expect(panel(page, 'projects')).toBeVisible();
+});

@@ -1,0 +1,117 @@
+---
+import '../styles/global.css';
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <title>404 — @JoeOfSomeTrades</title>
+    <meta
+      name="description"
+      content="That address does not exist on the @JoeOfSomeTrades portfolio. Follow a link to a live view."
+    />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <header class="site-header">
+      <div class="brand">
+        <img class="monogram" src="/favicon.png" alt="" width="30" height="30" />
+        <h1 class="brand-name">@JoeOfSomeTrades</h1>
+      </div>
+    </header>
+    <main id="main" tabindex="-1">
+      <section class="error">
+        <h2>404 — NO SIGNAL</h2>
+        <p>That address is not in this cabinet. Pick a view below.</p>
+        <ul class="routes">
+          <li><a href="/#whoami">Who Am I</a></li>
+          <li><a href="/#links">Links</a></li>
+          <li><a href="/#projects">Projects</a></li>
+          <li><a href="/#radio">Maximum Slappage</a></li>
+          <li><a href="/#game">Smiles Sadistic Adventure</a></li>
+        </ul>
+      </section>
+    </main>
+  </body>
+</html>
+
+<style>
+  .site-header {
+    display: flex;
+    align-items: center;
+    gap: 16px 22px;
+    padding: 12px 22px;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .monogram {
+    width: 30px;
+    height: 30px;
+    display: block;
+    border: 1px solid var(--green);
+    background: #0d1a10;
+    object-fit: cover;
+  }
+  .brand-name {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: #c9ffc2;
+    margin: 0;
+  }
+  .error {
+    padding: 48px 22px;
+    max-width: 720px;
+  }
+  h2 {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: var(--magenta);
+    text-shadow: 0 0 12px #ff2fd066;
+    margin: 0 0 10px;
+  }
+  p {
+    color: var(--muted);
+    margin: 0 0 22px;
+  }
+  .routes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 22px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .routes a {
+    color: var(--green);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 2px;
+  }
+  .routes a::before {
+    content: '> ';
+    color: var(--muted);
+  }
+  .routes a:hover {
+    border-bottom-color: var(--green);
+  }
+  @media (max-width: 899px) {
+    .site-header {
+      padding: 10px 16px;
+    }
+    .error {
+      padding: 32px 16px;
+    }
+    h2 {
+      font-size: 20px;
+    }
+  }
+</style>

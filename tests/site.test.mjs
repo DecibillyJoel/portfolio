@@ -174,6 +174,37 @@ test('robots.txt and llms.txt ship with the site', () => {
   }
 });
 
+test('sitemap.xml ships and robots.txt points at it', () => {
+  const sitemap = readFileSync(join(DIST, 'sitemap.xml'), 'utf8');
+  assert.match(sitemap, /<urlset xmlns="http:\/\/www\.sitemaps\.org\/schemas\/sitemap\/0\.9">/);
+  assert.match(sitemap, /<loc>https:\/\/portfolio\.joeofsometrades\.workers\.dev\/<\/loc>/);
+
+  const robots = readFileSync(join(DIST, 'robots.txt'), 'utf8');
+  assert.match(
+    robots,
+    /^Sitemap: https:\/\/portfolio\.joeofsometrades\.workers\.dev\/sitemap\.xml$/m,
+  );
+});
+
+test('a real 404 page ships and points back at every view', () => {
+  const notFound = readFileSync(join(DIST, '404.html'), 'utf8');
+  assert.match(notFound, /404 — NO SIGNAL/);
+  assert.equal((notFound.match(/<h1[\s>]/g) || []).length, 1);
+  assert.equal((notFound.match(/<h2[\s>]/g) || []).length, 1);
+  assert.match(notFound, /<main id="main" tabindex="-1"[^>]*>/);
+  assert.match(notFound, /<a class="skip-link" href="#main"[^>]*>/);
+  for (const route of ['/#whoami', '/#links', '/#projects', '/#radio', '/#game']) {
+    assert.ok(notFound.includes(`href="${route}"`), `404.html is missing ${route}`);
+  }
+  // The 404 page renders no tab bar, so it must not reference panels that only
+  // index.html provides.
+  assert.doesNotMatch(notFound, /role="tablist"|aria-controls|data-tab-target|data-sub-tab-target/);
+
+  const wrangler = readFileSync(new URL('../wrangler.jsonc', import.meta.url), 'utf8');
+  assert.match(wrangler, /"not_found_handling"\s*:\s*"404-page"/);
+  assert.doesNotMatch(wrangler, /single-page-application/);
+});
+
 test('the page has one h1, a skip link, and a focusable main landmark', () => {
   const html = readIndex();
   assert.equal((html.match(/<h1[\s>]/g) || []).length, 1);
