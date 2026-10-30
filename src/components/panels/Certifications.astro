@@ -2,7 +2,7 @@
 import { certifications } from '../../data/certifications.js';
 ---
 <section class="certs">
-  <h2>CERTIFICATIONS</h2>
+  <h2 class="heading">CERTIFICATIONS</h2>
   <p class="lede">
     These are all the certifications I've earned so far. The credential links are omitted from here, but you can find them on my LinkedIn page.
   </p>
@@ -30,14 +30,6 @@ import { certifications } from '../../data/certifications.js';
   .certs {
     padding: 26px 60px 32px;
     text-align: center;
-  }
-  h2 {
-    font-size: 26px;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    color: var(--magenta);
-    text-shadow: 0 0 12px var(--glow-magenta);
-    margin: 0 0 8px;
   }
   ul {
     list-style: none;
@@ -91,7 +83,6 @@ import { certifications } from '../../data/certifications.js';
 
   @media (max-width: 899px) {
     .certs { padding: 16px; }
-    h2 { font-size: 18px; }
     ul { grid-template-columns: 1fr; gap: 10px; }
     .cert { padding: 12px 14px; }
     h3 { font-size: 12px; }

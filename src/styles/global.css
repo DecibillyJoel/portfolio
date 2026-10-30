@@ -17,7 +17,9 @@
   --glow-green-strong: #39ff14cc;
   --glow-magenta: #ff2fd088;
   --glow-magenta-soft: #ff2fd0aa;
-  --glow-magenta-faint: #ff2fd066;
+  /* Space under a panel heading. */
+  --heading-gap: 8px;
+  --heading-gap-tight: 6px;
   --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
@@ -46,7 +48,6 @@
     --glow-green-strong: light-dark(transparent, #39ff14cc);
     --glow-magenta: light-dark(transparent, #ff2fd088);
     --glow-magenta-soft: light-dark(transparent, #ff2fd0aa);
-    --glow-magenta-faint: light-dark(transparent, #ff2fd066);
   }
 
   /* The toggle writes this. Pinning the scheme changes the icons and the
@@ -156,6 +157,18 @@ main > [data-panel='projects']:not([hidden]) {
   top: 8px;
 }
 
+/* One heading style for every view. The heading sits close to the line under
+   it, and closer still to a tagline, where the two lines read as one block. */
+.heading {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--magenta);
+  margin: 0 0 var(--heading-gap);
+}
+
+.heading--tight { margin-bottom: var(--heading-gap-tight); }
+
 /* One line of intro prose under a heading. The certifications view and every
    project panel share it, so the wording sits in the same measure everywhere. */
 .lede {
@@ -179,5 +192,6 @@ main > [data-panel='projects']:not([hidden]) {
 .embed-box iframe { display: block; border: 0; }
 
 @media (max-width: 899px) {
+  .heading { font-size: 18px; }
   .embed-box { --embed-pad: 4px; }
 }

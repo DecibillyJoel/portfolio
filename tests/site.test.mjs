@@ -662,3 +662,21 @@ test('every project link names the project it opens', () => {
     ['View on GitHub', 'https://github.com/DecibillyJoel/Smiles-Sadistic-Adventure'],
   ]);
 });
+
+// The heading style lives in one place now. A component that sets its own
+// heading size drifts away from the rest, so this fails as soon as one appears.
+test('one shared rule styles every panel heading', () => {
+  const offenders = [];
+  for (const file of collectFiles(SRC)) {
+    if (!file.endsWith('.astro')) continue;
+    if (/(^|\s)h2\s*\{/.test(readFileSync(file, 'utf8'))) {
+      offenders.push(file.slice(SRC.length + 1));
+    }
+  }
+  assert.deepEqual(offenders, []);
+
+  const html = readIndex();
+  assert.equal((html.match(/class="heading/g) || []).length, 7);
+  assert.match(html, /\.heading\{[^}]*color:var\(--magenta\)/);
+  assert.match(html, /\.heading--tight\{margin-bottom:var\(--heading-gap-tight\)\}/);
+});

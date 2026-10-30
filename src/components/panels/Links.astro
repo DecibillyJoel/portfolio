@@ -3,7 +3,7 @@ import { links } from '../../data/links.js';
 import Icon from '../Icon.astro';
 ---
 <section class="links">
-  <h2>LINKS</h2>
+  <h2 class="heading">LINKS</h2>
   <p class="lede">Socials and profiles</p>
   <ul>
     {links.map((link) => (
@@ -20,14 +20,6 @@ import Icon from '../Icon.astro';
 
 <style>
   .links { padding: 26px 60px 32px; text-align: center; }
-  h2 {
-    font-size: 26px;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    color: var(--magenta);
-    text-shadow: 0 0 12px var(--glow-magenta);
-    margin: 0 0 22px;
-  }
   ul {
     list-style: none;
     margin: 0 auto;
@@ -56,7 +48,6 @@ import Icon from '../Icon.astro';
 
   @media (max-width: 899px) {
     .links { padding: 16px; }
-    h2 { font-size: 18px; margin-bottom: 16px; }
     ul { grid-template-columns: 1fr; }
   }
 </style>

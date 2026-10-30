@@ -28,7 +28,7 @@ import { projects } from '../../data/projects.js';
         aria-labelledby={`subtab-${project.id}`}
         hidden
       >
-        <h2>{project.title}</h2>
+        <h2 class="heading heading--tight">{project.title}</h2>
         {project.tagline && <p class="tagline">{project.tagline}</p>}
         <p class="lede">{project.blurb}</p>
         {project.href && (
@@ -104,13 +104,6 @@ import { projects } from '../../data/projects.js';
     text-align: center;
     padding: 18px;
   }
-  h2 {
-    font-size: 26px;
-    font-weight: 800;
-    color: var(--magenta);
-    text-shadow: 0 0 12px var(--glow-magenta);
-    margin: 0 0 6px;
-  }
   .tagline { font-size: 13px; color: var(--muted); margin: 0 0 12px; }
   .project-link { font-size: 12px; color: var(--green); margin: 0 0 14px; }
   @media (hover: hover) {
@@ -132,7 +125,6 @@ import { projects } from '../../data/projects.js';
 
   @media (max-width: 899px) {
     .project { padding: 14px 16px; }
-    h2 { font-size: 18px; }
     .tagline { font-size: 11px; margin-bottom: 10px; }
   }
 </style>
