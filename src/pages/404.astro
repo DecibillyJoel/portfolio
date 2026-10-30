@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import NotFound from '../components/NotFound.astro';
 ---
 <!doctype html>
 <html lang="en">
@@ -7,7 +8,7 @@ import '../styles/global.css';
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content" />
     <link rel="icon" type="image/png" href="/favicon.png" />
-    <title>404 — @JoeOfSomeTrades</title>
+    <title>404 - @JoeOfSomeTrades</title>
     <meta
       name="description"
       content="That address does not exist on the @JoeOfSomeTrades portfolio. Follow a link to a live view."
@@ -22,19 +23,7 @@ import '../styles/global.css';
       </div>
     </header>
     <main id="main" tabindex="-1">
-      <section class="error">
-        <h2>404 - Dead Air</h2>
-        <p>Signal lost. Tune in to an active frequency below:</p>
-        <ul class="routes">
-          <li><a href="/#whoami">Who Am I</a></li>
-          <li><a href="/#links">Links</a></li>
-          <li><a href="/#certs">Certifications</a></li>
-          <li><a href="/#projects">Projects</a></li>
-          <li><a href="/#radio">Maximum Slappage</a></li>
-          <li><a href="/#portfolio">Portfolio</a></li>
-          <li><a href="/#game">Smiles Sadistic Adventure</a></li>
-        </ul>
-      </section>
+      <NotFound />
     </main>
   </body>
 </html>
@@ -74,55 +63,9 @@ import '../styles/global.css';
     min-height: 0;
     overflow-y: auto;
   }
-  .error {
-    padding: 48px 22px;
-    max-width: 720px;
-  }
-  h2 {
-    font-size: 26px;
-    font-weight: 800;
-    letter-spacing: 1px;
-    color: var(--magenta);
-    text-shadow: 0 0 12px #ff2fd066;
-    margin: 0 0 10px;
-  }
-  p {
-    color: var(--muted);
-    margin: 0 0 22px;
-  }
-  .routes {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px 22px;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-  .routes a {
-    color: var(--green);
-    text-decoration: none;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 2px;
-  }
-  .routes a::before {
-    content: '> ';
-    color: var(--muted);
-  }
-  @media (hover: hover) {
-    .routes a:hover {
-      border-bottom-color: var(--green);
-      text-shadow: var(--hover-glow);
-    }
-  }
   @media (max-width: 899px) {
     .site-header {
       padding: 10px 16px;
-    }
-    .error {
-      padding: 32px 16px;
-    }
-    h2 {
-      font-size: 20px;
     }
   }
 </style>

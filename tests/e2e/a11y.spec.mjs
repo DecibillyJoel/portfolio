@@ -12,6 +12,8 @@ const ROUTES = [
   { hash: '#radio', panel: 'projects' },
   { hash: '#portfolio', panel: 'projects' },
   { hash: '#game', panel: 'projects' },
+  // An unknown hash shows the 404 view inside the same document.
+  { hash: '#thisdoesntexist', panel: 'not-found' },
 ];
 
 async function blockEmbed(page) {

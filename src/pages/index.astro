@@ -4,6 +4,7 @@ import WhoAmI from '../components/panels/WhoAmI.astro';
 import Links from '../components/panels/Links.astro';
 import Certifications from '../components/panels/Certifications.astro';
 import Projects from '../components/panels/Projects.astro';
+import NotFound from '../components/NotFound.astro';
 ---
 <Base>
   <section id="panel-who-am-i" data-panel="who-am-i" role="tabpanel" aria-labelledby="tab-who-am-i" tabindex="0">
@@ -17,5 +18,9 @@ import Projects from '../components/panels/Projects.astro';
   </section>
   <section id="panel-projects" data-panel="projects" role="tabpanel" aria-labelledby="tab-projects" tabindex="0" hidden>
     <Projects />
+  </section>
+  <!-- No tab controls this panel. The router shows it for an unknown hash. -->
+  <section id="panel-not-found" data-panel="not-found" aria-label="Page not found" tabindex="0" hidden>
+    <NotFound prefix="" />
   </section>
 </Base>

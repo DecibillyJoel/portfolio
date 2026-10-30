@@ -23,6 +23,15 @@ export function readIndex() {
   return readFileSync(join(DIST, 'index.html'), 'utf8');
 }
 
+// Astro inlines the component script while it stays under the inline limit in
+// astro.config.mjs, and writes it to dist/_astro when it grows past it. Read
+// the script from either place.
+export function readScripts() {
+  const dir = join(DIST, '_astro');
+  if (existsSync(dir)) return collect(dir).join('\n');
+  return (readIndex().match(/<script[^>]*>[\s\S]*?<\/script>/g) || []).join('\n');
+}
+
 test('build emits a static index.html', () => {
   assert.match(readIndex(), /<!doctype html>/i);
 });
@@ -47,7 +56,9 @@ test('tab bar exposes the four full labels', () => {
 test('exactly one panel starts visible', () => {
   const html = readIndex();
   const hiddenCount = (html.match(/data-panel="[^"]+"[^>]*hidden/g) || []).length;
-  assert.equal(hiddenCount, 3);
+  // Four tab panels start hidden. The not-found panel starts hidden too, so a
+  // link without a hash shows the default view.
+  assert.equal(hiddenCount, 4);
 });
 
 test('Who Am I carries the three approved paragraphs', () => {
@@ -97,6 +108,7 @@ test('Certifications lists four credentials with dates and official pages', () =
   }
   assert.equal((panel.match(/<h3[\s>]/g) || []).length, 4);
   // The LinkedIn note is prose on the page, but LinkedIn itself must not be linked.
+  assert.match(panel, /These are all the certifications I've earned so far\./);
   assert.match(panel, /The credential links are omitted from here, but you can find them on my LinkedIn page\./);
   assert.doesNotMatch(panel, /href="https?:\/\/(www\.)?linkedin\.com/);
 });
@@ -289,7 +301,7 @@ test('_headers ships the security headers and no CSP', () => {
 test('the page has one h1, a skip link, and a focusable main landmark', () => {
   const html = readIndex();
   assert.equal((html.match(/<h1[\s>]/g) || []).length, 1);
-  assert.equal((html.match(/<h2[\s>]/g) || []).length, 5);
+  assert.equal((html.match(/<h2[\s>]/g) || []).length, 6);
   assert.match(html, /<a class="skip-link" href="#main">/);
   assert.match(html, /<main id="main" tabindex="-1">/);
 });
@@ -357,8 +369,8 @@ test('the shell locks the page height and scrolls inside each panel', () => {
   assert.match(css, /main>\[data-panel\]\{[^}]*min-height:0/, 'each panel gives up its content height');
   assert.match(css, /main>\[data-panel\]:focus-visible\{outline-offset:-2px\}/, 'the panel ring sits inside the panel');
 
-  assert.equal((html.match(/<section id="panel-[a-z-]+"[^>]*tabindex="0"/g) || []).length, 4,
-    'every tabpanel is focusable, so the scroll region is reachable by keyboard');
+  assert.equal((html.match(/<section id="panel-[a-z-]+"[^>]*tabindex="0"/g) || []).length, 5,
+    'every panel is focusable, so the scroll region is reachable by keyboard');
 });
 
 test('the sub-tab bar sticks to the top of the scrolling panel', () => {
@@ -379,4 +391,38 @@ test('both pages ask the on-screen keyboard to resize the content', () => {
 
   const notFound = readFileSync(join(DIST, '404.html'), 'utf8');
   assert.match(notFound, /main\[data-astro-cid-[a-z]+\]\{min-height:0;overflow-y:auto\}/, 'the 404 page scrolls inside main');
+});
+
+test('the page carries a not-found panel that no tab controls', () => {
+  const html = readIndex();
+  assert.match(
+    html,
+    /<section id="panel-not-found"[^>]*data-panel="not-found"[^>]*aria-label="Page not found"[^>]*tabindex="0"[^>]*hidden/,
+  );
+  assert.doesNotMatch(
+    html,
+    /id="panel-not-found"[^>]*role="tabpanel"/,
+    'a tabpanel role would claim a tab that does not exist',
+  );
+
+  const panel = html.match(/id="panel-not-found"[\s\S]*?<\/section>/)?.[0] ?? '';
+  assert.match(panel, /404 - Dead Air/);
+  assert.match(panel, /Signal lost\. Tune in to an active frequency below:/);
+
+  const links = panel.match(/<a [^>]*href="#[a-z-]+"/g) || [];
+  assert.equal(links.length, 7);
+  assert.match(panel, /href="#game"/);
+  assert.doesNotMatch(panel, /href="\/#/, 'the in-page view takes bare hashes');
+});
+
+test('the router reads the not-found panel and ignores only the skip link target', () => {
+  const scripts = readScripts();
+  assert.match(scripts, /404 - @JoeOfSomeTrades/, 'the 404 title lives in the script');
+  assert.match(scripts, /["'`]not-found["'`]/, 'the router names the not-found panel');
+  assert.match(
+    scripts,
+    /new Set\(\[["'`]main["'`]\]\)/,
+    'only the skip link target escapes the 404 view',
+  );
+  assert.match(readIndex(), /<main id="main" tabindex="-1">/, 'the ignored hash names a real element');
 });

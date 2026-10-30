@@ -365,6 +365,7 @@ test('the skip link reaches main content without changing the visible view', asy
   await expect(page).toHaveURL(/#main$/);
   await expect(page.locator('#main')).toBeFocused();
   await expect(panel(page, 'projects')).toBeVisible();
+  await expect(panel(page, 'not-found')).toBeHidden();
   await expect(tab(page, 'projects')).toHaveAttribute('aria-selected', 'true');
 });
 
@@ -519,6 +520,55 @@ test('an unknown path returns a 404 page with links back to the views', async ({
   await page.locator('.routes a', { hasText: 'Projects' }).click();
   await expect(page).toHaveURL(/#projects$/);
   await expect(panel(page, 'projects')).toBeVisible();
+});
+
+test('an unknown hash shows the 404 view in place, without a reload', async ({ page }) => {
+  await blockEmbed(page);
+  await page.addInitScript(() => {
+    window.__loads = (window.__loads ?? 0) + 1;
+  });
+  await page.goto('/#links');
+  await expect(panel(page, 'links')).toBeVisible();
+
+  await page.evaluate(() => {
+    window.location.hash = '#thisdoesntexist';
+  });
+
+  await expect(panel(page, 'not-found')).toBeVisible();
+  await expect(page).toHaveURL(/#thisdoesntexist$/);
+  await expect(page.locator('[data-panel]:visible')).toHaveCount(1);
+  await expect(page.locator('[role="tab"][aria-selected="true"]')).toHaveCount(0);
+  await expect(page).toHaveTitle('404 - @JoeOfSomeTrades');
+
+  await page.goBack();
+  await expect(page).toHaveURL(/#links$/);
+  await expect(panel(page, 'links')).toBeVisible();
+  await expect(tab(page, 'links')).toHaveAttribute('aria-selected', 'true');
+  await expect(page).toHaveTitle('@JoeOfSomeTrades');
+
+  expect(await page.evaluate(() => window.__loads)).toBe(1);
+});
+
+test('the 404 view links back to every live view without a reload', async ({ page }) => {
+  await blockEmbed(page);
+  await page.addInitScript(() => {
+    window.__loads = (window.__loads ?? 0) + 1;
+  });
+  await page.goto('/#nope');
+  await expect(panel(page, 'not-found')).toBeVisible();
+
+  const links = page.locator('#panel-not-found .routes a');
+  await expect(links).toHaveCount(7);
+  const hrefs = await links.evaluateAll((nodes) => nodes.map((node) => node.getAttribute('href')));
+  expect(hrefs).toEqual(['#whoami', '#links', '#certs', '#projects', '#radio', '#portfolio', '#game']);
+
+  await page.locator('#panel-not-found .routes a', { hasText: 'Certifications' }).click();
+  await expect(page).toHaveURL(/#certs$/);
+  await expect(panel(page, 'certifications')).toBeVisible();
+  await expect(page.locator('[role="tab"][aria-selected="true"]')).toHaveCount(1);
+  await expect(page).toHaveTitle('@JoeOfSomeTrades');
+
+  expect(await page.evaluate(() => window.__loads)).toBe(1);
 });
 
 test('the game frame shows the site focus ring for keyboard focus only', async ({ page }) => {

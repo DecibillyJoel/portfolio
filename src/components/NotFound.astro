@@ -1,0 +1,73 @@
+---
+import { routes } from '../data/routes.js';
+
+// The standalone 404 page is a different document, so its links need the
+// absolute form. The in-page view sits at `/` and takes the bare form, which
+// the browser treats as a same-document navigation.
+const { prefix = '/' } = Astro.props;
+---
+
+<div class="not-found">
+  <h2>404 - Dead Air</h2>
+  <p>Signal lost. Tune in to an active frequency below:</p>
+  <ul class="routes">
+    {
+      routes.map((route) => (
+        <li>
+          <a href={`${prefix}#${route.hash}`}>{route.label}</a>
+        </li>
+      ))
+    }
+  </ul>
+</div>
+
+<style>
+  .not-found {
+    padding: 48px 22px;
+    max-width: 720px;
+  }
+  h2 {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: var(--magenta);
+    text-shadow: 0 0 12px #ff2fd066;
+    margin: 0 0 10px;
+  }
+  p {
+    color: var(--muted);
+    margin: 0 0 22px;
+  }
+  .routes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 22px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .routes a {
+    color: var(--green);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 2px;
+  }
+  .routes a::before {
+    content: '> ';
+    color: var(--muted);
+  }
+  @media (hover: hover) {
+    .routes a:hover {
+      border-bottom-color: var(--green);
+      text-shadow: var(--hover-glow);
+    }
+  }
+  @media (max-width: 899px) {
+    .not-found {
+      padding: 32px 16px;
+    }
+    h2 {
+      font-size: 20px;
+    }
+  }
+</style>
