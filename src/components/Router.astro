@@ -1,0 +1,10 @@
+---
+// Inline on purpose. The script imports only local modules, so Astro keeps it
+// in the page and the build stays free of external files. A document with no
+// panels renders no router, so it ships no routing code either.
+---
+<script>
+  import { initRouter } from '../scripts/router.js';
+
+  initRouter();
+</script>

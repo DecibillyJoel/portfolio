@@ -1,77 +1,12 @@
 ---
-import '../styles/global.css';
+import Base from '../layouts/Base.astro';
 import NotFound from '../components/NotFound.astro';
-import ThemeScript from '../components/ThemeScript.astro';
-import ThemeToggle from '../components/ThemeToggle.astro';
+import { site } from '../data/site.js';
 ---
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content" />
-    <ThemeScript />
-    <link rel="icon" type="image/png" href="/favicon.png" />
-    <title>404 - @JoeOfSomeTrades</title>
-    <meta
-      name="description"
-      content="That address does not exist on the @JoeOfSomeTrades portfolio. Follow a link to a live view."
-    />
-  </head>
-  <body>
-    <a class="skip-link" href="#main">Skip to main content</a>
-    <header class="site-header">
-      <div class="brand">
-        <img class="monogram" src="/monogram.webp" alt="" width="30" height="30" />
-        <h1 class="brand-name">@JoeOfSomeTrades</h1>
-      </div>
-      <ThemeToggle />
-    </header>
-    <main id="main" tabindex="-1" data-route-ignore>
-      <NotFound />
-    </main>
-  </body>
-</html>
-
-<style>
-  .site-header {
-    display: flex;
-    align-items: center;
-    gap: 16px 22px;
-    padding: 12px 22px;
-    border-bottom: 1px solid var(--border);
-    flex-wrap: wrap;
-  }
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .monogram {
-    width: 30px;
-    height: 30px;
-    display: block;
-    border: 1px solid var(--green);
-    background: var(--header);
-    object-fit: cover;
-  }
-  .brand-name {
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    color: var(--text);
-    margin: 0;
-  }
-  /* This page has no status badge, so the toggle takes the right edge. */
-  :global(.theme-toggle) { margin-left: auto; }
-  /* The shell locks the page height, so this page scrolls inside main too.
-     It has no panels, so the panel rule in global.css does not apply here. */
-  main {
-    min-height: 0;
-    overflow-y: auto;
-  }
-  @media (max-width: 899px) {
-    .site-header {
-      padding: 10px 16px;
-    }
-  }
-</style>
+<Base
+  title={`404 - ${site.title}`}
+  description={`That address does not exist on the ${site.title} portfolio. Follow a link to a live view.`}
+  slim
+>
+  <NotFound />
+</Base>

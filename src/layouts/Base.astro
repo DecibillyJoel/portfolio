@@ -1,9 +1,20 @@
 ---
 import Header from '../components/Header.astro';
+import Router from '../components/Router.astro';
 import ThemeScript from '../components/ThemeScript.astro';
 import { site } from '../data/site.js';
 import { buildStructuredData } from '../data/structured-data.js';
 import '../styles/global.css';
+
+const {
+  title = site.title,
+  description = site.description,
+  // The 404 document shows the brand row alone. It carries no canonical link,
+  // no social tags and no structured data, because it describes no page.
+  slim = false,
+  discovery = !slim,
+  router = !slim,
+} = Astro.props;
 
 // Every absolute URL in the head comes from `site` in astro.config.mjs.
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
@@ -17,35 +28,38 @@ const structuredData = buildStructuredData(Astro.site.origin);
     <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content" />
     <ThemeScript />
     <link rel="icon" type="image/png" href="/favicon.png" />
-    <link rel="canonical" href={canonical} />
-    <title>{site.title}</title>
-    <meta name="description" content={site.description} />
-    <meta property="og:type" content="profile" />
-    <meta property="og:site_name" content={site.title} />
-    <meta property="og:title" content={site.title} />
-    <meta property="og:description" content={site.description} />
-    <meta property="og:url" content={canonical} />
-    <meta property="og:image" content={ogImage} />
-    <meta property="og:image:type" content="image/png" />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content={site.imageAlt} />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={site.title} />
-    <meta name="twitter:description" content={site.description} />
-    <meta name="twitter:image" content={ogImage} />
-    <meta name="twitter:image:alt" content={site.imageAlt} />
-    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {
+      discovery && (
+        <>
+          <link rel="canonical" href={canonical} />
+          <meta property="og:type" content="profile" />
+          <meta property="og:site_name" content={site.title} />
+          <meta property="og:title" content={title} />
+          <meta property="og:description" content={description} />
+          <meta property="og:url" content={canonical} />
+          <meta property="og:image" content={ogImage} />
+          <meta property="og:image:type" content="image/png" />
+          <meta property="og:image:width" content="1200" />
+          <meta property="og:image:height" content="630" />
+          <meta property="og:image:alt" content={site.imageAlt} />
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:title" content={title} />
+          <meta name="twitter:description" content={description} />
+          <meta name="twitter:image" content={ogImage} />
+          <meta name="twitter:image:alt" content={site.imageAlt} />
+          <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+        </>
+      )
+    }
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to main content</a>
-    <Header />
+    <Header tabs={!slim} status={!slim} />
     <main id="main" tabindex="-1" data-route-ignore>
       <slot />
     </main>
-    <script>
-      import { initRouter } from '../scripts/router.js';
-      initRouter();
-    </script>
+    {router && <Router />}
   </body>
 </html>

@@ -271,6 +271,14 @@ test('a real 404 page ships and points back at every view', () => {
   // The 404 page renders no tab bar, so it must not reference panels that only
   // index.html provides.
   assert.doesNotMatch(notFound, /role="tablist"|aria-controls|data-tab-target|data-sub-tab-target/);
+  // The shared header renders in slim mode: the brand row and the theme
+  // control, with no badge and no routing code of its own.
+  assert.match(notFound, /<header class="site-header" data-slim="true"[^>]*>/);
+  assert.match(notFound, /class="brand-name"/);
+  assert.doesNotMatch(notFound, /data-on-air/);
+  assert.doesNotMatch(notFound, /<script type="module"/);
+  // Nothing describes a page that does not exist.
+  assert.doesNotMatch(notFound, /rel="canonical"|property="og:|name="twitter:|application\/ld\+json/);
 
   const wrangler = readFileSync(new URL('../wrangler.jsonc', import.meta.url), 'utf8');
   assert.match(wrangler, /"not_found_handling"\s*:\s*"404-page"/);
@@ -383,8 +391,8 @@ test('the shell locks the page height and scrolls inside each panel', () => {
   assert.match(css, /body\{[^}]*overscroll-behavior-y:none/, 'the page does not chain its scroll');
 
   assert.match(css, /main\{[^}]*min-height:0/, 'main gives up its content height');
-  assert.match(css, /main>\[data-panel\]\{[^}]*overflow-y:auto/, 'each panel scrolls');
-  assert.match(css, /main>\[data-panel\]\{[^}]*min-height:0/, 'each panel gives up its content height');
+  assert.match(css, /main>\*\{[^}]*overflow-y:auto/, 'each view scrolls');
+  assert.match(css, /main>\*\{[^}]*min-height:0/, 'each view gives up its content height');
   assert.match(css, /main>\[data-panel\]:focus-visible\{outline-offset:-2px\}/, 'the panel ring sits inside the panel');
 
   assert.equal((html.match(/<section id="panel-[a-z-]+"[^>]*tabindex="0"/g) || []).length, 4,
@@ -427,9 +435,6 @@ test('both pages ask the on-screen keyboard to resize the content', () => {
     assert.match(html, /name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content"/);
     assert.ok(!/maximum-scale|user-scalable/.test(html), `${doc} must not block zoom`);
   }
-
-  const notFound = readFileSync(join(DIST, '404.html'), 'utf8');
-  assert.match(notFound, /main\[data-astro-cid-[a-z]+\]\{min-height:0;overflow-y:auto\}/, 'the 404 page scrolls inside main');
 });
 
 test('the page carries a not-found panel that no tab controls', () => {
@@ -690,4 +695,16 @@ test('the page renders the navigation from the one route list', () => {
   const html = readIndex();
   const rendered = [...html.matchAll(/data-hash="([^"]+)"/g)].map((match) => match[1]);
   assert.deepEqual(rendered, routes.map(({ hash }) => hash));
+});
+
+// The 404 document shares the head and the header with the other pages, so the
+// markup and its styling live in one place.
+test('the 404 document reuses the shared layout', () => {
+  const page = readFileSync(join(SRC, 'pages/404.astro'), 'utf8');
+  assert.doesNotMatch(page, /<(html|head|body|header)\b/, 'the page holds no document markup of its own');
+
+  const headerRules = collectFiles(SRC)
+    .filter((file) => /\.site-header\s*\{/.test(readFileSync(file, 'utf8')))
+    .map((file) => file.slice(SRC.length + 1));
+  assert.deepEqual(headerRules, ['components/Header.astro']);
 });

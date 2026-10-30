@@ -1,15 +1,26 @@
 ---
 import TabBar from './TabBar.astro';
 import ThemeToggle from './ThemeToggle.astro';
+
+// The 404 document shows the same brand row without the tab bar and the
+// station badge, so one header serves both documents.
+const { tabs = true, status = true } = Astro.props;
+const slim = !tabs && !status;
 ---
-<header class="site-header">
+<header class="site-header" data-slim={slim ? 'true' : undefined}>
   <div class="brand">
     <img class="monogram" src="/monogram.webp" alt="" width="30" height="30" />
     <h1 class="brand-name">@JoeOfSomeTrades</h1>
   </div>
-  <span class="divider" aria-hidden="true"></span>
-  <TabBar />
-  <span class="on-air" data-on-air data-state="off" role="status"><span aria-hidden="true">[</span> <span data-on-air-text>OFF AIR</span> <span aria-hidden="true">]</span></span>
+  {tabs && <span class="divider" aria-hidden="true"></span>}
+  {tabs && <TabBar />}
+  {
+    status && (
+      <span class="on-air" data-on-air data-state="off" role="status"
+        ><span aria-hidden="true">[</span> <span data-on-air-text>OFF AIR</span> <span aria-hidden="true">]</span></span
+      >
+    )
+  }
   <ThemeToggle />
 </header>
 
@@ -51,8 +62,9 @@ import ThemeToggle from './ThemeToggle.astro';
   .on-air[data-state='on-air'],
   .on-air[data-state='running'] { color: var(--green); text-shadow: 0 0 8px var(--glow-green); }
 
-  /* The badge already takes the free space, so the control only needs a gap. */
+  /* The badge takes the free space. Without it, the control does. */
   :global(.theme-toggle) { margin-left: 8px; }
+  .site-header[data-slim] :global(.theme-toggle) { margin-left: auto; }
 
   @media (max-width: 899px) {
     .site-header { padding: 10px 16px; gap: 10px 14px; }

@@ -92,8 +92,8 @@ html {
 
 [data-panel][hidden] { display: none; }
 
-/* The page never scrolls. Each panel scrolls inside the shell. The header and
-   the sub-tab bar stay on screen. */
+/* The page never scrolls. Each view scrolls inside the shell, so the header
+   stays on screen. The 404 document has no panels and reads the same rule. */
 main {
   flex: 1 1 auto;
   min-height: 0;
@@ -101,7 +101,7 @@ main {
   flex-direction: column;
 }
 
-main > [data-panel] {
+main > * {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
