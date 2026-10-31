@@ -290,7 +290,7 @@ test('the critical stylesheet is inlined, so nothing blocks the first render', (
   const html = readIndex();
   assert.doesNotMatch(html, /rel="stylesheet"/);
   assert.doesNotMatch(html, /\/_astro\//);
-  assert.match(html, /<style>[\s\S]*--hover:/);
+  assert.match(html, /<style>[\s\S]*--green:/);
   assert.equal(existsSync(join(DIST, '_astro')), false);
 });
 
@@ -648,10 +648,11 @@ test('the stylesheet resolves both palettes through light-dark', () => {
 
   // The dark values stay as the fallback for a browser without light-dark().
   assert.match(css, /--bg: ?#080b09/);
-  assert.match(css, /--green: ?#39ff14/);
+  assert.match(css, /--green: ?#78e16b/);
 
-  // The light values.
-  for (const hex of ['#e6f1e4', '#f7fbf5', '#eff7ec', '#0d2a15', '#3f6b48', '#b9cfba', '#9c0f7a', '#12661f']) {
+  // The light values, which are the layered theme: page, then the darker
+  // cool wells for the cards, the embed box and the scrollbar track.
+  for (const hex of ['#e9efe7', '#f0f4ee', '#d5e0d7', '#c7d4c9', '#bfcdc2', '#a3b8a6', '#65836e', '#0b2411', '#43626a', '#0a6b16', '#95117a']) {
     assert.ok(css.includes(hex), `missing the light value ${hex}`);
   }
 });
@@ -771,18 +772,47 @@ test('nothing on the page carries a text glow', () => {
   }
 });
 
-test('the sub-tabs wear a purple ramp, and every step stays legible', () => {
+test('every clickable wears the one link colour, and the badge wears the handle colour', () => {
   const html = readIndex();
-  assert.match(html, /\.sub-tabs\[[^\]]*\] a\[[^\]]*\]\{[^}]*color:var\(--magenta-dim\)/);
-  assert.match(html, /\.sub-tabs\[[^\]]*\] a\[[^\]]*\]\[aria-selected=true\]\{color:var\(--magenta\)\}/);
-  assert.match(html, /\.sub-tabs\[[^\]]*\] a\[[^\]]*\]:hover\{color:var\(--magenta-hover\)\}/);
-  assert.match(html, /\.sub-tabs\[[^\]]*\] a\[[^\]]*\]\{[^}]*border:0/, 'the sub-tabs carry no box of their own');
-  assert.ok(!/\.sub-tabs[^{]*\{[^}]*var\(--green\)/.test(html), 'no green is left on the sub-tabs');
 
-  // A near black background leaves a purple very little room to darken and stay
-  // legible, so the two dim steps give up saturation instead of light. Each one
-  // still clears AA on its own background.
+  // The tabs, the sub-tabs, the Links link in the brand row and the theme
+  // button all take the link colour, so every clickable reads as one group.
+  // The tab anchors are scoped by their own attribute rather than by a
+  // descendant selector, so their rule starts with a bare `a`.
+  for (const [pattern, label] of [
+    [/\}a\[[^\]]*\]\{font:inherit;color:var\(--green\)/, 'a tab'],
+    [/\.sub-tabs\[[^\]]*\] a\[[^\]]*\]\{font:inherit;color:var\(--green\)/, 'a sub-tab'],
+    [/\.brand-link\[[^\]]*\]\{color:var\(--green\)/, 'the Links link'],
+    [/\.theme-toggle\[[^\]]*\]\{height:var\(--control-h\);color:var\(--green\)/, 'the theme button'],
+  ]) {
+    assert.match(html, pattern, `${label} takes the link colour`);
+  }
+
+  // Selection is shown by the prompt alone, so no clickable needs a second
+  // colour, and hover underlines instead of recolouring.
+  assert.match(html, /\{a\[[^\]]*\]:hover\{text-decoration:underline\}/);
+  assert.match(html, /\.sub-tabs\[[^\]]*\] a\[[^\]]*\]:hover\{text-decoration:underline\}/);
+  assert.match(html, /\.brand-link\[[^\]]*\]:hover\{text-decoration:underline\}/);
+
+  // The badge is a status rather than a control, so an active state wears the
+  // colour of the handle. A brand mark in a card is a picture, not a control,
+  // so it stays off the link colour as well.
+  assert.match(
+    html,
+    /\.on-air\[[^\]]*\]\[data-state=on-air\],\.on-air\[[^\]]*\]\[data-state=running\]\{color:var\(--text\)\}/,
+    'the active badge takes the handle colour',
+  );
+  assert.match(html, /\.card\[[^\]]*\] \.icon\{color:var\(--text\)\}/, 'a card mark takes it too');
+
+  // The two extra ramps that the one colour replaced are gone from the token
+  // layer, with the hover colour they were paired with.
   const css = readFileSync(join(SRC, 'styles', 'global.css'), 'utf8');
+  for (const token of ['--magenta-hover', '--magenta-dim', '--hover']) {
+    assert.ok(!css.includes(`${token}:`), `${token} was removed with its last user`);
+  }
+
+  // The link colour lands on the page background and inside the header, where
+  // the badge sits, so it must clear AA on both in both themes.
   const plain = (name) => css.match(new RegExp(`^\\s*${name}:\\s*(#[0-9a-f]{6});`, 'm'))?.[1];
   const pair = (name) =>
     css.match(new RegExp(`${name}:\\s*light-dark\\(\\s*(#[0-9a-f]{6}),\\s*(#[0-9a-f]{6})\\)`))?.slice(1, 3);
@@ -796,15 +826,20 @@ test('the sub-tabs wear a purple ramp, and every step stays legible', () => {
     return (hi + 0.05) / (lo + 0.05);
   };
 
-  const darkBg = plain('--bg');
-  const lightBg = pair('--bg')?.[0];
-  assert.ok(darkBg && lightBg, 'both backgrounds are named');
-  for (const name of ['--magenta', '--magenta-hover', '--magenta-dim']) {
-    assert.ok(ratio(plain(name), darkBg) >= 4.5, `${name} clears AA on ${darkBg}`);
-    const [light, dark] = pair(name) ?? [];
-    assert.ok(light && dark, `${name} names both themes`);
-    assert.equal(dark, plain(name), `${name} keeps the dark fallback and the pair in step`);
-    assert.ok(ratio(light, lightBg) >= 4.5, `${name} clears AA on ${lightBg}`);
+  for (const [colour, background] of [
+    ['--green', '--bg'],
+    ['--green', '--header'],
+    ['--text', '--header'],
+  ]) {
+    assert.ok(
+      ratio(plain(colour), plain(background)) >= 4.5,
+      `${colour} clears AA on the dark ${background}`,
+    );
+    const [light] = pair(background) ?? [];
+    assert.ok(
+      ratio(pair(colour)[0], light) >= 4.5,
+      `${colour} clears AA on the light ${background}`,
+    );
   }
 });
 

@@ -26,24 +26,22 @@ import { tabs } from '../data/routes.js';
     padding: 0.5625rem 0;
     font: inherit;
     font-size: 1.125rem;
-    color: var(--muted);
+    color: var(--green);
     text-decoration: none;
     cursor: pointer;
   }
-  /* One colour ramp for every bar: selected is the brightest, hover sits one
-     step below it, and everything else is the dimmest. */
-  a[aria-selected='true'] {
-    color: var(--green);
-  }
-  /* The prompt marks the selected tab. It is hidden from assistive tech, so
-     the tab is announced by its label alone. */
+  /* Every clickable on the site wears one colour: the link colour. The prompt
+     marks the selected tab, so selection needs no second colour. */
   .prompt { display: none; }
   a[aria-selected='true'] .prompt { display: inline; }
-  a:focus-visible { outline: 2px solid var(--magenta); outline-offset: 2px; }
+  a:focus-visible {
+    outline: 2px solid var(--magenta);
+    outline-offset: 2px;
+    text-decoration: underline;
+  }
 
   @media (hover: hover) {
-    a:hover { color: var(--hover); }
-    a[aria-selected='true']:hover { color: var(--green); }
+    a:hover { text-decoration: underline; }
   }
 
   @media (max-width: 899px) {

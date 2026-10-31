@@ -79,22 +79,20 @@ import { projects } from '../../data/projects.js';
     font: inherit;
     font-size: 1rem;
     line-height: 1.5;
-    color: var(--magenta-dim);
+    color: var(--green);
     border: 0;
     padding: 0.5rem 0;
     cursor: pointer;
     text-decoration: none;
   }
-  /* The prompt marks the selected sub-tab and stays out of its accessible name. */
+  /* The prompt marks the selected sub-tab and stays out of its accessible name.
+     The sub-tabs take the same colour and the same hover underline as the tabs
+     above them, so every clickable on the page reads as one group. */
   .sub-tabs .prompt { display: none; }
   .sub-tabs a[aria-selected='true'] .prompt { display: inline; }
-  /* The same three step ramp as the tabs above, in the purple family: the
-     selected sub-tab is the bright magenta, hover is one step duller, and the
-     rest sit on the dullest step. */
-  .sub-tabs a[aria-selected='true'] { color: var(--magenta); }
+  .sub-tabs a:focus-visible { text-decoration: underline; }
   @media (hover: hover) {
-    .sub-tabs a:hover { color: var(--magenta-hover); }
-    .sub-tabs a[aria-selected='true']:hover { color: var(--magenta); }
+    .sub-tabs a:hover { text-decoration: underline; }
   }
   .project[hidden] { display: none; }
   .project {

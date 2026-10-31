@@ -41,7 +41,8 @@ import Icon from '../Icon.astro';
     background: var(--surface);
     padding: 1.5rem 1.6875rem;
   }
-  .card :global(.icon) { color: var(--green); }
+  /* A brand mark is a picture, not a control, so it stays off the link colour. */
+  .card :global(.icon) { color: var(--text); }
   .meta { min-width: 0; }
   .label { display: block; font-size: 1rem; color: var(--muted); margin-bottom: 0.5625rem; }
   .card a { font-size: 1.3125rem; color: var(--green); }

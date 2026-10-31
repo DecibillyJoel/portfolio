@@ -1,22 +1,16 @@
 :root {
   color-scheme: dark;
   --bg: #080b09;
-  --green: #39ff14;
-  --magenta: #ff2fd0;
-  /* The two steps below the bright magenta. A near black background leaves a
-     purple very little room to darken and stay legible, so the steps lose
-     saturation more than they lose light. Both pass AA on their background. */
-  --magenta-hover: #cb63b3;
-  --magenta-dim: #a86a9a;
-  --text: #c2ffbd;
-  --muted: #5d8a63;
-  --border: #1f3a24;
-  --hover: #2fd413;
+  --green: #78e16b;
+  --magenta: #ef71cb;
+  --text: #b6f2b1;
+  --muted: #84b289;
+  --border: #29452e;
   --scroll-track: #0c1410;
   --header: #0d1a10;
   --surface: #0b120d;
   --deep: #060906;
-  --dim: #2c5a33;
+  --dim: #40794a;
   /* Space under a panel heading. */
   --heading-gap: 0.75rem;
   --heading-gap-tight: 0.5625rem;
@@ -34,20 +28,19 @@
 @supports (color: light-dark(#000, #fff)) {
   :root {
     color-scheme: light dark;
-    --bg: light-dark(#e6f1e4, #080b09);
-    --green: light-dark(#12661f, #39ff14);
-    --magenta: light-dark(#9c0f7a, #ff2fd0);
-    --magenta-hover: light-dark(#892270, #cb63b3);
-    --magenta-dim: light-dark(#6f3c63, #a86a9a);
-    --text: light-dark(#0d2a15, #c2ffbd);
-    --muted: light-dark(#3f6b48, #5d8a63);
-    --border: light-dark(#b9cfba, #1f3a24);
-    --hover: light-dark(#1c8a2c, #2fd413);
-    --scroll-track: light-dark(#d7e8d3, #0c1410);
-    --header: light-dark(#eff7ec, #0d1a10);
-    --surface: light-dark(#f7fbf5, #0b120d);
-    --deep: light-dark(#dcebd9, #060906);
-    --dim: light-dark(#9db89f, #2c5a33);
+    /* Light is the layered theme: the page is the lightest layer and the cards,
+       the embed box and the scrollbar track step down and turn cool. */
+    --bg: light-dark(#e9efe7, #080b09);
+    --green: light-dark(#0a6b16, #78e16b);
+    --magenta: light-dark(#95117a, #ef71cb);
+    --text: light-dark(#0b2411, #b6f2b1);
+    --muted: light-dark(#43626a, #84b289);
+    --border: light-dark(#a3b8a6, #29452e);
+    --scroll-track: light-dark(#bfcdc2, #0c1410);
+    --header: light-dark(#f0f4ee, #0d1a10);
+    --surface: light-dark(#d5e0d7, #0b120d);
+    --deep: light-dark(#c7d4c9, #060906);
+    --dim: light-dark(#65836e, #40794a);
   }
 
   /* The toggle writes this. Pinning the scheme changes the icons and the

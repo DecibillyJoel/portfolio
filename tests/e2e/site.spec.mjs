@@ -808,7 +808,7 @@ function themeState(page) {
   });
 }
 
-const LIGHT_BG = 'rgb(230, 241, 228)';
+const LIGHT_BG = 'rgb(233, 239, 231)';
 const DARK_BG = 'rgb(8, 11, 9)';
 
 test('the auto theme follows the system setting with no attribute set', async ({ page }) => {

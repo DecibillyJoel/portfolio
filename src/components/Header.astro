@@ -60,7 +60,9 @@ const links = views.find((view) => view.id === 'links');
   .monogram {
     width: 2.8125rem; height: 2.8125rem;
     display: block;
-    border: 1px solid var(--green);
+    /* A frame around a picture, not text and not a control, so it wears the
+       same colour as the handle beside it. */
+    border: 1px solid var(--text);
     background: var(--header);
     object-fit: cover;
   }
@@ -78,12 +80,12 @@ const links = views.find((view) => view.id === 'links');
   .brand-link {
     align-self: flex-start;
     font-size: 1.125rem;
-    color: var(--muted);
+    color: var(--green);
     text-decoration: none;
   }
   .brand-link .prompt { display: none; }
   .brand-link[aria-current='true'] .prompt { display: inline; }
-  .brand-link[aria-current='true'] { color: var(--green); }
+  .brand-link:focus-visible { text-decoration: underline; }
   /* One hairline between the handle column and the tab list. */
   .divider {
     width: 1px;
@@ -103,8 +105,10 @@ const links = views.find((view) => view.id === 'links');
     padding: 0 1rem;
     text-decoration: none;
   }
+  /* The badge is a status, not a control, so its active state wears the handle
+     colour rather than the link colour, which is there for clickables. */
   .on-air[data-state='on-air'],
-  .on-air[data-state='running'] { color: var(--green); }
+  .on-air[data-state='running'] { color: var(--text); }
 
   /* The badge and the toggle travel together at the right edge of the top row,
      and they claim the free space, so they never move down on their own. */
@@ -120,8 +124,7 @@ const links = views.find((view) => view.id === 'links');
   .site-header[data-slim] :global(.theme-toggle) { margin-left: auto; }
 
   @media (hover: hover) {
-    .brand-link:hover { color: var(--hover); }
-    .brand-link[aria-current='true']:hover { color: var(--green); }
+    .brand-link:hover { text-decoration: underline; }
   }
 
   /* The tabs give way before the status pair does. Once the handle, the tabs
