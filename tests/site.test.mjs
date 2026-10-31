@@ -782,7 +782,7 @@ test('every size is a rem value written where it is used', () => {
   assert.doesNotMatch(html, /font-size: ?[\d.]+px/, 'no font size stays in px, so the reader font sets the scale');
   // The whole type scale, one deliberate step at a time.
   const sizes = [...new Set([...html.matchAll(/font-size: ?(-?[\d.]+)rem/g)].map((m) => Number(m[1])))];
-  assert.deepEqual(sizes.sort((a, b) => a - b), [1, 1.125, 1.25, 1.3125, 1.6875, 2.4375]);
+  assert.deepEqual(sizes.sort((a, b) => a - b), [0.875, 1, 1.125, 1.25, 1.3125, 1.6875, 2.4375]);
 });
 
 test('nothing on the page carries a text glow', () => {

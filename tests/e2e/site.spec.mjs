@@ -998,25 +998,39 @@ test('the browser chrome colour follows the page colour in both themes', async (
 
 test('the sub-tab bar reads as the second level of chrome', async ({ page }) => {
   await blockEmbed(page);
-  await page.setViewportSize({ width: 1280, height: 720 });
-  await page.goto('/#portfolio');
 
-  const m = await page.evaluate(() => {
-    const height = (el) => Math.round(el.getBoundingClientRect().height);
-    const sub = document.querySelector('#panel-projects .sub-tabs a');
-    return {
-      header: height(document.querySelector('.site-header')),
-      bar: height(document.querySelector('#panel-projects .sub-tabs')),
-      tabFont: parseFloat(getComputedStyle(document.querySelector('.tab-bar a')).fontSize),
-      subFont: parseFloat(getComputedStyle(sub).fontSize),
-      subTarget: height(sub),
-      subColor: getComputedStyle(sub).color,
-    };
-  });
+  const measure = async (width) => {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto('/#portfolio');
+    return page.evaluate(() => {
+      const height = (el) => Math.round(el.getBoundingClientRect().height);
+      const sub = document.querySelector('#panel-projects .sub-tabs a');
+      return {
+        header: height(document.querySelector('.site-header')),
+        bar: height(document.querySelector('#panel-projects .sub-tabs')),
+        tabFont: parseFloat(getComputedStyle(document.querySelector('.tab-bar a')).fontSize),
+        subFont: parseFloat(getComputedStyle(sub).fontSize),
+        subTarget: height(sub),
+      };
+    });
+  };
 
-  expect(m.bar, JSON.stringify(m)).toBeLessThan(m.header);
-  expect(m.subFont, JSON.stringify(m)).toBeLessThan(m.tabFont);
-  expect(m.subTarget, 'a sub-tab keeps a 24px pointer target').toBeGreaterThanOrEqual(24);
+  const wide = await measure(1280);
+  expect(wide.bar, JSON.stringify(wide)).toBeLessThan(wide.header);
+  expect(wide.subFont, JSON.stringify(wide)).toBeLessThan(wide.tabFont);
+  expect(wide.subTarget, 'a sub-tab keeps a 24px pointer target').toBeGreaterThanOrEqual(24);
+
+  // Below the mobile threshold the tabs step down, and the sub-tabs step down by
+  // the same factor, so the two bars keep the ratio they wear in the wide layout.
+  const narrow = await measure(390);
+  expect(narrow.tabFont, JSON.stringify(narrow)).toBeLessThan(wide.tabFont);
+  expect(narrow.subFont, JSON.stringify(narrow)).toBeLessThan(narrow.tabFont);
+  expect(narrow.subTarget, 'a sub-tab keeps a 24px pointer target').toBeGreaterThanOrEqual(24);
+  const ratio = (m) => m.subFont / m.tabFont;
+  expect(
+    Math.abs(ratio(narrow) - ratio(wide)),
+    `the sub-tabs keep their step below the tabs: ${ratio(narrow)} narrow against ${ratio(wide)} wide`,
+  ).toBeLessThan(0.02);
 });
 
 // Each part of the header gives way only at its own measured threshold, so the
