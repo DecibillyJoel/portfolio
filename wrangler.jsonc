@@ -3,6 +3,12 @@
   "name": "portfolio",
   "compatibility_date": "2026-10-29",
   "main": "src/worker.js",
+  // The site answered on a workers.dev address before it had a domain, and old
+  // links must keep working. Wrangler disables that address as soon as a route
+  // exists, so it is asked for here, together with the version preview URLs
+  // that it would otherwise take down with it.
+  "workers_dev": true,
+  "preview_urls": true,
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
