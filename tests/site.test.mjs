@@ -11,6 +11,8 @@ import { routes, tabs, landing } from '../src/data/routes.js';
 import { mobileMax, statusRowMax, tabsWrapMax, toggleHideMax, wideMin } from '../src/data/layout.js';
 
 const DIST = fileURLToPath(new URL('../dist', import.meta.url));
+// The deploy configuration, read by the tests that guard the hosting setup.
+const WRANGLER = fileURLToPath(new URL('../wrangler.jsonc', import.meta.url));
 // The origin the built absolute URLs must carry. It comes from `site` in
 // astro.config.mjs, so a domain move is a one line change there plus this one.
 const ORIGIN = 'https://joeofsometrades.com';
@@ -961,9 +963,10 @@ test('no built file still names the workers.dev fallback', () => {
   assert.deepEqual(hits, [], 'every absolute URL moved to the custom domain');
 });
 
-// The site moved from a workers.dev address to the custom domain. The old host
-// forwards to the new one, and every other host is served from the built assets.
-test('the forwarding host sends the visitor to the custom domain', async () => {
+// The site answers on the custom domain alone. The old workers.dev address and
+// every version preview URL are switched off, so the Worker only ever hands a
+// request to the built assets.
+test('the worker hands every request to the built assets', async () => {
   const { default: worker } = await import('../src/worker.js');
   const served = [];
   const env = {
@@ -975,22 +978,20 @@ test('the forwarding host sends the visitor to the custom domain', async () => {
     },
   };
 
-  const old = await worker.fetch(
-    new Request('https://portfolio.joeofsometrades.workers.dev/radio?q=1'),
-    env,
-  );
-  assert.equal(old.status, 301, 'the old address answers with a permanent redirect');
-  assert.equal(old.headers.get('location'), 'https://joeofsometrades.com/radio?q=1');
-  assert.equal(served.length, 0, 'a forwarded request never reaches the assets');
-
-  // A version preview lives on its own workers.dev name, so it must not forward.
-  for (const host of [
-    'abc123-portfolio.joeofsometrades.workers.dev',
-    'joeofsometrades.com',
-    'www.joeofsometrades.com',
-  ]) {
+  for (const host of ['joeofsometrades.com', 'www.joeofsometrades.com']) {
     const response = await worker.fetch(new Request(`https://${host}/robots.txt`), env);
     assert.equal(response.status, 200, `${host} is served`);
   }
-  assert.deepEqual(served, ['/robots.txt', '/robots.txt', '/robots.txt']);
+  assert.deepEqual(served, ['/robots.txt', '/robots.txt']);
+});
+
+// Only the real site is live. The workers.dev address that was live first and
+// the per-version preview URLs must stay off, and both domain names stay
+// claimed, so a later config edit cannot quietly open either door again.
+test('the workers.dev address and the preview URLs stay switched off', () => {
+  const config = readFileSync(WRANGLER, 'utf8');
+  assert.match(config, /"workers_dev": false/, 'the old address is off');
+  assert.match(config, /"preview_urls": false/, 'the preview URLs are off');
+  assert.match(config, /"pattern": "joeofsometrades\.com"/, 'the apex is claimed');
+  assert.match(config, /"pattern": "www\.joeofsometrades\.com"/, 'www is claimed');
 });

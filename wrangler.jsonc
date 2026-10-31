@@ -3,12 +3,13 @@
   "name": "portfolio",
   "compatibility_date": "2026-10-29",
   "main": "src/worker.js",
-  // The site answered on a workers.dev address before it had a domain, and old
-  // links must keep working. Wrangler disables that address as soon as a route
-  // exists, so it is asked for here, together with the version preview URLs
-  // that it would otherwise take down with it.
-  "workers_dev": true,
-  "preview_urls": true,
+  // The site answers on the custom domain alone. The workers.dev address that
+  // was live first, and every version preview URL, are switched off on purpose,
+  // so a search engine or a visitor can only ever reach the real site. A routes
+  // entry would switch the workers.dev address off by itself, but these stay
+  // explicit so a future edit cannot turn either one back on by accident.
+  "workers_dev": false,
+  "preview_urls": false,
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
