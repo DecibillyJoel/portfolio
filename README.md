@@ -1,6 +1,6 @@
 # portfolio
 
-My personal site. It's a single page with a retro-arcade look and tabs for a short bio, my links, my certifications, and my projects. The projects tab embeds my Live365 radio station, Maximum Slappage, and my game, Smiles Sadistic Adventure. It also has a Portfolio entry that describes this site.
+My personal site. It's a single page with a retro-arcade look. The About Me view lands first and holds my links, and two tabs beside it open my certifications and my projects. The projects tab embeds my Live365 radio station, Maximum Slappage, my game, Smiles Sadistic Adventure, and my SoundCloud audio, and it also describes this site itself.
 
 Live at https://portfolio.joeofsometrades.workers.dev
 
@@ -25,4 +25,4 @@ That starts a dev server at http://localhost:4321. Edit anything under `src/` an
 
 ## How it's built
 
-Astro generates the static site. Cloudflare Workers serves the files in `dist/`, with `public/` copied in as-is. The tab switching and the project embeds are plain JavaScript in `src/scripts/`, and each view has its own hash URL, like `#links` or `#radio`.
+Astro generates the static site. Cloudflare Workers serves the files in `dist/`, with `public/` copied in as-is. The tab switching and the project embeds are plain JavaScript in `src/scripts/`, and each view has its own hash URL, like `#about` or `#radio`.

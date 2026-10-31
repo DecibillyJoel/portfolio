@@ -27,8 +27,10 @@ import { certifications } from '../../data/certifications.js';
 </section>
 
 <style>
+  /* Every view wears the same panel measurements, so the columns of one view
+     line up with the columns of the next. */
   .certs {
-    padding: 2.4375rem 5.625rem 3rem;
+    padding: var(--panel-pad-top) var(--panel-pad-x) var(--panel-pad-bottom);
     text-align: center;
   }
   ul {
@@ -37,8 +39,8 @@ import { certifications } from '../../data/certifications.js';
     padding: 0;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1.3125rem;
-    max-width: 80.625rem;
+    gap: var(--panel-grid-gap);
+    max-width: var(--panel-grid-max);
     text-align: left;
   }
   .cert {
@@ -70,10 +72,9 @@ import { certifications } from '../../data/certifications.js';
   }
   .sep { color: var(--dim); }
 
-  @media (max-width: 899px) {
-    .certs { padding: 1.5rem; }
-    ul { grid-template-columns: 1fr; gap: 0.9375rem; }
-    .cert { padding: 1.125rem 1.3125rem; }
+  @media (max-width: 1149px) {
+    ul { grid-template-columns: minmax(0, 1fr); }
+    .cert { padding: 1.125rem 1.25rem; }
     h3 { font-size: 1.125rem; }
   }
 </style>

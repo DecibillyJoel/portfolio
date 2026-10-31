@@ -1,16 +1,5 @@
 export const projects = [
   {
-    id: 'maximum-slappage',
-    hash: 'radio',
-    label: 'Maximum Slappage',
-    title: 'MAXIMUM SLAPPAGE',
-    tagline: 'live internet radio - rock, power pop, alternative, adult contemporary, and electronic/dance',
-    blurb: 'The station I run. The best classics, the best modern hits, and the best songs you have never heard, all optimized for maximum slappage.',
-    href: 'https://live365.com/station/Maximum-Slappage-a57727',
-    linkLabel: 'View on Live365',
-    embedKind: 'player',
-  },
-  {
     id: 'portfolio',
     hash: 'portfolio',
     label: 'Portfolio',
@@ -23,15 +12,40 @@ export const projects = [
     embedKind: 'none',
   },
   {
+    id: 'maximum-slappage',
+    hash: 'radio',
+    label: 'Maximum Slappage',
+    title: 'MAXIMUM SLAPPAGE',
+    tagline: 'live internet radio - rock, power pop, alternative, adult contemporary, and electronic/dance',
+    blurb: 'The station I run. The best classics, the best modern hits, and the best songs you have never heard, all optimized for maximum slappage.',
+    href: 'https://live365.com/station/Maximum-Slappage-a57727',
+    linkLabel: 'View on Live365',
+    embedKind: 'player',
+  },
+  {
     id: 'smiles',
     hash: 'game',
     label: 'Smiles Sadistic Adventure',
     title: 'SMILES SADISTIC ADVENTURE',
-    blurb: 'An endless semi-random bullet hell I created in high school.',
+    tagline: 'a bullet hell I made in high school',
+    blurb:
+      'I made this with Defold in high school during my time as Game Development Club President. You can see the early stages of my game design principles in how I designed some of these systems.',
     href: 'https://github.com/DecibillyJoel/Smiles-Sadistic-Adventure',
     linkLabel: 'View on GitHub',
     embedKind: 'iframe',
     embed: 'https://decibillyjoel.github.io/Smiles-Sadistic-Adventure/',
     embedTitle: 'Smiles Sadistic Adventure',
+  },
+  {
+    id: 'soundcloud',
+    hash: 'audio',
+    label: 'Audio Productions',
+    title: 'AUDIO PRODUCTIONS',
+    tagline: 'various music and voice acting projects',
+    blurb:
+      'My voice acting projects are my highest quality and most recent audio production work. My music tracks are from my high school and college years.',
+    href: 'https://soundcloud.com/joeofsometrades',
+    linkLabel: 'View on SoundCloud',
+    embedKind: 'soundcloud',
   },
 ];

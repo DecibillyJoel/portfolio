@@ -2,9 +2,9 @@
 import { links } from '../../data/links.js';
 import Icon from '../Icon.astro';
 ---
-<section class="links">
-  <h2 class="heading">LINKS</h2>
-  <p class="lede">Socials and profiles</p>
+<section class="about">
+  <h2 class="heading">ABOUT ME</h2>
+  <p class="lede">I'm an enthusiast of all things IT, music, audio, and game design and development. I've made this site to share all my works and passions with you. Please enjoy exploring these links and the tabs at the top of this site.</p>
   <ul>
     {links.map((link) => (
       <li class="card">
@@ -22,24 +22,29 @@ import Icon from '../Icon.astro';
 </section>
 
 <style>
-  .links { padding: 2.4375rem 5.625rem 3rem; text-align: center; }
+  /* Every view wears the same panel measurements, so the columns of one view
+     line up with the columns of the next. */
+  .about {
+    padding: var(--panel-pad-top) var(--panel-pad-x) var(--panel-pad-bottom);
+    text-align: center;
+  }
   ul {
     list-style: none;
     margin: 0 auto;
     padding: 0;
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-    max-width: 84.375rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--panel-grid-gap);
+    max-width: var(--panel-grid-max);
     text-align: left;
   }
   .card {
     display: flex;
     align-items: center;
-    gap: 1.3125rem;
+    gap: var(--panel-grid-gap);
     border: 1px solid var(--border);
     background: var(--surface);
-    padding: 1.5rem 1.6875rem;
+    padding: 1.3125rem 1.5rem;
   }
   /* A brand mark is a picture, not a control, so it stays off the link colour. */
   .card :global(.icon) { color: var(--text); }
@@ -47,11 +52,11 @@ import Icon from '../Icon.astro';
   .label { display: block; font-size: 1rem; color: var(--muted); margin-bottom: 0.5625rem; }
   .card a { font-size: 1.3125rem; color: var(--green); }
 
-  @media (max-width: 899px) {
-    .links { padding: 1.5rem; }
+  @media (max-width: 1149px) {
     /* One column, and the track may go smaller than the longest address so the
        card keeps fitting the screen and the arrow stays in view. */
     ul { grid-template-columns: minmax(0, 1fr); }
-    .card a { overflow-wrap: anywhere; }
+    .card { padding: 1.125rem 1.25rem; }
+    .card a { font-size: 1.25rem; overflow-wrap: anywhere; }
   }
 </style>

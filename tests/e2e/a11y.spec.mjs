@@ -5,13 +5,13 @@ const require = createRequire(import.meta.url);
 const AXE_PATH = require.resolve('axe-core/axe.min.js');
 
 const ROUTES = [
-  { hash: '#whoami', panel: 'who-am-i' },
-  { hash: '#links', panel: 'links' },
+  { hash: '#about', panel: 'about' },
   { hash: '#certs', panel: 'certifications' },
   { hash: '#projects', panel: 'projects' },
   { hash: '#radio', panel: 'projects' },
   { hash: '#portfolio', panel: 'projects' },
   { hash: '#game', panel: 'projects' },
+  { hash: '#audio', panel: 'projects' },
   // An unknown hash shows the 404 view inside the same document.
   { hash: '#thisdoesntexist', panel: 'not-found' },
 ];
@@ -19,6 +19,7 @@ const ROUTES = [
 async function blockEmbed(page) {
   await page.route(/live365\.com/, (route) => route.abort());
   await page.route(/decibillyjoel\.github\.io/, (route) => route.abort());
+  await page.route(/soundcloud\.com/, (route) => route.abort());
 }
 
 async function audit(page) {

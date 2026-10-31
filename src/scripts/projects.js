@@ -1,5 +1,6 @@
 import { initTablistKeys, setRovingTabindex } from './tablist.js';
 import { player } from '../data/player.js';
+import { soundcloud } from '../data/soundcloud.js';
 
 const FOCUS_POLL_MS = 200;
 
@@ -9,7 +10,6 @@ export function initProjects(root = document) {
   if (!buttons.length) return;
 
   const list = buttons[0].closest('[role="tablist"]');
-  const empty = root.querySelector('[data-project-empty]');
   const badge = root.querySelector('[data-on-air]');
   const badgeText = badge?.querySelector('[data-on-air-text]');
   const projectsPanel = root.querySelector('[data-panel="projects"]');
@@ -21,6 +21,7 @@ export function initProjects(root = document) {
 
   const radioPanel = embedPanelOf('player');
   const gamePanel = embedPanelOf('iframe');
+  const soundcloudPanel = embedPanelOf('soundcloud');
 
   function isLoaded(panel) {
     const frame = panel?.querySelector('iframe[data-embed]');
@@ -36,7 +37,7 @@ export function initProjects(root = document) {
   function syncEmbedFocus() {
     const active = root.activeElement ?? document.activeElement;
     for (const frame of root.querySelectorAll('iframe[data-embed]')) {
-      const wrap = frame.closest('.player, .game');
+      const wrap = frame.closest('.player, .game, .soundcloud');
       if (wrap) wrap.dataset.embedFocus = String(keyboardInput && active === frame);
     }
   }
@@ -58,19 +59,24 @@ export function initProjects(root = document) {
   const BADGE_LABELS = {
     off: 'OFF AIR',
     'on-air': 'ON AIR',
-    running: 'GAME RUNNING',
-    paused: 'GAME PAUSED',
+    running: 'PLAYING',
+    paused: 'PAUSED',
+    vibing: 'VIBING',
   };
 
   function syncBadge() {
     if (!badge || !badgeText) return;
     const running = isLoaded(gamePanel);
     const onAir = isLoaded(radioPanel);
+    const vibing = isLoaded(soundcloudPanel);
     const onProjects = projectsPanel ? !projectsPanel.hidden : true;
 
     let state = 'off';
     if (running) state = onProjects ? 'running' : 'paused';
     else if (onAir) state = 'on-air';
+    // The SoundCloud frame keeps playing on another tab, like the radio, so
+    // this state does not look at the visible panel.
+    else if (vibing) state = 'vibing';
 
     badgeText.textContent = BADGE_LABELS[state];
     badge.dataset.state = state;
@@ -93,6 +99,12 @@ export function initProjects(root = document) {
       frame.width = String(size.width);
       frame.height = String(size.height);
       frame.src = layout === 'xl' ? frame.dataset.srcXl : frame.dataset.srcSm;
+    } else if (frame.dataset.embedKind === 'soundcloud') {
+      const layout = window.matchMedia(soundcloud.wideQuery).matches ? 'xl' : 'sm';
+      const size = soundcloud.sizes[layout];
+      frame.width = String(size.width);
+      frame.height = String(size.height);
+      frame.src = frame.dataset.src;
     } else {
       frame.src = frame.dataset.src;
     }
@@ -104,8 +116,13 @@ export function initProjects(root = document) {
     return Boolean(panel?.querySelector('iframe[data-embed]'));
   }
 
+  // The project on screen, so the router only sends a bare #projects to the
+  // first project when the view is empty. Otherwise the loaded project stays.
+  let currentId = null;
+
   function show(id) {
     const activePanel = panels.find((panel) => panel.dataset.project === id);
+    if (activePanel) currentId = id;
     // A project with no embed of its own leaves the mounted embed alone, so
     // the radio keeps playing and the game keeps its state.
     const spareEmbeds = Boolean(activePanel) && !hasEmbed(activePanel);
@@ -121,10 +138,16 @@ export function initProjects(root = document) {
       if (active) activeButton = button;
     }
     setRovingTabindex(buttons, activeButton ?? buttons[0]);
-    if (empty) empty.hidden = Boolean(id);
     if (activePanel) mount(activePanel);
     syncBadge();
+    // The scroll body may now be shorter than its viewport, so the router
+    // rechecks whether it still needs a focus stop of its own.
+    root.dispatchEvent(new CustomEvent('projects:change', { detail: { project: id } }));
   }
+
+  // The first project is the one the Projects view opens with, so the router can
+  // send a bare #projects there instead of showing a chooser.
+  const defaultId = buttons[0]?.dataset.subTabTarget ?? null;
 
   initTablistKeys(list, buttons);
   setRovingTabindex(buttons, buttons[0]);
@@ -136,5 +159,5 @@ export function initProjects(root = document) {
   syncBadge();
   syncEmbedFocus();
 
-  return { show, syncBadge };
+  return { show, syncBadge, defaultId, current: () => currentId };
 }

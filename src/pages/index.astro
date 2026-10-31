@@ -1,30 +1,28 @@
 ---
 import Base from '../layouts/Base.astro';
-import WhoAmI from '../components/panels/WhoAmI.astro';
-import Links from '../components/panels/Links.astro';
+import About from '../components/panels/About.astro';
 import Certifications from '../components/panels/Certifications.astro';
 import Projects from '../components/panels/Projects.astro';
 import NotFound from '../components/NotFound.astro';
 ---
 <Base>
-  <section id="panel-who-am-i" data-panel="who-am-i" role="tabpanel" aria-labelledby="tab-who-am-i" tabindex="0">
-    <WhoAmI />
-  </section>
-  <!-- No tab controls this panel either. The Links link in the brand row opens
-       it, so it is a labelled region rather than a tab panel. -->
-  <section id="panel-links" data-panel="links" role="region" aria-label="Links" tabindex="0" hidden>
-    <Links />
-  </section>
-  <section id="panel-certifications" data-panel="certifications" role="tabpanel" aria-labelledby="tab-certifications" tabindex="0" hidden>
-    <Certifications />
+  <!-- No tab controls this panel. The About Me link in the brand row opens it,
+       and a bare address lands here, so it is a labelled region rather than a
+       tab panel. -->
+  <section id="panel-about" data-panel="about" role="region" aria-label="About Me">
+    <About />
   </section>
   <!-- The projects panel scrolls inside .projects-scroll, so it carries no
-       tabindex of its own. The scroll body holds that focus target. -->
+       tabindex of its own. The scroll body is the focus target, and the router
+       gives it one only while it can actually scroll. -->
   <section id="panel-projects" data-panel="projects" role="tabpanel" aria-labelledby="tab-projects" hidden>
     <Projects />
   </section>
+  <section id="panel-certifications" data-panel="certifications" role="tabpanel" aria-labelledby="tab-certifications" hidden>
+    <Certifications />
+  </section>
   <!-- No tab controls this panel. The router shows it for an unknown hash. -->
-  <section id="panel-not-found" data-panel="not-found" aria-label="Page not found" tabindex="0" hidden>
+  <section id="panel-not-found" data-panel="not-found" aria-label="Page not found" hidden>
     <NotFound prefix="" />
   </section>
 </Base>

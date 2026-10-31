@@ -1,5 +1,7 @@
 import { initTabs } from './tabs.js';
 import { initProjects } from './projects.js';
+import { initRowRules } from './rows.js';
+import { initScrollFocus } from './scroll.js';
 
 const NOT_FOUND_PANEL = 'not-found';
 
@@ -8,10 +10,16 @@ export function initRouter(root = document) {
   const projects = initProjects(root);
   if (!tabs) return;
 
-  // The tab the page marks as selected is where a bare address lands, so the
-  // default hash is not written twice.
+  // The bars that wrap draw their own row rules, and every scrollable region
+  // takes a focus stop only while it can actually scroll.
+  initRowRules(root);
+  initScrollFocus(root);
+
+  // The view the page marks as its landing view is where a bare address lands,
+  // so the default hash is not written twice. The landing view is not a tab, so
+  // the marker sits on the link in the brand row.
   const defaultHash =
-    root.querySelector('[data-tab-target][aria-selected="true"]')?.dataset.hash ??
+    root.querySelector('[data-default][data-hash]')?.dataset.hash ??
     root.querySelector('[data-tab-target][data-hash]')?.dataset.hash;
 
   // In-page targets, such as the skip link, are not routes, so the visible tab
@@ -24,8 +32,8 @@ export function initRouter(root = document) {
   const tabRoutes = new Map();
   const projectRoutes = new Map();
 
-  // A tab and a view that sits outside the tab list, such as the Links link in
-  // the brand row, both open a panel by name.
+  // A tab and a view that sits outside the tab list, such as the About Me link
+  // in the brand row, both open a panel by name.
   for (const link of root.querySelectorAll('[data-tab-target][data-hash], [data-view][data-hash]')) {
     tabRoutes.set(link.dataset.hash, link.dataset.tabTarget ?? link.dataset.view);
   }
@@ -44,7 +52,14 @@ export function initRouter(root = document) {
       projects.show(projectRoutes.get(name));
       return;
     }
-    tabs.show(tabRoutes.get(name) ?? tabRoutes.get(defaultHash));
+    const tab = tabRoutes.get(name) ?? tabRoutes.get(defaultHash);
+    tabs.show(tab);
+    // The Projects view opens on its first project rather than on a chooser, so
+    // a bare #projects always has something in it. A project already on screen
+    // stays, so returning to the view does not switch away from it.
+    if (projectTab && tab === projectTab && projects.defaultId && !projects.current()) {
+      projects.show(projects.defaultId);
+    }
   }
 
   // An unknown hash is a real address the user asked for. Keep it in the

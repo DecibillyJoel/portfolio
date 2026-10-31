@@ -14,6 +14,23 @@
   /* Space under a panel heading. */
   --heading-gap: 0.75rem;
   --heading-gap-tight: 0.5625rem;
+  /* One set of panel measurements, so every view lines its content up on the
+     same grid as the view beside it. */
+  --panel-pad-top: 2.4375rem;
+  --panel-pad-x: 5.625rem;
+  --panel-pad-bottom: 3rem;
+  --panel-grid-max: 80.625rem;
+  --panel-grid-gap: 1.3125rem;
+  /* The vertical space between two wrapped rows of the same bar, and between the
+     two rows of the header itself. The tab bars and the header share it, so a
+     wrapped row costs the same wherever it happens. Half of it falls above the
+     line drawn between the rows and half below, so the line clears the entries
+     as much as the outlines of the sections do. */
+  --wrap-gap: 16px;
+  /* How far a rule between two rows stops short of each side of its bar. The
+     header pads its own box and the sub-tab bar pads its children, so both read
+     this one value and the two rules come out the same length. */
+  --rule-inset: 1.5rem;
   /* The one box height shared by the status badge and the theme toggle, so the
      two boxes beside each other are the same size. */
   --control-h: 2.375rem;
@@ -137,6 +154,13 @@ main > [data-panel='projects']:not([hidden]) {
   border: 0;
 }
 
+/* A visually hidden label is taken out of the flow, so without a positioned
+   ancestor it anchors to the viewport and adds its place on the page to the
+   document scroll height. Hold it to the element it labels instead. */
+:has(> .visually-hidden) {
+  position: relative;
+}
+
 .skip-link {
   position: absolute;
   top: 0;
@@ -200,7 +224,24 @@ main > [data-panel='projects']:not([hidden]) {
   .ext-link:hover { text-decoration: underline; }
 }
 
-@media (max-width: 899px) {
+/* The mobile layout: one column, tighter padding and the smaller heading. The
+   width lives in src/data/layout.js, and the tests check every copy of it. */
+@media (max-width: 1149px) {
+  :root {
+    --panel-pad-top: 1.75rem;
+    --panel-pad-x: 1.5rem;
+    --panel-pad-bottom: 2rem;
+    --panel-grid-gap: 1rem;
+    --heading-gap: 0.625rem;
+    --heading-gap-tight: 0.5rem;
+    --control-h: 2rem;
+    --rule-inset: 1rem;
+  }
   .heading { font-size: 1.6875rem; }
   .embed-box { --embed-pad: 0.375rem; }
 }
+
+/* One hairline between two stacked rows of the same bar, drawn across the gap
+   the two rows leave. The router writes one of these between every pair of rows
+   it measures. */
+.row-rule { position: absolute; left: var(--rule-inset); right: var(--rule-inset); height: 1px; pointer-events: none; background: var(--border); }

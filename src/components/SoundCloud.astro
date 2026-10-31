@@ -1,0 +1,16 @@
+---
+import { soundcloud, soundcloudSrc } from '../data/soundcloud.js';
+
+const { xl } = soundcloud.sizes;
+---
+<div class="soundcloud embed-box">
+  <iframe
+    data-embed
+    data-embed-kind="soundcloud"
+    data-loaded="false"
+    data-src={soundcloudSrc()}
+    width={xl.width}
+    height={xl.height}
+    title={soundcloud.title}
+  ></iframe>
+</div>

@@ -7,7 +7,8 @@ import { site } from '../src/data/site.js';
 import { links } from '../src/data/links.js';
 import { certifications } from '../src/data/certifications.js';
 import { projects } from '../src/data/projects.js';
-import { routes, tabs } from '../src/data/routes.js';
+import { routes, tabs, landing } from '../src/data/routes.js';
+import { mobileMax, statusRowMax, tabsWrapMax, toggleHideMax, wideMin } from '../src/data/layout.js';
 
 const DIST = fileURLToPath(new URL('../dist', import.meta.url));
 
@@ -41,47 +42,55 @@ test('build emits a static index.html', () => {
   assert.match(readIndex(), /<!doctype html>/i);
 });
 
-test('page mounts all four panels in one document', () => {
+test('page mounts every view in one document', () => {
   const html = readIndex();
-  assert.match(html, /data-panel="who-am-i"/);
-  assert.match(html, /data-panel="links"/);
+  assert.match(html, /data-panel="about"/);
   assert.match(html, /data-panel="certifications"/);
   assert.match(html, /data-panel="projects"/);
   assert.equal((html.match(/<html/g) || []).length, 1);
 });
 
-test('the tab bar carries three labels and the brand row carries Links', () => {
+test('the tab bar carries both tabs and the brand row carries About Me', () => {
   const html = readIndex();
   // The selected tab carries a decorative prompt, so drop the markup first.
   const labels = [...html.matchAll(/data-tab-target="([a-z-]+)"[^>]*>([\s\S]*?)<\/a>/g)]
     .map((m) => [m[1], m[2].replace(/<span[\s\S]*?<\/span>/g, '').replace(/<[^>]+>/g, '').trim()]);
   assert.deepEqual(labels, [
-    ['who-am-i', 'Who Am I'],
-    ['certifications', 'Certifications'],
     ['projects', 'Projects'],
+    ['certifications', 'Certifications'],
   ]);
-  // Links sits in the brand column with the handle and opens its own panel.
-  assert.match(html, /class="brand-link"[^>]*data-view="links"[^>]*data-hash="links"[^>]*href="#links"/);
+  // About Me sits in the brand column with the handle, opens its own panel, and
+  // is the view a bare address lands on.
+  assert.match(
+    html,
+    /class="brand-link"[^>]*data-view="about"[^>]*data-hash="about"[^>]*data-default[^>]*href="#about"/,
+  );
 });
 
 test('exactly one panel starts visible', () => {
   const html = readIndex();
   const hiddenCount = (html.match(/data-panel="[^"]+"[^>]*hidden/g) || []).length;
-  // Four tab panels start hidden. The not-found panel starts hidden too, so a
-  // link without a hash shows the default view.
-  assert.equal(hiddenCount, 4);
+  // The two tabs and the not-found panel start hidden. About Me is the landing
+  // view, so it is the one panel that starts visible.
+  assert.equal(hiddenCount, 3);
 });
 
-test('Who Am I carries the three approved paragraphs', () => {
+test('About Me holds the approved paragraph above the links', () => {
   const html = readIndex();
-  assert.match(html, /I'm an enthusiast of all things IT, music, audio, and game design and development\./);
-  assert.match(html, /I've built many personal game dev and programming projects over the years, driven by my own interests\./);
-  assert.match(html, /I'm now using those skills and interests to bring power and togetherness to indie artists and creators\./);
+  const panel = html.match(/data-panel="about"[\s\S]*?<\/section>/)?.[0] ?? '';
+  assert.notEqual(panel, '');
+  assert.match(panel, /class="heading"[^>]*>ABOUT ME</);
+  assert.match(
+    panel,
+    /class="lede"[^>]*>I'm an enthusiast of all things IT, music, audio, and game design and development\. I've made this site to share all my works and passions with you\. Please enjoy exploring these links and the tabs at the top of this site\.</,
+  );
+  // The view carries no heading of its own for the links beyond the paragraph.
+  assert.doesNotMatch(panel, /Socials and profiles|>LINKS</);
 });
 
-test('Links lists eight entries, each with an icon', () => {
+test('About Me lists nine entries, each with an icon', () => {
   const html = readIndex();
-  const labels = ['GITHUB', 'YOUTUBE', 'X', 'BLUESKY', 'LIVE365', 'LAST.FM', 'EMAIL', 'DISCORD'];
+  const labels = ['GITHUB', 'YOUTUBE', 'X', 'BLUESKY', 'LIVE365', 'SOUNDCLOUD', 'LAST.FM', 'EMAIL', 'DISCORD'];
   for (const label of labels) assert.match(html, new RegExp(`>\\s*${label.replace('.', '\\.')}<`));
   assert.equal((html.match(/class="icon"/g) || []).length, labels.length);
 });
@@ -154,25 +163,28 @@ test('header merges the brand, tabs, and a status badge indicator', () => {
   assert.doesNotMatch(header, /data-on-air[^>]*(href|aria-disabled|data-clickable)/);
 });
 
-test('the status badge knows all four states and reacts to tab changes', () => {
+test('the status badge knows all five states and reacts to tab changes', () => {
   const html = readIndex();
   const all = readDist();
-  for (const label of ['OFF AIR', 'ON AIR', 'GAME RUNNING', 'GAME PAUSED']) {
+  for (const label of ['OFF AIR', 'ON AIR', 'PLAYING', 'PAUSED', 'VIBING']) {
     assert.ok(all.includes(label), `missing ${label}`);
   }
   // No state carries its own brackets. The pair in the markup is the only one.
-  assert.ok(!all.includes('[ OFF AIR ]') && !all.includes('[ ON AIR ]'), 'the brackets left the labels');
+  assert.ok(
+    !['[ OFF AIR ]', '[ ON AIR ]', '[ VIBING ]'].some((s) => all.includes(s)),
+    'the brackets left the labels',
+  );
   assert.match(all, /tabs:change/);
 });
 
 test('every tab and sub-tab is a native link with its own hash', () => {
   const html = readIndex();
   const links = [
-    ['data-tab-target="who-am-i"', '#whoami'],
-    ['data-view="links"', '#links'],
-    ['data-tab-target="certifications"', '#certs'],
+    ['data-view="about"', '#about'],
     ['data-tab-target="projects"', '#projects'],
+    ['data-tab-target="certifications"', '#certs'],
     ['data-sub-tab-target="maximum-slappage"', '#radio'],
+    ['data-sub-tab-target="soundcloud"', '#audio'],
     ['data-sub-tab-target="smiles"', '#game'],
   ];
   for (const [attr, hash] of links) {
@@ -187,14 +199,18 @@ test('hash routing drives the view and browser history', () => {
   assert.match(js, /a\[data-hash\]/);
 });
 
-test('projects expose three sub-tabs and three lazy project blocks', () => {
+test('projects expose four sub-tabs and four lazy project blocks', () => {
   const html = readIndex();
   assert.match(html, /data-sub-tab-target="maximum-slappage"/);
   assert.match(html, /data-sub-tab-target="portfolio"/);
+  assert.match(html, /data-sub-tab-target="soundcloud"/);
   assert.match(html, /data-sub-tab-target="smiles"/);
-  assert.equal((html.match(/data-project="/g) || []).length, 3);
-  assert.equal((html.match(/data-project="[^"]+"[^>]*hidden/g) || []).length, 3);
-  assert.match(html, /data-project-empty[^>]*>\s*Select a project above\./);
+  assert.equal((html.match(/data-project="/g) || []).length, 4);
+  assert.equal((html.match(/data-project="[^"]+"[^>]*hidden/g) || []).length, 4);
+  // The Projects view opens on its first project, so there is no chooser state.
+  assert.doesNotMatch(html, /data-project-empty|Select a project above/);
+  const first = html.match(/data-sub-tab-target="([a-z-]+)"/);
+  assert.equal(first?.[1], 'portfolio');
 });
 
 test('hidden project blocks are display:none, not flex', () => {
@@ -206,14 +222,15 @@ test('Smiles Sadistic Adventure carries its embed and GitHub link', () => {
   const html = readIndex();
   assert.match(html, /data-src="https:\/\/decibillyjoel\.github\.io\/Smiles-Sadistic-Adventure\/"/);
   assert.match(html, /href="https:\/\/github\.com\/DecibillyJoel\/Smiles-Sadistic-Adventure"/);
-  assert.match(html, /An endless semi-random bullet hell I created in high school\./);
+  assert.match(html, /a bullet hell I made in high school/);
+  assert.match(html, /during my time as Game Development Club President/);
 });
 
 test('player holds both embed sizes and lazy iframes carry no src', () => {
   const html = readIndex();
   assert.match(html, /data-src-xl="https:\/\/live365\.com\/embeds\/v1\/player\/a57727\?s=xl&amp;m=dark&amp;c=aac"/);
   assert.match(html, /data-src-sm="https:\/\/live365\.com\/embeds\/v1\/player\/a57727\?s=sm&amp;m=dark&amp;c=aac"/);
-  assert.equal((html.match(/data-loaded="false"/g) || []).length, 2);
+  assert.equal((html.match(/data-loaded="false"/g) || []).length, 3, 'one lazy embed per embed project');
   assert.doesNotMatch(html, /<iframe[^>]*\ssrc=/);
 });
 
@@ -221,11 +238,16 @@ test('player chooses the embed size once, not on resize', () => {
   const js = readDist();
   // The query comes from data/player.js, so the numbers are written once.
   assert.match(js, /matchMedia\(\w+\.wideQuery\)/);
-  assert.doesNotMatch(js, /addEventListener\([`'"]resize[`'"]/);
+  // The size is decided where a frame is mounted. A resize handler that re-picked
+  // it would have to ask the query again, so the decisions are counted instead.
+  assert.equal((js.match(/matchMedia\(/g) || []).length, 2, 'one size decision per embed');
+  const source = readFileSync(join(SRC, 'scripts/projects.js'), 'utf8');
+  const mount = source.slice(source.indexOf('function mount('), source.indexOf('function show('));
+  assert.equal((mount.match(/matchMedia\(/g) || []).length, 2, 'both decisions sit in mount()');
 });
 
-test('the mobile layout block exists', () => {
-  assert.match(readDist(), /max-width:\s*899px|width\s*<=\s*899px/);
+test('the mobile layout block uses the shared breakpoint', () => {
+  assert.match(readDist(), new RegExp(`max-width:\\s*${mobileMax}px|width\\s*<=\\s*${mobileMax}px`));
 });
 
 test('inactive panels are hidden, never removed', () => {
@@ -241,7 +263,7 @@ test('robots.txt and llms.txt ship with the site', () => {
 
   const llms = readFileSync(join(DIST, 'llms.txt'), 'utf8');
   assert.match(llms, /^# @JoeOfSomeTrades$/m);
-  for (const route of ['#whoami', '#links', '#certs', '#projects', '#radio', '#game']) {
+  for (const route of ['#about', '#projects', '#certs', '#radio', '#portfolio', '#game', '#audio']) {
     assert.ok(llms.includes(route), `llms.txt is missing ${route}`);
   }
 });
@@ -266,7 +288,7 @@ test('a real 404 page ships and points back at every view', () => {
   assert.equal((notFound.match(/<h2[\s>]/g) || []).length, 1);
   assert.match(notFound, /<main id="main" tabindex="-1"[^>]*>/);
   assert.match(notFound, /<a class="skip-link" href="#main"[^>]*>/);
-  for (const route of ['/#whoami', '/#links', '/#certs', '/#projects', '/#radio', '/#game']) {
+  for (const route of ['/#about', '/#projects', '/#certs', '/#radio', '/#portfolio', '/#game', '/#audio']) {
     assert.ok(notFound.includes(`href="${route}"`), `404.html is missing ${route}`);
   }
   // The 404 page renders no tab bar, so it must not reference panels that only
@@ -274,7 +296,7 @@ test('a real 404 page ships and points back at every view', () => {
   assert.doesNotMatch(notFound, /role="tablist"|aria-controls|data-tab-target|data-sub-tab-target/);
   // The shared header renders in slim mode: the brand row and the theme
   // control, with no badge and no routing code of its own.
-  assert.match(notFound, /<header class="site-header" data-slim="true"[^>]*>/);
+  assert.match(notFound, /<header class="site-header"[^>]*data-slim="true"[^>]*>/);
   assert.match(notFound, /class="brand-name"/);
   assert.doesNotMatch(notFound, /data-on-air/);
   assert.doesNotMatch(notFound, /<script type="module"/);
@@ -338,9 +360,9 @@ test('tablists use roving tabindex, arrow keys, and paired roles', () => {
   assert.equal((html.match(/<[a-z]+[^>]*role="tablist"/g) || []).length, 2);
   assert.equal((html.match(/role="tabpanel"/g) || []).length, 6);
   assert.equal((html.match(/role="tab"/g) || []).length, 6);
-  // Links has no tab of its own, so its panel is a labelled region.
-  assert.match(html, /id="panel-links"[^>]*role="region"[^>]*aria-label="Links"/);
-  assert.ok(!/id="tab-links"/.test(html), 'the Links view is not a tab');
+  // About Me has no tab of its own, so its panel is a labelled region.
+  assert.match(html, /id="panel-about"[^>]*role="region"[^>]*aria-label="About Me"/);
+  assert.ok(!/id="tab-about"/.test(html), 'the About Me view is not a tab');
   assert.match(html, /id="subtab-maximum-slappage"[^>]*aria-controls="project-maximum-slappage"/);
   assert.match(
     html,
@@ -361,12 +383,12 @@ test('the embed wrappers carry the focus ring attribute', () => {
   assert.match(js, /dataset\.embedFocus/);
 });
 
-test('the Portfolio project sits between the radio and the game and carries the repo link', () => {
+test('the Portfolio project opens the list and carries the repo link', () => {
   const html = readIndex();
   const order = [...html.matchAll(/data-project="([a-z-]+)"/g)].map((m) => m[1]);
-  assert.deepEqual(order, ['maximum-slappage', 'portfolio', 'smiles']);
+  assert.deepEqual(order, ['portfolio', 'maximum-slappage', 'smiles', 'soundcloud']);
   const subTabOrder = [...html.matchAll(/data-sub-tab-target="([a-z-]+)"/g)].map((m) => m[1]);
-  assert.deepEqual(subTabOrder, ['maximum-slappage', 'portfolio', 'smiles']);
+  assert.deepEqual(subTabOrder, ['portfolio', 'maximum-slappage', 'smiles', 'soundcloud']);
   assert.match(html, /id="subtab-portfolio"[^>]*data-hash="portfolio"[^>]*href="#portfolio"/);
   assert.match(html, /id="project-portfolio"[^>]*role="tabpanel"[^>]*aria-labelledby="subtab-portfolio"/);
   assert.match(
@@ -375,13 +397,13 @@ test('the Portfolio project sits between the radio and the game and carries the 
   );
   assert.ok(!/class="project-link[^"]*"[^>]*tabindex/.test(html), 'the project link takes no tabindex');
   assert.match(html, /Cloudflare Workers with Static Assets/);
-  const panel = html.slice(html.indexOf('id="project-portfolio"'), html.indexOf('id="project-smiles"'));
+  const panel = html.slice(html.indexOf('id="project-portfolio"'), html.indexOf('id="project-maximum-slappage"'));
   assert.ok(!panel.includes('iframe'), 'the Portfolio project must carry no embed');
 });
 
 test('every project carries one intro line and no screen-size text swap', () => {
   const html = readIndex();
-  assert.equal((html.match(/class="lede"/g) || []).length, 5, 'three projects, the links view and the certifications view');
+  assert.equal((html.match(/class="lede"/g) || []).length, 6, 'four projects, the About Me view and the certifications view');
   assert.ok(!/blurb-narrow|blurb-wide|blurbNarrow|blurbWide/.test(html), 'no narrow or wide blurb class');
   const js = readDist();
   assert.ok(!/blurbNarrow|blurbWide/.test(js), 'no narrow blurb in the bundle');
@@ -402,10 +424,14 @@ test('the shell locks the page height and scrolls inside each panel', () => {
   assert.match(css, /main>\*\{[^}]*min-height:0/, 'each view gives up its content height');
   assert.match(css, /main>\[data-panel\]:focus-visible\{outline-offset:-2px\}/, 'the panel ring sits inside the panel');
 
-  assert.equal((html.match(/<section id="panel-[a-z-]+"[^>]*tabindex="0"/g) || []).length, 4,
-    'every panel except projects is focusable, so its scroll region is reachable by keyboard');
-  assert.match(html, /<div class="projects-scroll" tabindex="0"/,
-    'the projects panel hands that focus target to its scroll body');
+  assert.equal((html.match(/<section id="panel-[a-z-]+"[^>]*tabindex=/g) || []).length, 0,
+    'no panel carries a static focus stop');
+  assert.doesNotMatch(html, /class="projects-scroll" tabindex=/,
+    'the projects scroll body carries no static focus stop either');
+  const js = readDist();
+  assert.ok(js.includes('scrollHeight-e.clientHeight>'), 'the router measures the overflow');
+  assert.ok(js.includes('setAttribute(`tabindex`,`0`)'), 'a region that scrolls takes a focus stop');
+  assert.ok(js.includes('removeAttribute(`tabindex`)'), 'a region that fits gives the stop back');
 });
 
 test('the sub-tab bar sits outside the projects scroll area', () => {
@@ -448,7 +474,7 @@ test('the page carries a not-found panel that no tab controls', () => {
   const html = readIndex();
   assert.match(
     html,
-    /<section id="panel-not-found"[^>]*data-panel="not-found"[^>]*aria-label="Page not found"[^>]*tabindex="0"[^>]*hidden/,
+    /<section id="panel-not-found"[^>]*data-panel="not-found"[^>]*aria-label="Page not found"[^>]*hidden/,
   );
   assert.doesNotMatch(
     html,
@@ -675,9 +701,10 @@ test('every project link names the project it opens', () => {
   const links = [...html.matchAll(/class="project-link ext-link" href="([^"]+)"[^>]*>([^<]+)<span class="arrow"/g)]
     .map((m) => [m[2], m[1]]);
   assert.deepEqual(links, [
-    ['View on Live365', 'https://live365.com/station/Maximum-Slappage-a57727'],
     ['View on GitHub', 'https://github.com/DecibillyJoel/portfolio'],
+    ['View on Live365', 'https://live365.com/station/Maximum-Slappage-a57727'],
     ['View on GitHub', 'https://github.com/DecibillyJoel/Smiles-Sadistic-Adventure'],
+    ['View on SoundCloud', 'https://soundcloud.com/joeofsometrades'],
   ]);
 });
 
@@ -706,10 +733,10 @@ test('the page renders the navigation from the one route list', () => {
   const rendered = [...html.matchAll(/data-hash="([^"]+)"/g)].map((match) => match[1]);
   // Every route in the list reaches the page, and the page invents none.
   assert.deepEqual([...rendered].sort(), routes.map(({ hash }) => hash).sort());
-  // Links leads, because it sits in the brand row, and the tab bar then keeps
-  // the order the list gives it.
+  // About Me leads, because it sits in the brand row, and the tab bar then
+  // keeps the order the list gives it.
   assert.deepEqual(rendered, [
-    'links',
+    landing.hash,
     ...tabs.map(({ hash }) => hash),
     ...projects.map(({ hash }) => hash),
   ]);
@@ -755,7 +782,7 @@ test('every size is a rem value written where it is used', () => {
   assert.doesNotMatch(html, /font-size: ?[\d.]+px/, 'no font size stays in px, so the reader font sets the scale');
   // The whole type scale, one deliberate step at a time.
   const sizes = [...new Set([...html.matchAll(/font-size: ?(-?[\d.]+)rem/g)].map((m) => Number(m[1])))];
-  assert.deepEqual(sizes.sort((a, b) => a - b), [1, 1.125, 1.25, 1.3125, 1.375, 1.6875, 2.4375]);
+  assert.deepEqual(sizes.sort((a, b) => a - b), [1, 1.125, 1.25, 1.3125, 1.6875, 2.4375]);
 });
 
 test('nothing on the page carries a text glow', () => {
@@ -799,7 +826,7 @@ test('every clickable wears the one link colour, and the badge wears the handle 
   // so it stays off the link colour as well.
   assert.match(
     html,
-    /\.on-air\[[^\]]*\]\[data-state=on-air\],\.on-air\[[^\]]*\]\[data-state=running\]\{color:var\(--text\)\}/,
+    /\.on-air\[[^\]]*\]\[data-state=on-air\],\.on-air\[[^\]]*\]\[data-state=running\],\.on-air\[[^\]]*\]\[data-state=vibing\]\{color:var\(--text\)\}/,
     'the active badge takes the handle colour',
   );
   assert.match(html, /\.card\[[^\]]*\] \.icon\{color:var\(--text\)\}/, 'a card mark takes it too');
@@ -861,7 +888,7 @@ test('the Links link takes the same selected prompt as a tab', () => {
 test('every link that leaves the site looks and reads the same', () => {
   const html = readIndex();
   const external = [...html.matchAll(/<a [^>]*target="_blank"[^>]*>([\s\S]*?)<\/a>/g)].map((m) => m[1]);
-  assert.equal(external.length, 15, 'eight social links, four credential links and three project links');
+  assert.equal(external.length, 17, 'nine social links, four credential links and four project links');
   for (const inner of external) {
     assert.match(inner, /<span class="arrow"[^>]*>↗<\/span>/, 'the arrow is missing');
     assert.match(inner, /<span class="visually-hidden"[^>]*>[^<]*opens in a new tab<\/span>/, 'the new tab note is missing');
@@ -871,8 +898,61 @@ test('every link that leaves the site looks and reads the same', () => {
   assert.match(html, /@media \(hover:hover\)\{\.ext-link:hover\{text-decoration:underline\}\}/);
 });
 
-test('a long address cannot push the Links card off a narrow screen', () => {
+test('a long address cannot push the About card off a narrow screen', () => {
   const html = readIndex();
-  assert.match(html, /\.card\[[^\]]*\] a\[[^\]]*\]\{overflow-wrap:anywhere\}/);
+  assert.match(html, /\.card\[[^\]]*\] a\[[^\]]*\]\{[^}]*overflow-wrap:anywhere/);
   assert.match(html, /minmax\(0,1fr\)/);
+});
+
+test('every stylesheet uses the one breakpoint from data/layout.js', () => {
+  // A media query cannot read a custom property, so the number is written into
+  // each stylesheet. This keeps every copy equal to data/layout.js.
+  const queries = collectFiles(SRC)
+    .flatMap((file) => [...readFileSync(file, 'utf8').matchAll(/@media \(max-width: (\d+)px\)/g)])
+    .map((match) => Number(match[1]));
+  assert.equal(queries.length, 10, 'one block per part that has to give way, including the two controls');
+  assert.deepEqual(
+    [...new Set(queries)].sort((a, b) => b - a),
+    [mobileMax, tabsWrapMax, statusRowMax, toggleHideMax],
+    'every mobile block uses one of the shared widths',
+  );
+
+  assert.match(readDist(), new RegExp(`min-width: ?${wideMin}px`), 'the scripts read the wide query');
+  for (const file of collectFiles(SRC)) {
+    const text = readFileSync(file, 'utf8');
+    assert.ok(!/(?:max-width|min-width): (?:899|900|959)px/.test(text), `${file.slice(SRC.length + 1)} keeps an old breakpoint`);
+  }
+});
+
+test('a hairline divides the tabs and the sub-tabs', () => {
+  const html = readIndex();
+  // The line is a pseudo element, so it costs no gap of its own: it sits at the
+  // halfway point of the gap, and the mobile gap gets its own offset.
+  assert.match(html, /\.tab-bar\[[^\]]*\] a\[[^\]]*\]?:not\(:last-of-type\):after\{[^}]*background:var\(--border\)/);
+  assert.match(html, /\.sub-tabs\[[^\]]*\] a\[[^\]]*\]?:not\(:last-of-type\):after\{[^}]*background:var\(--border\)/);
+  assert.match(html, /:not\(:last-of-type\):after\{[^}]*right:-1\.0625rem\}/, 'the desktop tab line sits at half the gap');
+  assert.match(html, /:not\(:last-of-type\):after\{right:-\.65625rem\}/, 'the mobile tab line and the sub-tab line sit at half the narrow gap');
+  assert.match(html, /\.sub-tabs\[[^\]]*\] a\[[^\]]*\]\{[^}]*position:relative/);
+});
+
+test('a wrapped bar drops its hairline and draws a rule between its rows', () => {
+  const css = readDist();
+  const html = readIndex();
+  // rows.js measures the rows the browser made, so the marks reach the page.
+  assert.match(css, /dataset\.rowEnd/);
+  assert.match(css, /dataset\.wrapped/);
+  assert.ok(css.includes('[data-row-end]:after'), 'the stylesheet reads the row-end mark');
+  // The header and both bars are measured, and a rule sits in each gap.
+  assert.equal((html.match(/<[^>]+\sdata-rows[^>]*>/g) || []).length, 3, 'three bars are measured');
+  assert.match(css, /row-rule/);
+  assert.ok(
+    css.includes('.row-rule{left:var(--rule-inset);right:var(--rule-inset);pointer-events:none;background:var(--border);height:1px;position:absolute}'),
+    'the rule stops short of each side of its bar',
+  );
+  assert.ok(css.includes('--rule-inset:1.5rem') && css.includes('--rule-inset:1rem'), 'one token holds the inset');
+  // Both bars read their wrapped row gap from the header's own air, and one
+  // token holds that value. Two documents carry the same inlined stylesheet.
+  const wrapped = css.split('[data-wrapped]{gap:var(--wrap-gap) 1.3125rem}').length - 1;
+  assert.ok(wrapped >= 2, `both bars share the wrapped row gap, found ${wrapped}`);
+  assert.ok(css.includes('--wrap-gap:16px'), 'one token holds the air between two rows');
 });

@@ -1,8 +1,8 @@
 ---
 import { tabs } from '../data/routes.js';
 ---
-<nav class="tab-bar" role="tablist" aria-label="Sections">
-  {tabs.map((tab, index) => (
+<nav class="tab-bar" role="tablist" aria-label="Sections" data-rows>
+  {tabs.map((tab) => (
     <a
       role="tab"
       id={`tab-${tab.id}`}
@@ -10,13 +10,14 @@ import { tabs } from '../data/routes.js';
       data-hash={tab.hash}
       href={`#${tab.hash}`}
       aria-controls={`panel-${tab.id}`}
-      aria-selected={index === 0 ? 'true' : 'false'}
+      aria-selected="false"
     ><span class="prompt" aria-hidden="true">{'> '}</span>{tab.label}</a>
   ))}
 </nav>
 
 <style>
   .tab-bar {
+    position: relative;
     display: flex;
     gap: 2.0625rem;
   }
@@ -29,7 +30,26 @@ import { tabs } from '../data/routes.js';
     color: var(--green);
     text-decoration: none;
     cursor: pointer;
+    position: relative;
   }
+  /* A short hairline, centred in the gap between two tabs, so the list reads as
+     separate items. It is decoration over the gap, so it adds no width and
+     carries no text. A measured bar appends its row rules as children, so the
+     last item is found by type rather than by child position. */
+  .tab-bar a:not(:last-of-type)::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: -1.0625rem;
+    width: 1px;
+    height: 1em;
+    margin-top: -0.5em;
+    background: var(--border);
+  }
+  /* A hairline divides two neighbours. When the list wraps, the last tab on a
+     row has no neighbour beside it, so its hairline would sit against nothing.
+     tablist.js measures which row each tab landed on and marks those. */
+  .tab-bar a[data-row-end]::after { display: none; }
   /* Every clickable on the site wears one colour: the link colour. The prompt
      marks the selected tab, so selection needs no second colour. */
   .prompt { display: none; }
@@ -44,12 +64,24 @@ import { tabs } from '../data/routes.js';
     a:hover { text-decoration: underline; }
   }
 
-  @media (max-width: 899px) {
+  @media (max-width: 1149px) {
     /* The tabs sit on a line of their own under the handle and the status pair,
-       and they wrap onto a second line rather than shrink. */
+       and they wrap onto a second line rather than shrink. The rows and the
+       boxes sit closer together, so a second line costs little height. */
     .tab-bar {
       flex-wrap: wrap;
-      gap: 0.75rem 1.3125rem;
+      gap: var(--wrap-gap) 1.3125rem;
     }
+    a {
+      padding: 0.4375rem 0;
+      font-size: 1rem;
+    }
+    /* A wrapped row of tabs takes the air the header itself uses between its own
+       rows: the shared token, less the 2px of padding above and below the text,
+       which adds back up to the same air the About Me line leaves above the
+       tab list. */
+    .tab-bar[data-wrapped] { gap: var(--wrap-gap) 1.3125rem; }
+    .tab-bar[data-wrapped] a { padding: 0.125rem 0; }
+    .tab-bar a:not(:last-of-type)::after { right: -0.65625rem; }
   }
 </style>

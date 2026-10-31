@@ -8,10 +8,11 @@ import { views } from '../data/routes.js';
 const { tabs = true, status = true } = Astro.props;
 const slim = !tabs && !status;
 
-// The Links view sits with the handle instead of in the tab list.
-const links = views.find((view) => view.id === 'links');
+// The About Me view sits with the handle instead of in the tab list, and it is
+// the view a bare address lands on.
+const about = views.find((view) => view.landing);
 ---
-<header class="site-header" data-slim={slim ? 'true' : undefined}>
+<header class="site-header" data-rows data-slim={slim ? 'true' : undefined}>
   <div class="brand">
     <img class="monogram" src="/monogram.webp" alt="" width="30" height="30" />
     <div class="brand-lockup">
@@ -20,10 +21,11 @@ const links = views.find((view) => view.id === 'links');
         tabs && (
           <a
             class="brand-link"
-            data-view={links.id}
-            data-hash={links.hash}
-            href={`#${links.hash}`}
-          ><span class="prompt" aria-hidden="true">{'> '}</span>{links.label}</a>
+            data-view={about.id}
+            data-hash={about.hash}
+            data-default
+            href={`#${about.hash}`}
+          ><span class="prompt" aria-hidden="true">{'> '}</span>{about.label}</a>
         )
       }
     </div>
@@ -46,6 +48,7 @@ const links = views.find((view) => view.id === 'links');
 
 <style>
   .site-header {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 0.9375rem 1.3125rem;
@@ -53,10 +56,10 @@ const links = views.find((view) => view.id === 'links');
     border-bottom: 1px solid var(--border);
     flex-wrap: wrap;
   }
-  /* The handle starts level with the top of the helmet, and the Links view
+  /* The handle starts level with the top of the helmet, and the About Me view
      sits under the handle rather than beside it in the tab list. */
   .brand { display: flex; align-items: flex-start; gap: 0.9375rem; }
-  .brand-lockup { display: flex; flex-direction: column; gap: 0.1875rem; }
+  .brand-lockup { display: flex; flex-direction: column; height: 2.8125rem; justify-content: space-between; }
   .monogram {
     width: 2.8125rem; height: 2.8125rem;
     display: block;
@@ -74,7 +77,7 @@ const links = views.find((view) => view.id === 'links');
     color: var(--text);
     margin: 0;
   }
-  /* The Links view wears the same box and the same prompt as a tab, so the
+  /* The About Me view wears the same box and the same prompt as a tab, so the
      row reads as one group. The box hugs its text rather than filling the
      handle column. */
   .brand-link {
@@ -82,6 +85,12 @@ const links = views.find((view) => view.id === 'links');
     font-size: 1.125rem;
     color: var(--green);
     text-decoration: none;
+    /* A line box carries half leading above the cap and the descender space
+       under the baseline, so the box bottom sits several pixels below the ink.
+       Trimming the box to the cap height and the baseline leaves the ink itself
+       to meet the bottom of the helmet, with the hover underline below it. */
+    text-box-trim: trim-end;
+    text-box-edge: cap alphabetic;
   }
   .brand-link .prompt { display: none; }
   .brand-link[aria-current='true'] .prompt { display: inline; }
@@ -108,7 +117,8 @@ const links = views.find((view) => view.id === 'links');
   /* The badge is a status, not a control, so its active state wears the handle
      colour rather than the link colour, which is there for clickables. */
   .on-air[data-state='on-air'],
-  .on-air[data-state='running'] { color: var(--text); }
+  .on-air[data-state='running'],
+  .on-air[data-state='vibing'] { color: var(--text); }
 
   /* The badge and the toggle travel together at the right edge of the top row,
      and they claim the free space, so they never move down on their own. */
@@ -127,12 +137,44 @@ const links = views.find((view) => view.id === 'links');
     .brand-link:hover { text-decoration: underline; }
   }
 
-  /* The tabs give way before the status pair does. Once the handle, the tabs
-     and the pair no longer fit on one line, the tabs take a row of their own.
-     The row needs 951px with the widest tab selected. */
-  @media (max-width: 959px) {
+  /* The mobile sizes. The header keeps all three of its parts on one row for as
+     long as they fit: the handle column, the tab list and the status pair. Each
+     block below is the width at which one part stops fitting, and every number
+     comes from data/layout.js. */
+  @media (max-width: 1149px) {
+    /* Rows are closer together, since the tabs may take two of them. */
+    .site-header {
+      gap: var(--wrap-gap) 1rem;
+      padding: 0.625rem 1rem;
+    }
+    .brand { gap: 0.75rem; }
+    /* The handle column spans the helmet, so the About Me line ends level with
+       the bottom of the picture, not below it. */
+    .brand-lockup { height: 2.5rem; }
+    .brand-name { font-size: 1.125rem; }
+    .brand-link { line-height: 1.1; }
+    .monogram { width: 2.5rem; height: 2.5rem; }
+    .divider { height: 2.5rem; }
+  }
+
+  /* The tabs give way first, once the handle, the tabs and the pair no longer fit
+     on one row. They keep a row of their own below that. The hairline between
+     the handle column and the tab list goes with them, since a hairline between
+     two stacked rows reads as noise. */
+  @media (max-width: 743px) {
     :global(.tab-bar) { order: 9; flex: 1 1 100%; }
-    /* A hairline between two stacked rows reads as noise. */
     .divider { display: none; }
+  }
+
+  /* Under that width the badge no longer fits beside the handle, and a line of
+     its own for one small box is wasteful, so it steps out. The toggle stays. */
+  @media (max-width: 455px) {
+    .on-air { display: none; }
+  }
+
+  /* Under this one the toggle has no room either, so the header keeps only the
+     handle and the tabs. The badge above it is gone at this width already. */
+  @media (max-width: 327px) {
+    .status { display: none; }
   }
 </style>
