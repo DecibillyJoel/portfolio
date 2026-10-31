@@ -2,7 +2,7 @@
 
 My personal site. It's a single page with a retro-arcade look. The About Me view lands first and holds my links, and two tabs beside it open my certifications and my projects. The projects tab embeds my Live365 radio station, Maximum Slappage, my game, Smiles Sadistic Adventure, and my SoundCloud audio, and it also describes this site itself.
 
-Live at https://portfolio.joeofsometrades.workers.dev
+Live at https://joeofsometrades.com
 
 ## Running it locally
 

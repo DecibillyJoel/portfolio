@@ -11,6 +11,9 @@ import { routes, tabs, landing } from '../src/data/routes.js';
 import { mobileMax, statusRowMax, tabsWrapMax, toggleHideMax, wideMin } from '../src/data/layout.js';
 
 const DIST = fileURLToPath(new URL('../dist', import.meta.url));
+// The origin the built absolute URLs must carry. It comes from `site` in
+// astro.config.mjs, so a domain move is a one line change there plus this one.
+const ORIGIN = 'https://joeofsometrades.com';
 
 function collect(dir) {
   return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
@@ -271,13 +274,11 @@ test('robots.txt and llms.txt ship with the site', () => {
 test('sitemap.xml ships and robots.txt points at it', () => {
   const sitemap = readFileSync(join(DIST, 'sitemap.xml'), 'utf8');
   assert.match(sitemap, /<urlset xmlns="http:\/\/www\.sitemaps\.org\/schemas\/sitemap\/0\.9">/);
-  assert.match(sitemap, /<loc>https:\/\/portfolio\.joeofsometrades\.workers\.dev\/<\/loc>/);
+  const origin = ORIGIN.replace(/\./g, '\\.');
+  assert.match(sitemap, new RegExp(`<loc>${origin}/</loc>`));
 
   const robots = readFileSync(join(DIST, 'robots.txt'), 'utf8');
-  assert.match(
-    robots,
-    /^Sitemap: https:\/\/portfolio\.joeofsometrades\.workers\.dev\/sitemap\.xml$/m,
-  );
+  assert.match(robots, new RegExp(`^Sitemap: ${origin}/sitemap\\.xml$`, 'm'));
 });
 
 test('a real 404 page ships and points back at every view', () => {
@@ -505,9 +506,6 @@ test('the router reads the not-found panel and leaves in-page targets alone', ()
   assert.match(html, /<main id="main" tabindex="-1"[^>]*data-route-ignore/, 'the marker sits on a real element');
   assert.match(html, /<title>@JoeOfSomeTrades<\/title>/, 'the base title comes from the page');
 });
-
-// The origin is fixed in astro.config.mjs, so the built tags must be absolute.
-const ORIGIN = 'https://portfolio.joeofsometrades.workers.dev';
 
 function metaMap(html) {
   const map = {};
@@ -955,4 +953,44 @@ test('a wrapped bar drops its hairline and draws a rule between its rows', () =>
   const wrapped = css.split('[data-wrapped]{gap:var(--wrap-gap) 1.3125rem}').length - 1;
   assert.ok(wrapped >= 2, `both bars share the wrapped row gap, found ${wrapped}`);
   assert.ok(css.includes('--wrap-gap:16px'), 'one token holds the air between two rows');
+});
+
+test('no built file still names the workers.dev fallback', () => {
+  const dist = readDist();
+  const hits = dist.match(/[a-z0-9.-]*workers\.dev/g) || [];
+  assert.deepEqual(hits, [], 'every absolute URL moved to the custom domain');
+});
+
+// The site moved from a workers.dev address to the custom domain. The old host
+// forwards to the new one, and every other host is served from the built assets.
+test('the forwarding host sends the visitor to the custom domain', async () => {
+  const { default: worker } = await import('../src/worker.js');
+  const served = [];
+  const env = {
+    ASSETS: {
+      fetch(request) {
+        served.push(new URL(request.url).pathname);
+        return new Response('asset body', { status: 200 });
+      },
+    },
+  };
+
+  const old = await worker.fetch(
+    new Request('https://portfolio.joeofsometrades.workers.dev/radio?q=1'),
+    env,
+  );
+  assert.equal(old.status, 301, 'the old address answers with a permanent redirect');
+  assert.equal(old.headers.get('location'), 'https://joeofsometrades.com/radio?q=1');
+  assert.equal(served.length, 0, 'a forwarded request never reaches the assets');
+
+  // A version preview lives on its own workers.dev name, so it must not forward.
+  for (const host of [
+    'abc123-portfolio.joeofsometrades.workers.dev',
+    'joeofsometrades.com',
+    'www.joeofsometrades.com',
+  ]) {
+    const response = await worker.fetch(new Request(`https://${host}/robots.txt`), env);
+    assert.equal(response.status, 200, `${host} is served`);
+  }
+  assert.deepEqual(served, ['/robots.txt', '/robots.txt', '/robots.txt']);
 });

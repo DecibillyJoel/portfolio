@@ -2,8 +2,15 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "portfolio",
   "compatibility_date": "2026-10-29",
+  "main": "src/worker.js",
   "assets": {
     "directory": "./dist",
-    "not_found_handling": "404-page"
-  }
+    "binding": "ASSETS",
+    "not_found_handling": "404-page",
+    "run_worker_first": true
+  },
+  "routes": [
+    { "pattern": "joeofsometrades.com", "custom_domain": true },
+    { "pattern": "www.joeofsometrades.com", "custom_domain": true }
+  ]
 }

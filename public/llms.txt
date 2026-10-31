@@ -9,16 +9,16 @@ URL, so the page never reloads on navigation.
 
 ## Views
 
-- [About Me](https://portfolio.joeofsometrades.workers.dev/#about): A short introduction and every contact link.
-- [Projects](https://portfolio.joeofsometrades.workers.dev/#projects): The project index.
-- [Certifications](https://portfolio.joeofsometrades.workers.dev/#certs): Certifications and their dates, with a link to each official description.
+- [About Me](https://joeofsometrades.com/#about): A short introduction and every contact link.
+- [Projects](https://joeofsometrades.com/#projects): The project index.
+- [Certifications](https://joeofsometrades.com/#certs): Certifications and their dates, with a link to each official description.
 
 ## Projects
 
-- [Maximum Slappage](https://portfolio.joeofsometrades.workers.dev/#radio): A Live365 radio station I run. https://live365.com/station/Maximum-Slappage-a57727
-- [Portfolio](https://portfolio.joeofsometrades.workers.dev/#portfolio): This site itself, built with Astro and deployed on Cloudflare Workers with Static Assets. The source lives at https://github.com/DecibillyJoel/portfolio.
-- [Smiles Sadistic Adventure](https://portfolio.joeofsometrades.workers.dev/#game): A browser game. The source lives at https://github.com/DecibillyJoel/Smiles-Sadistic-Adventure.
-- [Audio Productions](https://portfolio.joeofsometrades.workers.dev/#audio): Music, arrangements, and voice acting, newest first. https://soundcloud.com/joeofsometrades
+- [Maximum Slappage](https://joeofsometrades.com/#radio): A Live365 radio station I run. https://live365.com/station/Maximum-Slappage-a57727
+- [Portfolio](https://joeofsometrades.com/#portfolio): This site itself, built with Astro and deployed on Cloudflare Workers with Static Assets. The source lives at https://github.com/DecibillyJoel/portfolio.
+- [Smiles Sadistic Adventure](https://joeofsometrades.com/#game): A browser game. The source lives at https://github.com/DecibillyJoel/Smiles-Sadistic-Adventure.
+- [Audio Productions](https://joeofsometrades.com/#audio): Music, arrangements, and voice acting, newest first. https://soundcloud.com/joeofsometrades
 
 ## Contact
 

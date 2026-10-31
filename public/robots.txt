@@ -1,7 +1,7 @@
 # @JoeOfSomeTrades portfolio
-# https://portfolio.joeofsometrades.workers.dev
+# https://joeofsometrades.com
 
 User-agent: *
 Allow: /
 
-Sitemap: https://portfolio.joeofsometrades.workers.dev/sitemap.xml
+Sitemap: https://joeofsometrades.com/sitemap.xml
