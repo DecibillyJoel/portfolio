@@ -149,7 +149,7 @@ test('live links point at the approved URLs', () => {
   const html = readIndex();
   assert.match(html, /href="https:\/\/github\.com\/DecibillyJoel"/);
   assert.match(html, /href="https:\/\/www\.youtube\.com\/@JoeOfSomeTrades"/);
-  assert.match(html, /href="https:\/\/x\.com\/JoeOfManyTrades"/);
+  assert.match(html, /href="https:\/\/x\.com\/DecibillyJoel"/);
   assert.match(html, /href="https:\/\/www\.last\.fm\/user\/DecibillyJoel"/);
   assert.match(html, /href="https:\/\/bsky\.app\/profile\/joeofsometrades\.bsky\.social"/);
   assert.match(html, /href="https:\/\/live365\.com\/station\/a57727"/);
@@ -720,7 +720,7 @@ test('every project link names the project it opens', () => {
     ['View on GitHub', 'https://github.com/DecibillyJoel/portfolio'],
     ['View on Live365', 'https://live365.com/station/Maximum-Slappage-a57727'],
     ['View on GitHub', 'https://github.com/DecibillyJoel/Smiles-Sadistic-Adventure'],
-    ['View on SoundCloud', 'https://soundcloud.com/joeofsometrades'],
+    ['View on SoundCloud', 'https://soundcloud.com/JoeOfSomeTrades'],
   ]);
 });
 

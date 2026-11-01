@@ -4,7 +4,7 @@
 import { wideQuery } from './layout.js';
 
 export const soundcloud = {
-  profile: 'https://soundcloud.com/joeofsometrades',
+  profile: 'https://soundcloud.com/JoeOfSomeTrades',
   // The widget takes its accent as an unprefixed hex inside a query value, so
   // this is not a CSS colour. It mirrors the dark --magenta token.
   tint: 'ff2fd0',

@@ -44,7 +44,7 @@ export const projects = [
     tagline: 'various music and voice acting projects',
     blurb:
       'My voice acting projects are my highest quality and most recent audio production work. My music tracks are from my high school and college years.',
-    href: 'https://soundcloud.com/joeofsometrades',
+    href: 'https://soundcloud.com/JoeOfSomeTrades',
     linkLabel: 'View on SoundCloud',
     embedKind: 'soundcloud',
   },

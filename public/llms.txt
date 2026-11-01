@@ -18,16 +18,16 @@ URL, so the page never reloads on navigation.
 - [Maximum Slappage](https://joeofsometrades.com/#radio): A Live365 radio station I run. https://live365.com/station/Maximum-Slappage-a57727
 - [Portfolio](https://joeofsometrades.com/#portfolio): This site itself, built with Astro and deployed on Cloudflare Workers with Static Assets. The source lives at https://github.com/DecibillyJoel/portfolio.
 - [Smiles Sadistic Adventure](https://joeofsometrades.com/#game): A browser game. The source lives at https://github.com/DecibillyJoel/Smiles-Sadistic-Adventure.
-- [Audio Productions](https://joeofsometrades.com/#audio): Music, arrangements, and voice acting, newest first. https://soundcloud.com/joeofsometrades
+- [Audio Productions](https://joeofsometrades.com/#audio): Music, arrangements, and voice acting, newest first. https://soundcloud.com/JoeOfSomeTrades
 
 ## Contact
 
 - Live365: https://live365.com/station/Maximum-Slappage-a57727
 - GitHub: https://github.com/DecibillyJoel
-- SoundCloud: https://soundcloud.com/joeofsometrades
+- SoundCloud: https://soundcloud.com/JoeOfSomeTrades
 - YouTube: https://www.youtube.com/@JoeOfSomeTrades
 - Bluesky: https://bsky.app/profile/joeofsometrades.bsky.social
-- X: https://x.com/JoeOfManyTrades
+- X: https://x.com/DecibillyJoel
 - Last.fm: https://www.last.fm/user/DecibillyJoel
 - Discord: https://discord.com/users/152963830350217217
 - Email: joe@joeofsometrades.com
