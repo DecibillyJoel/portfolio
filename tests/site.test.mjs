@@ -151,7 +151,7 @@ test('live links point at the approved URLs', () => {
   assert.match(html, /href="https:\/\/www\.last\.fm\/user\/DecibillyJoel"/);
   assert.match(html, /href="https:\/\/bsky\.app\/profile\/joeofsometrades\.bsky\.social"/);
   assert.match(html, /href="https:\/\/live365\.com\/station\/a57727"/);
-  assert.match(html, /href="mailto:joeofsometrades@outlook\.com"/);
+  assert.match(html, /href="mailto:joe@joeofsometrades\.com"/);
   assert.match(html, /href="https:\/\/discord\.com\/users\/152963830350217217"/);
 });
 

@@ -22,7 +22,7 @@ URL, so the page never reloads on navigation.
 
 ## Contact
 
-- Email: joeofsometrades@outlook.com
+- Email: joe@joeofsometrades.com
 - GitHub: https://github.com/DecibillyJoel
 - YouTube: https://www.youtube.com/@JoeOfSomeTrades
 - X: https://x.com/JoeOfManyTrades
