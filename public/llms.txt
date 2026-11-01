@@ -22,12 +22,12 @@ URL, so the page never reloads on navigation.
 
 ## Contact
 
-- Email: joe@joeofsometrades.com
-- GitHub: https://github.com/DecibillyJoel
-- YouTube: https://www.youtube.com/@JoeOfSomeTrades
-- X: https://x.com/JoeOfManyTrades
-- Bluesky: https://bsky.app/profile/joeofsometrades.bsky.social
 - Live365: https://live365.com/station/Maximum-Slappage-a57727
+- GitHub: https://github.com/DecibillyJoel
 - SoundCloud: https://soundcloud.com/joeofsometrades
+- YouTube: https://www.youtube.com/@JoeOfSomeTrades
+- Bluesky: https://bsky.app/profile/joeofsometrades.bsky.social
+- X: https://x.com/JoeOfManyTrades
 - Last.fm: https://www.last.fm/user/DecibillyJoel
 - Discord: https://discord.com/users/152963830350217217
+- Email: joe@joeofsometrades.com

@@ -93,10 +93,12 @@ test('About Me holds the approved paragraph above the links', () => {
   assert.doesNotMatch(panel, /Socials and profiles|>LINKS</);
 });
 
-test('About Me lists nine entries, each with an icon', () => {
+test('About Me lists nine entries, each with an icon, in the chosen order', () => {
   const html = readIndex();
-  const labels = ['GITHUB', 'YOUTUBE', 'X', 'BLUESKY', 'LIVE365', 'SOUNDCLOUD', 'LAST.FM', 'EMAIL', 'DISCORD'];
-  for (const label of labels) assert.match(html, new RegExp(`>\\s*${label.replace('.', '\\.')}<`));
+  const labels = ['LIVE365', 'GITHUB', 'SOUNDCLOUD', 'YOUTUBE', 'BLUESKY', 'X', 'LAST.FM', 'DISCORD', 'EMAIL'];
+  const panel = html.match(/data-panel="about"[\s\S]*?<\/section>/)?.[0] ?? '';
+  const rendered = [...panel.matchAll(/class="label"[^>]*>([^<]*)<\/span>/g)].map((m) => m[1]);
+  assert.deepEqual(rendered, labels);
   assert.equal((html.match(/class="icon"/g) || []).length, labels.length);
 });
 
