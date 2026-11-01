@@ -352,6 +352,12 @@ test('_headers ships the security headers and a report only CSP', () => {
   // script, so the policy reports first and blocks nothing yet.
   assert.ok(headers.includes('Content-Security-Policy-Report-Only:'), 'the CSP must report only');
   assert.doesNotMatch(headers, /^Content-Security-Policy:/m, 'no blocking CSP yet');
+  // Read the directive list alone, because the comment above it names both of
+  // these. A report only policy ignores them, and the browser logs an error for
+  // the second one on every load.
+  const csp = headers.match(/^\s*Content-Security-Policy-Report-Only: (.*)$/m)[1];
+  assert.ok(!csp.includes('upgrade-insecure-requests'), 'a report only policy ignores this directive');
+  assert.ok(!csp.includes('frame-ancestors'), 'X-Frame-Options already covers framing');
   // The report names every embed, so a later blocking policy would keep them.
   for (const origin of ['https://live365.com', 'https://w.soundcloud.com', 'https://decibillyjoel.github.io']) {
     assert.ok(headers.includes(origin), `the CSP frame-src is missing ${origin}`);
