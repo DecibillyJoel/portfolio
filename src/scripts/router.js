@@ -43,6 +43,26 @@ export function initRouter(root = document) {
 
   const projectTab = root.querySelector('[data-sub-tab-target]')?.closest('[data-panel]')?.dataset.panel;
 
+  // The tab that carries the chooser, so a press on it can be read as a toggle.
+  const projectsTabLink = projectTab
+    ? root.querySelector(`[data-tab-target="${projectTab}"][data-hash]`)
+    : null;
+
+  function isCurrent(link) {
+    return window.location.hash.replace(/^#/, '') === link?.dataset.hash;
+  }
+
+  // Pressing the Projects tab while its view is already open folds the chooser
+  // away, rather than doing nothing. The address does not change then, so no
+  // route runs and the press is handled here.
+  function toggleOpenView(link) {
+    if (link !== projectsTabLink || !isCurrent(link)) return false;
+    projects?.toggleBar();
+    return true;
+  }
+
+  projectsTabLink?.addEventListener('click', () => toggleOpenView(projectsTabLink));
+
   const defaultTitle = document.title;
 
   function apply(name) {
@@ -50,6 +70,8 @@ export function initRouter(root = document) {
     if (projectRoutes.has(name)) {
       if (projectTab) tabs.show(projectTab);
       projects.show(projectRoutes.get(name));
+      // A project fills the view, so the chooser folds away.
+      projects.showBar(false);
       return;
     }
     const tab = tabRoutes.get(name) ?? tabRoutes.get(defaultHash);
@@ -57,8 +79,10 @@ export function initRouter(root = document) {
     // The Projects view opens on its first project rather than on a chooser, so
     // a bare #projects always has something in it. A project already on screen
     // stays, so returning to the view does not switch away from it.
-    if (projectTab && tab === projectTab && projects.defaultId && !projects.current()) {
-      projects.show(projects.defaultId);
+    if (projectTab && tab === projectTab) {
+      if (projects.defaultId && !projects.current()) projects.show(projects.defaultId);
+      // The view carries the chooser, which a project route folded away.
+      projects.showBar(true);
     }
   }
 
@@ -90,7 +114,7 @@ export function initRouter(root = document) {
     link.addEventListener('keydown', (event) => {
       if (event.key === ' ') {
         event.preventDefault();
-        window.location.hash = link.dataset.hash;
+        if (!toggleOpenView(link)) window.location.hash = link.dataset.hash;
       }
     });
   }

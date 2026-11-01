@@ -116,6 +116,23 @@ export function initProjects(root = document) {
     return Boolean(panel?.querySelector('iframe[data-embed]'));
   }
 
+  // The chooser folds away on a project route, so the panel belongs to the
+  // project alone. The Projects tab brings the chooser back, which keeps every
+  // project one press away.
+  function showBar(visible) {
+    if (!list) return;
+    const active = root.activeElement ?? document.activeElement;
+    const focusedInside = Boolean(active && list.contains(active));
+    list.hidden = !visible;
+    // Hiding the bar would leave focus nowhere, and the next Tab would start
+    // again at the top of the page. Move focus to the project that just appeared.
+    if (!visible && focusedInside) panels.find((panel) => !panel.hidden)?.focus();
+  }
+
+  function toggleBar() {
+    if (list) showBar(list.hidden);
+  }
+
   // The project on screen, so the router only sends a bare #projects to the
   // first project when the view is empty. Otherwise the loaded project stays.
   let currentId = null;
@@ -159,5 +176,5 @@ export function initProjects(root = document) {
   syncBadge();
   syncEmbedFocus();
 
-  return { show, syncBadge, defaultId, current: () => currentId };
+  return { show, syncBadge, showBar, toggleBar, defaultId, current: () => currentId };
 }

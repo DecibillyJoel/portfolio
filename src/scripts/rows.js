@@ -9,8 +9,9 @@
 //     continuation of the first. The rules are absolutely positioned children,
 //     which keeps them out of the flex layout.
 //
-// A hidden bar measures as one row. The observer runs again the moment it
-// becomes visible, and again whenever the browser rewraps it.
+// A hidden bar measures as no rows at all, so the marks a wider layout left
+// behind are cleared with it. The observer runs again the moment the bar becomes
+// visible, and again whenever the browser rewraps it.
 
 const RULE_CLASS = 'row-rule';
 
@@ -63,7 +64,16 @@ function drawRules(list, rows, top) {
 
 export function markRows(list) {
   const { rows, count } = measure(list);
-  if (count < 2) return;
+  // Fewer than two visible items, as in a hidden bar, means no wrap and no
+  // rules. Take away anything a wider layout left behind.
+  if (count < 2) {
+    for (const child of [...list.children]) {
+      if (child.classList.contains(RULE_CLASS)) child.remove();
+      else delete child.dataset.rowEnd;
+    }
+    delete list.dataset.wrapped;
+    return;
+  }
 
   rows.forEach((row, index) => {
     const last = index < rows.length - 1;

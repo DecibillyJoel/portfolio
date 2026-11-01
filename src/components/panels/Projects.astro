@@ -26,6 +26,7 @@ import { projects } from '../../data/projects.js';
         data-project={project.id}
         role="tabpanel"
         aria-labelledby={`subtab-${project.id}`}
+        tabindex="-1"
         hidden
       >
         <h2 class="heading heading--tight">{project.title}</h2>
@@ -68,6 +69,9 @@ import { projects } from '../../data/projects.js';
     min-height: 0;
   }
   .sub-tabs { position: relative; display: flex; flex-wrap: wrap; flex: 0 0 auto; gap: 1.3125rem; padding: 0.5rem 2.0625rem; border-bottom: 1px solid var(--border); background: var(--bg); }
+  /* The bar folds away on a project route. It carries a flex display of its own,
+     which would beat the hidden attribute, so it needs a rule of its own. */
+  .sub-tabs[hidden] { display: none; }
   .projects-scroll {
     flex: 1 1 auto;
     min-height: 0;

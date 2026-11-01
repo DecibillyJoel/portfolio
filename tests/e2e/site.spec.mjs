@@ -14,7 +14,24 @@ const tab = (page, id) => page.locator(`#tab-${id}`);
 const viewLink = (page, id) => page.locator(`[data-view="${id}"]`);
 const panel = (page, id) => page.locator(`#panel-${id}`);
 const subTab = (page, id) => page.locator(`[data-sub-tab-target="${id}"]`);
+const projectBar = (page) => page.locator('[data-panel="projects"] [role="tablist"]');
 const loadedFrames = (page) => page.locator('iframe[data-loaded="true"]');
+
+// The chooser folds away as soon as a project is chosen, so a test that wants a
+// second project brings the bar back through the Projects tab first. That press
+// toggles the bar, and the route may still be settling when it lands, so the
+// press is retried until the bar is really there.
+async function chooseProject(page, id) {
+  await expect
+    .poll(async () => {
+      if (await projectBar(page).isVisible()) return true;
+      await tab(page, 'projects').click();
+      return projectBar(page).isVisible();
+    })
+    .toBe(true);
+  await subTab(page, id).click();
+  await expect(projectBar(page)).toBeHidden();
+}
 
 async function blockEmbed(page) {
   await page.route(/live365\.com/, (route) => route.abort());
@@ -68,7 +85,7 @@ test('resizing across the 900px breakpoint does not swap or reload the embed', a
   await page.goto('/');
 
   await tab(page, 'projects').click();
-  await subTab(page, 'maximum-slappage').click();
+  await chooseProject(page, 'maximum-slappage');
   await expect(loadedFrames(page)).toHaveAttribute('src', /live365\.com/);
   const before = await page.evaluate(() => {
     const frame = document.querySelector('iframe');
@@ -230,19 +247,19 @@ test('only one project embed is loaded at a time', async ({ page }) => {
   await page.goto('/');
   await tab(page, 'projects').click();
 
-  await subTab(page, 'maximum-slappage').click();
+  await chooseProject(page, 'maximum-slappage');
   await expect(loadedFrames(page)).toHaveCount(1);
   await expect(loadedFrames(page)).toHaveAttribute('src', /live365\.com/);
   await expect(page.locator('[data-project]:visible')).toHaveCount(1);
   await expect(page.locator('[data-project="maximum-slappage"]')).toBeVisible();
 
-  await subTab(page, 'smiles').click();
+  await chooseProject(page, 'smiles');
   await expect(loadedFrames(page)).toHaveCount(1);
   await expect(loadedFrames(page)).toHaveAttribute('src', /decibillyjoel\.github\.io/);
   await expect(page.locator('[data-project]:visible')).toHaveCount(1);
   await expect(page.locator('[data-project="smiles"]')).toBeVisible();
 
-  await subTab(page, 'maximum-slappage').click();
+  await chooseProject(page, 'maximum-slappage');
   await expect(loadedFrames(page)).toHaveCount(1);
   await expect(loadedFrames(page)).toHaveAttribute('src', /live365\.com/);
   await expect(page.locator('[data-project]:visible')).toHaveCount(1);
@@ -254,14 +271,14 @@ test('the Portfolio project leaves the radio player mounted', async ({ page }) =
   await page.goto('/');
   await tab(page, 'projects').click();
 
-  await subTab(page, 'maximum-slappage').click();
+  await chooseProject(page, 'maximum-slappage');
   await expect(loadedFrames(page)).toHaveCount(1);
   await expect(loadedFrames(page)).toHaveAttribute('src', /live365\.com/);
   await page.evaluate(() => {
     window.__radio = document.querySelector('[data-project="maximum-slappage"] iframe[data-embed]');
   });
 
-  await subTab(page, 'portfolio').click();
+  await chooseProject(page, 'portfolio');
   await expect(page.locator('[data-project="portfolio"]')).toBeVisible();
   await expect(page.locator('[data-project="maximum-slappage"]')).toBeHidden();
   await expect(loadedFrames(page)).toHaveCount(1);
@@ -274,7 +291,7 @@ test('the Portfolio project leaves the radio player mounted', async ({ page }) =
   expect(radio.same).toBe(true);
   expect(radio.src).toMatch(/live365\.com/);
 
-  await subTab(page, 'smiles').click();
+  await chooseProject(page, 'smiles');
   await expect(loadedFrames(page)).toHaveCount(1);
   await expect(loadedFrames(page)).toHaveAttribute('src', /decibillyjoel\.github\.io/);
   await expect(page.locator('[data-project="maximum-slappage"] iframe[data-embed]')).toHaveAttribute(
@@ -288,11 +305,11 @@ test('the Portfolio project leaves the game mounted', async ({ page }) => {
   await page.goto('/');
   await tab(page, 'projects').click();
 
-  await subTab(page, 'smiles').click();
+  await chooseProject(page, 'smiles');
   await expect(loadedFrames(page)).toHaveCount(1);
   await expect(loadedFrames(page)).toHaveAttribute('src', /decibillyjoel\.github\.io/);
 
-  await subTab(page, 'portfolio').click();
+  await chooseProject(page, 'portfolio');
   await expect(page.locator('[data-project="portfolio"]')).toBeVisible();
   await expect(page.locator('[data-project="smiles"]')).toBeHidden();
   await expect(loadedFrames(page)).toHaveCount(1);
@@ -332,10 +349,10 @@ test('status badge announces the current state and never takes focus', async ({ 
   await tab(page, 'projects').click();
   await expectState('[ OFF AIR ]');
 
-  await subTab(page, 'maximum-slappage').click();
+  await chooseProject(page, 'maximum-slappage');
   await expectState('[ ON AIR ]');
 
-  await subTab(page, 'smiles').click();
+  await chooseProject(page, 'smiles');
   await expectState('[ PLAYING ]');
 
   await viewLink(page, 'about').click();
@@ -345,7 +362,7 @@ test('status badge announces the current state and never takes focus', async ({ 
   await tab(page, 'projects').click();
   await expectState('[ PLAYING ]');
 
-  await subTab(page, 'soundcloud').click();
+  await chooseProject(page, 'soundcloud');
   await expectState('[ VIBING ]');
 
   await viewLink(page, 'about').click();
@@ -431,7 +448,7 @@ test('leaving Projects to a non-project tab keeps the project loaded', async ({ 
   await blockEmbed(page);
   await page.goto('/');
   await tab(page, 'projects').click();
-  await subTab(page, 'maximum-slappage').click();
+  await chooseProject(page, 'maximum-slappage');
   await expect(loadedFrames(page)).toHaveCount(1);
   await page.evaluate(() => {
     window.__radioFrame = document.querySelector('iframe[data-embed-kind="player"]');
@@ -508,10 +525,10 @@ test('every view has its own hash URL', async ({ page }) => {
   await expect(page).toHaveURL(/#about$/);
 
   await tab(page, 'projects').click();
-  await subTab(page, 'maximum-slappage').click();
+  await chooseProject(page, 'maximum-slappage');
   await expect(page).toHaveURL(/#radio$/);
 
-  await subTab(page, 'smiles').click();
+  await chooseProject(page, 'smiles');
   await expect(page).toHaveURL(/#game$/);
 });
 
@@ -543,7 +560,7 @@ test('browser back and forward move between views without a reload', async ({ pa
   });
   await page.goto('/');
   await tab(page, 'projects').click();
-  await subTab(page, 'maximum-slappage').click();
+  await chooseProject(page, 'maximum-slappage');
   await expect(page).toHaveURL(/#radio$/);
 
   await page.goBack();
@@ -698,7 +715,9 @@ const SHELL_VIEWPORTS = [
 
 test('the page fills the viewport at every size and only the panel body scrolls', async ({ page }) => {
   await blockEmbed(page);
-  await page.goto('/#game');
+  // This view keeps the chooser up, so the sub-tab bar is part of the shell
+  // that has to fit above the scrolling body.
+  await page.goto('/#projects');
 
   for (const size of SHELL_VIEWPORTS) {
     await page.setViewportSize(size);
@@ -729,26 +748,24 @@ test('the page fills the viewport at every size and only the panel body scrolls'
   }
 });
 
-test('the projects body scrolls while the header and the sub-tab bar stay in place', async ({ page }) => {
+test('a project route folds the chooser, and the body starts under the header', async ({ page }) => {
   await blockEmbed(page);
   await page.setViewportSize({ width: 844, height: 390 });
   await page.goto('/#game');
 
+  await expect(projectBar(page)).toBeHidden();
   const before = await page.evaluate(() => {
     const header = document.querySelector('.site-header');
-    const tabs = document.querySelector('#panel-projects .sub-tabs');
     const body = document.querySelector('#panel-projects .projects-scroll');
     return {
-      headerTop: header.getBoundingClientRect().top,
-      tabsTop: tabs.getBoundingClientRect().top,
-      tabsBottom: tabs.getBoundingClientRect().bottom,
+      headerBottom: header.getBoundingClientRect().bottom,
       bodyTop: body.getBoundingClientRect().top,
     };
   });
 
-  // The scroll body starts where the sub-tab bar ends, so the scrollbar never
-  // runs alongside the bar.
-  expect(before.bodyTop).toBeGreaterThanOrEqual(before.tabsBottom);
+  // The folded bar gives up its height, so the project starts directly under
+  // the header and the whole pane belongs to the scroll body.
+  expect(Math.abs(before.bodyTop - before.headerBottom)).toBeLessThanOrEqual(1);
 
   await page.evaluate(() => {
     const body = document.querySelector('#panel-projects .projects-scroll');
@@ -757,7 +774,6 @@ test('the projects body scrolls while the header and the sub-tab bar stay in pla
 
   const after = await page.evaluate(() => {
     const header = document.querySelector('.site-header');
-    const tabs = document.querySelector('#panel-projects .sub-tabs');
     const panel = document.querySelector('#panel-projects');
     const body = document.querySelector('#panel-projects .projects-scroll');
     return {
@@ -765,7 +781,6 @@ test('the projects body scrolls while the header and the sub-tab bar stay in pla
       bodyScrollTop: body.scrollTop,
       panelScrolls: panel.scrollHeight > panel.clientHeight,
       headerTop: header.getBoundingClientRect().top,
-      tabsTop: tabs.getBoundingClientRect().top,
       scrollY: window.scrollY,
     };
   });
@@ -773,8 +788,52 @@ test('the projects body scrolls while the header and the sub-tab bar stay in pla
   expect(after.scrollable).toBe(true);
   expect(after.bodyScrollTop).toBeGreaterThan(0);
   expect(after.panelScrolls, 'the panel itself never scrolls').toBe(false);
-  expect(after.tabsTop).toBe(before.tabsTop);
-  expect(after.headerTop).toBe(before.headerTop);
+  expect(after.headerTop).toBe(0);
+  expect(after.scrollY).toBe(0);
+});
+
+test('the sub-tab bar holds still above the scrolling body', async ({ page }) => {
+  await blockEmbed(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  // The radio project is the tall one. Pressing the Projects tab brings the
+  // chooser back while that project stays on screen.
+  await page.goto('/#radio');
+  await expect(projectBar(page)).toBeHidden();
+  await tab(page, 'projects').click();
+  await expect(projectBar(page)).toBeVisible();
+
+  const before = await page.evaluate(() => {
+    const bar = document.querySelector('#panel-projects .sub-tabs');
+    const body = document.querySelector('#panel-projects .projects-scroll');
+    return {
+      barTop: bar.getBoundingClientRect().top,
+      barBottom: bar.getBoundingClientRect().bottom,
+      bodyTop: body.getBoundingClientRect().top,
+      bodyScrollable: body.scrollHeight > body.clientHeight,
+    };
+  });
+
+  // The body starts below the bar, so the scrollbar never runs alongside it.
+  expect(before.bodyScrollable).toBe(true);
+  expect(before.bodyTop).toBeGreaterThanOrEqual(before.barBottom);
+
+  const after = await page.evaluate(() => {
+    const bar = document.querySelector('#panel-projects .sub-tabs');
+    const body = document.querySelector('#panel-projects .projects-scroll');
+    body.scrollTop = body.scrollHeight;
+    return {
+      barTop: bar.getBoundingClientRect().top,
+      barBottom: bar.getBoundingClientRect().bottom,
+      bodyTop: body.getBoundingClientRect().top,
+      bodyScrollTop: body.scrollTop,
+      scrollY: window.scrollY,
+    };
+  });
+
+  // The bar lives outside the scroll body, so a scroll leaves it where it is.
+  expect(after.bodyScrollTop).toBeGreaterThan(0);
+  expect(after.barTop).toBe(before.barTop);
+  expect(after.bodyTop).toBeGreaterThanOrEqual(after.barBottom);
   expect(after.scrollY).toBe(0);
 });
 
@@ -967,9 +1026,11 @@ test('the tabs, the sub-tabs, the badge and the route links are named without de
   expect(await page.locator('[data-on-air]').ariaSnapshot()).toBe('- status: OFF AIR');
 
   await tab(page, 'projects').click();
+  // The names are read while the chooser is up. A folded bar leaves the
+  // accessibility tree, and the fold itself is asserted by the helper.
   await expect(subTab(page, 'smiles')).toHaveAccessibleName('Smiles Sadistic Adventure');
-  await subTab(page, 'maximum-slappage').click();
   await expect(subTab(page, 'maximum-slappage')).toHaveAccessibleName('Maximum Slappage');
+  await chooseProject(page, 'maximum-slappage');
   await expect(page.locator('[data-on-air]')).toHaveText('[ ON AIR ]');
   expect(await page.locator('[data-on-air]').ariaSnapshot()).toBe('- status: ON AIR');
 
@@ -1001,7 +1062,10 @@ test('the sub-tab bar reads as the second level of chrome', async ({ page }) => 
 
   const measure = async (width) => {
     await page.setViewportSize({ width, height: 800 });
-    await page.goto('/#portfolio');
+    // The chooser has to be up to be measured, and a project route folds it
+    // away, so this reads the view rather than one of its projects.
+    await page.goto('/#projects');
+    await expect(projectBar(page)).toBeVisible();
     return page.evaluate(() => {
       const height = (el) => Math.round(el.getBoundingClientRect().height);
       const sub = document.querySelector('#panel-projects .sub-tabs a');
@@ -1155,10 +1219,10 @@ test('the Audio Productions project loads one frame and unloads the others', asy
   await page.goto('/');
   await tab(page, 'projects').click();
 
-  await subTab(page, 'maximum-slappage').click();
+  await chooseProject(page, 'maximum-slappage');
   await expect(loadedFrames(page)).toHaveCount(1);
 
-  await subTab(page, 'soundcloud').click();
+  await chooseProject(page, 'soundcloud');
   await expect(loadedFrames(page)).toHaveCount(1);
   await expect(loadedFrames(page)).toHaveAttribute('src', /soundcloud\.com/);
   await expect(page.locator('[data-project="soundcloud"]')).toBeVisible();
@@ -1168,7 +1232,7 @@ test('the Audio Productions project loads one frame and unloads the others', asy
   );
   await expect(page.locator('[data-on-air]')).toHaveText('[ VIBING ]');
 
-  await subTab(page, 'smiles').click();
+  await chooseProject(page, 'smiles');
   await expect(loadedFrames(page)).toHaveCount(1);
   await expect(loadedFrames(page)).toHaveAttribute('src', /decibillyjoel\.github\.io/);
   await expect(page.locator('[data-project="soundcloud"] iframe[data-embed]')).toHaveAttribute(
@@ -1182,7 +1246,7 @@ test('the Audio Productions frame picks its size from the viewport', async ({ pa
   await page.setViewportSize({ width: 1280, height: 720 });
   await page.goto('/');
   await tab(page, 'projects').click();
-  await subTab(page, 'soundcloud').click();
+  await chooseProject(page, 'soundcloud');
 
   const frame = page.locator('[data-project="soundcloud"] iframe[data-embed]');
   await expect(frame).toHaveAttribute('src', /soundcloud\.com/);

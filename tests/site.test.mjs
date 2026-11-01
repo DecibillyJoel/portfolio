@@ -1060,3 +1060,22 @@ test('the security policy is served from the well known path', () => {
   assert.ok(expires, 'the policy needs an Expires field');
   assert.ok(Date.parse(expires[1]) > Date.now(), 'the policy must not be expired');
 });
+
+test('the chooser folds away on a project route', () => {
+  const css = readDist();
+  const html = readIndex();
+  // The bar carries a flex display of its own, which would beat the hidden
+  // attribute, so it needs a rule of its own to fold away.
+  assert.match(css, /\.sub-tabs[^{]*\[hidden\][^{]*\{display:none\}/);
+  // The route folds the bar as the address lands, and a press on the Projects
+  // tab toggles it back and forth.
+  assert.match(css, /showBar/);
+  assert.match(css, /toggleBar/);
+  // A folded bar takes its links out of the tab order, so the project that is
+  // on screen takes the focus instead.
+  assert.equal(
+    (html.match(/id="project-[a-z-]+"[^>]*tabindex="-1"/g) || []).length,
+    4,
+    'each project can take the focus',
+  );
+});
