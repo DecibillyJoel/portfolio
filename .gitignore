@@ -3,6 +3,7 @@ dist/
 .astro/
 .cloudflare/
 .wrangler/
+mail/.wrangler/
 .dev.vars*
 test-results/
 playwright-report/

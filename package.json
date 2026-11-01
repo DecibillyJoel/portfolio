@@ -8,6 +8,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "test": "node --test tests/",
+    "test:mail": "node --test mail/test/",
     "test:e2e": "playwright test",
     "test:a11y": "playwright test tests/e2e/a11y.spec.mjs",
     "deploy": "wrangler deploy"

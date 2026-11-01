@@ -1,0 +1,9 @@
+{
+  // Email Routing calls this Worker by name, so it serves no HTTP traffic.
+  // The workers.dev address and the preview URLs stay off, and no route is set.
+  "name": "email-router",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-31",
+  "workers_dev": false,
+  "preview_urls": false
+}
