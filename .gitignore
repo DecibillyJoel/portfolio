@@ -5,6 +5,10 @@ dist/
 .wrangler/
 mail/.wrangler/
 .dev.vars*
+.env
+.env.*
+*.pem
+*.key
 test-results/
 playwright-report/
 .superpowers/

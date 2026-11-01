@@ -1,0 +1,7 @@
+# How to report a security problem in joeofsometrades.com.
+# The Contact address reaches me. See RFC 9116 for the field meanings.
+
+Contact: mailto:joe@joeofsometrades.com
+Expires: 2027-11-01T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://joeofsometrades.com/.well-known/security.txt

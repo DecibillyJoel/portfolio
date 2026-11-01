@@ -38,6 +38,11 @@ dashboard under Email > Email Routing, or through the API.
 - The Worker holds no dependency, so it needs no compatibility flag.
 - The reply goes out only when the message looks like it came from a person on
   another domain. Automated senders are forwarded without an answer.
+- The reply also needs a passing DMARC result. Email Routing checks DMARC and
+  prepends its own `Authentication-Results` header before the Worker runs, so the
+  Worker reads the first `Authentication-Results` header, checks that the service
+  is `mx.cloudflare.net`, and checks for `dmarc=pass`. A message that fails the
+  check is forwarded without an answer.
 - The reply carries its own `Message-ID` on our domain. The mail runtime refuses
   to send a message without one, and it says so as `no message-id set`.
 - The forwarded copy carries an `X-Auto-Reply` header. When the reply was

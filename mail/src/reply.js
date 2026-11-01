@@ -25,11 +25,19 @@ const REPLY_INTRO = 'Thanks for your message.';
 const REPLY_FORWARDED = `It has been forwarded to ${DESTINATION}.`;
 const REPLY_EXPECT = `Please expect a reply from ${DESTINATION}.`;
 
+// A header value is one line of text. Every control character goes, because a
+// value with no newline cannot start another header, and an over long value is
+// cut. The reader sees a shorter subject, never a second header.
+export const HEADER_LIMIT = 255;
+
 function headerValue(value) {
   return String(value ?? '')
     .replace(/[\r\n\t]+/g, ' ')
+    .replace(/[\x00-\x1f\x7f]+/g, ' ')
     .replace(/\s+/g, ' ')
-    .trim();
+    .trim()
+    .slice(0, HEADER_LIMIT)
+    .trimEnd();
 }
 
 function isPrintableAscii(text) {
@@ -38,6 +46,30 @@ function isPrintableAscii(text) {
 
 function cap(text) {
   return text.length > SUBJECT_LIMIT ? text.slice(0, SUBJECT_LIMIT).trimEnd() : text;
+}
+
+// Only a well formed message id belongs in In-Reply-To and References. The
+// sender chooses that header, and the reply would carry it twice, so anything
+// that is not one bracketed id is dropped.
+export function replyMessageId(value) {
+  const clean = headerValue(value);
+  return /^<[^<>\s]{1,200}>$/.test(clean) ? clean : '';
+}
+
+// Email Routing checks DMARC before the Worker runs, and prepends its own
+// Authentication-Results header. Only that prepended value is worth reading:
+// a sender can send their own copy of the same header, and the runtime keeps
+// both. Headers.get joins repeats with ", ", so the read stops at that join.
+export const AUTH_SERVICE = 'mx.cloudflare.net';
+const AUTH_HEADER_LIMIT = 1000;
+
+export function dmarcPassed(headers) {
+  const combined = String(headers?.get?.('Authentication-Results') ?? '');
+  const value = combined.split(', ')[0].trim().toLowerCase().slice(0, AUTH_HEADER_LIMIT);
+  if (!value) return false;
+  const parts = value.split(';').map((part) => part.trim());
+  if (parts.shift() !== AUTH_SERVICE) return false;
+  return parts.some((part) => /^dmarc\s*=\s*pass$/.test(part));
 }
 
 function localPart(address) {
@@ -111,7 +143,7 @@ export function buildReplyMime({ from, to, subject, messageId, id = crypto.rando
     `Date: ${date.toUTCString()}`,
   ];
 
-  const inReplyTo = headerValue(messageId);
+  const inReplyTo = replyMessageId(messageId);
   if (inReplyTo) {
     lines.push(`In-Reply-To: ${inReplyTo}`, `References: ${inReplyTo}`);
   }

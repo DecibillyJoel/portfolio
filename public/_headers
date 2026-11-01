@@ -4,3 +4,10 @@
   Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: SAMEORIGIN
   Cross-Origin-Opener-Policy: same-origin
+  # The page asks for no device. Naming them keeps a future script honest.
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+  # Report only, so nothing can break. Cloudflare injects its own inline
+  # bootstrap script for Bot Fight Mode and loads the insights beacon, so a
+  # blocking policy would need those hosts and 'unsafe-inline' anyway. This
+  # header records what a strict policy would reject, in the browser console.
+  Content-Security-Policy-Report-Only: default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'none'; frame-ancestors 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://cloudflareinsights.com; frame-src https://live365.com https://w.soundcloud.com https://decibillyjoel.github.io; upgrade-insecure-requests

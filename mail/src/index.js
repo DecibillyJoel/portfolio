@@ -7,6 +7,7 @@ import {
   DESTINATION,
   NOTE_HEADER,
   buildReplyMime,
+  dmarcPassed,
   forwardedSubject,
   replyFailureReason,
   skipReason,
@@ -22,6 +23,9 @@ export default {
   async email(message) {
     const subject = message.headers.get('Subject') ?? '';
     let skipped = skipReason(message.headers, message.from);
+    // A stranger can aim our auto-reply at any address. Only a sender whose own
+    // domain passed DMARC earns one.
+    if (!skipped && !dmarcPassed(message.headers)) skipped = 'dmarc-unverified';
 
     if (skipped) {
       log('reply-skipped', message, skipped);

@@ -335,7 +335,7 @@ test('both header marks use the small WebP mark and keep the PNG favicon', () =>
   }
 });
 
-test('_headers ships the security headers and no CSP', () => {
+test('_headers ships the security headers and a report only CSP', () => {
   const headers = readFileSync(join(DIST, '_headers'), 'utf8');
   assert.match(headers, /^\/\*$/m);
   for (const name of [
@@ -344,10 +344,18 @@ test('_headers ships the security headers and no CSP', () => {
     'Referrer-Policy',
     'X-Frame-Options',
     'Cross-Origin-Opener-Policy',
+    'Permissions-Policy',
   ]) {
     assert.ok(headers.includes(`${name}:`), `_headers is missing ${name}`);
   }
-  assert.doesNotMatch(headers, /Content-Security-Policy/);
+  // A blocking policy would stop the Cloudflare bot check, which injects its own
+  // script, so the policy reports first and blocks nothing yet.
+  assert.ok(headers.includes('Content-Security-Policy-Report-Only:'), 'the CSP must report only');
+  assert.doesNotMatch(headers, /^Content-Security-Policy:/m, 'no blocking CSP yet');
+  // The report names every embed, so a later blocking policy would keep them.
+  for (const origin of ['https://live365.com', 'https://w.soundcloud.com', 'https://decibillyjoel.github.io']) {
+    assert.ok(headers.includes(origin), `the CSP frame-src is missing ${origin}`);
+  }
 });
 
 test('the page has one h1, a skip link, and a focusable main landmark', () => {
@@ -888,7 +896,7 @@ test('the Links link takes the same selected prompt as a tab', () => {
 test('every link that leaves the site looks and reads the same', () => {
   const html = readIndex();
   const external = [...html.matchAll(/<a [^>]*target="_blank"[^>]*>([\s\S]*?)<\/a>/g)].map((m) => m[1]);
-  assert.equal(external.length, 17, 'nine social links, four credential links and four project links');
+  assert.equal(external.length, 16, 'eight social links, four credential links and four project links');
   for (const inner of external) {
     assert.match(inner, /<span class="arrow"[^>]*>↗<\/span>/, 'the arrow is missing');
     assert.match(inner, /<span class="visually-hidden"[^>]*>[^<]*opens in a new tab<\/span>/, 'the new tab note is missing');
@@ -994,4 +1002,53 @@ test('the workers.dev address and the preview URLs stay switched off', () => {
   assert.match(config, /"preview_urls": false/, 'the preview URLs are off');
   assert.match(config, /"pattern": "joeofsometrades\.com"/, 'the apex is claimed');
   assert.match(config, /"pattern": "www\.joeofsometrades\.com"/, 'www is claimed');
+});
+
+test('every embed is sandboxed, and only the two players may autoplay', () => {
+  const html = readIndex();
+  const frames = [...html.matchAll(/<iframe[\s\S]*?>/g)].map((m) => m[0]);
+  assert.equal(frames.length, 3, 'the radio, the game and the audio list');
+  for (const frame of frames) {
+    assert.match(frame, /sandbox="allow-scripts allow-same-origin allow-popups"/, 'every frame is sandboxed');
+  }
+  const autoplay = frames.filter((frame) => frame.includes('allow="autoplay"'));
+  assert.equal(autoplay.length, 2, 'the radio and the audio list ask for autoplay');
+});
+
+test('the structured data cannot break out of its script element', () => {
+  const html = readIndex();
+  const block = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
+  assert.ok(block, 'the structured data block is missing');
+  assert.ok(!block[1].includes('<'), 'a raw < would end the script element early');
+  const source = readFileSync(join(SRC, 'layouts', 'Base.astro'), 'utf8');
+  assert.match(source, /\.replace\(\/<\/g, '\\\\u003c'\)/, 'the source must keep the escape');
+});
+
+test('gitignore keeps environment files and keys out of the repo', () => {
+  const ignore = readFileSync(fileURLToPath(new URL('../.gitignore', import.meta.url)), 'utf8');
+  const lines = ignore.split('\n');
+  for (const pattern of ['.dev.vars*', '.env', '.env.*', '*.pem', '*.key', 'docs/superpowers/']) {
+    assert.ok(lines.includes(pattern), `gitignore is missing ${pattern}`);
+  }
+});
+
+test('the mail row opens the mail client in place', () => {
+  const html = readIndex();
+  const anchors = [...html.matchAll(/<a [^>]*href="mailto:[^"]*"[^>]*>[\s\S]*?<\/a>/g)];
+  assert.equal(anchors.length, 1, 'one mail link');
+  const mail = anchors[0][0];
+  assert.match(mail, /rel="me"/);
+  assert.ok(!mail.includes('target="_blank"'), 'the mail client opens in place');
+  assert.ok(!mail.includes('arrow'), 'the mail row carries no outward arrow');
+});
+
+test('the security policy is served from the well known path', () => {
+  const file = join(DIST, '.well-known', 'security.txt');
+  assert.ok(existsSync(file), 'dist/.well-known/security.txt is missing');
+  const text = readFileSync(file, 'utf8');
+  assert.match(text, /^Contact: mailto:joe@joeofsometrades\.com$/m);
+  assert.match(text, /^Canonical: https:\/\/joeofsometrades\.com\/\.well-known\/security\.txt$/m);
+  const expires = text.match(/^Expires: (.+)$/m);
+  assert.ok(expires, 'the policy needs an Expires field');
+  assert.ok(Date.parse(expires[1]) > Date.now(), 'the policy must not be expired');
 });

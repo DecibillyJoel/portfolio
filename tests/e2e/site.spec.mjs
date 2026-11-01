@@ -198,12 +198,12 @@ test('first load defaults to #about and reload keeps the current hash', async ({
 
   const autoplay = await page.evaluate(() => ({
     attributeCount: document.querySelectorAll('[autoplay]').length,
-    iframeAllows: document.querySelector('iframe').getAttribute('allow') ?? '',
-    iframeSrc: document.querySelector('iframe').getAttribute('src') ?? '',
+    sources: [...document.querySelectorAll('iframe[data-embed]')].map((frame) => frame.getAttribute('src') ?? ''),
   }));
   expect(autoplay.attributeCount).toBe(0);
-  expect(autoplay.iframeAllows).not.toContain('autoplay');
-  expect(autoplay.iframeSrc).not.toContain('autoplay');
+  // The players hold the autoplay permission, but no frame is asked to load
+  // until its own project is chosen.
+  expect(autoplay.sources.every((src) => src === '')).toBe(true);
 });
 
 test('the Projects view opens on its first project and loads no embed', async ({ page }) => {
