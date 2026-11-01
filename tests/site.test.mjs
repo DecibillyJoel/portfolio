@@ -1079,3 +1079,23 @@ test('the chooser folds away on a project route', () => {
     'each project can take the focus',
   );
 });
+
+// The Portfolio project describes this site, so it shows the card the site
+// hands to anyone who shares a link to it. The card is the one picture in the
+// view, and no other project carries one.
+test('the Portfolio project shows the site card under its link', () => {
+  const html = readIndex();
+  const panel = html.slice(html.indexOf('id="project-portfolio"'), html.indexOf('id="project-smiles"'));
+  const card = panel.match(/<img[^>]*class="project-card"[^>]*>/);
+  assert.ok(card, 'the card is rendered in the Portfolio project');
+  assert.match(card[0], /src="\/og\.png"/);
+  assert.match(card[0], /width="1200"/);
+  assert.match(card[0], /height="630"/);
+  assert.match(card[0], /loading="lazy"/);
+  assert.ok(card[0].includes(`alt="${site.imageAlt}"`), 'the card carries the alt text from site.js');
+  assert.ok(
+    panel.indexOf(card[0]) > panel.indexOf('class="project-link ext-link"'),
+    'the card sits under the project link',
+  );
+  assert.equal((html.match(/class="project-card"/g) || []).length, 1, 'only the site project shows the card');
+});

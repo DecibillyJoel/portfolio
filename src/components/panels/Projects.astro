@@ -2,6 +2,7 @@
 import Player from '../Player.astro';
 import SoundCloud from '../SoundCloud.astro';
 import { projects } from '../../data/projects.js';
+import { site } from '../../data/site.js';
 ---
 <section class="projects">
   <div class="sub-tabs" role="tablist" aria-label="Projects" data-rows>
@@ -39,6 +40,17 @@ import { projects } from '../../data/projects.js';
             target="_blank"
             rel="noopener"
           >{project.linkLabel}<span class="arrow" aria-hidden="true">↗</span><span class="visually-hidden"> — opens in a new tab</span></a>
+        )}
+        {project.card && (
+          <img
+            class="project-card"
+            src={site.image}
+            alt={site.imageAlt}
+            width={site.imageWidth}
+            height={site.imageHeight}
+            loading="lazy"
+            decoding="async"
+          />
         )}
         {project.embedKind === 'player' && <Player />}
         {project.embedKind === 'soundcloud' && <SoundCloud />}
@@ -125,6 +137,15 @@ import { projects } from '../../data/projects.js';
   }
   .tagline { font-size: 1.25rem; color: var(--muted); margin: 0 0 1.125rem; }
   .project-link { font-size: 1.125rem; color: var(--green); margin: 0 0 1.3125rem; }
+  /* The card the site shows when someone shares a link to it, shown here on the
+     project that describes this site. It takes the reading width of the prose
+     and keeps its own 1200 by 630 shape. */
+  .project-card {
+    width: 100%;
+    max-width: 48.75rem;
+    height: auto;
+    margin: 0;
+  }
   /* The frame comes from .embed-box. The game keeps its own shape: a 16 by 9
      box that fills the panel until it reaches this width. */
   .game { --game-width: 71.25rem; }
