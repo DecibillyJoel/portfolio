@@ -3,8 +3,8 @@ export const projects = [
     id: 'portfolio',
     hash: 'portfolio',
     label: 'Portfolio',
-    title: 'PORTFOLIO SITE',
-    tagline: 'the site you are reading',
+    title: 'MY PORTFOLIO',
+    tagline: 'this very website!',
     blurb:
       'This site is my professional and personal portfolio. I built it with Astro and deployed it on Cloudflare Workers with Static Assets. The source code is public on GitHub.',
     href: 'https://github.com/DecibillyJoel/portfolio',
